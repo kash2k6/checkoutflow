@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, FileText, CheckCircle2, X } from 'lucide-react';
+import { Plus, FileText, CheckCircle2, X, Code } from 'lucide-react';
 import { Button } from '@whop/react/components';
 
 import UpsellFlowBuilder from './UpsellFlowBuilder';
+import EmbedCodeModal from './EmbedCodeModal';
 
 interface FlowNode {
   id: string;
@@ -71,6 +72,9 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
   const [loading, setLoading] = useState(true);
   const [showNewFlowModal, setShowNewFlowModal] = useState(false);
   const [newFlowName, setNewFlowName] = useState('');
+  const [showEmbedModal, setShowEmbedModal] = useState(false);
+  const [embedFlowId, setEmbedFlowId] = useState<string | null>(null);
+  const [embedFlowName, setEmbedFlowName] = useState<string | null>(null);
 
   // Load flows list on mount
   useEffect(() => {
@@ -315,7 +319,22 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 flex-shrink-0">
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setEmbedFlowId(f.id);
+                            setEmbedFlowName(f.flow_name);
+                            setShowEmbedModal(true);
+                          }}
+                          color="gray"
+                          variant="classic"
+                          size="2"
+                        >
+                          <Code className="w-4 h-4 mr-2" />
+                          Embed
+                        </Button>
                         <div className="text-right">
                           <p className="text-gray-9 text-xs mb-1">Created</p>
                           <p className="text-gray-10 text-sm font-medium">
@@ -420,6 +439,21 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
               </div>
             </div>
           )}
+
+        {/* Embed Code Modal */}
+        {showEmbedModal && embedFlowId && (
+          <EmbedCodeModal
+            isOpen={showEmbedModal}
+            onClose={() => {
+              setShowEmbedModal(false);
+              setEmbedFlowId(null);
+              setEmbedFlowName(null);
+            }}
+            companyId={companyId}
+            flowId={embedFlowId}
+            flowName={embedFlowName}
+          />
+        )}
       </div>
     );
   }
