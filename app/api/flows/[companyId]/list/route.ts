@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { checkSubscriptionAccessInApi } from '@/lib/subscription-api-helpers';
 
+interface FlowData {
+  id: string;
+  flow_name: string | null;
+  initial_product_plan_id: string | null;
+  confirmation_page_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // List all flows for a company
 export async function GET(
   request: NextRequest,
@@ -18,11 +27,14 @@ export async function GET(
       );
     }
 
+    // TypeScript: supabase is guaranteed to be non-null after the check above
+    const db = supabase;
+
     console.log('Fetching flows for company_id:', companyId, 'Type:', typeof companyId);
     
     // First, let's check what flows exist in the database (for debugging)
     // Include initial_product_plan_id in this query to see if it's available
-    const { data: allFlows, error: allFlowsError } = await supabase
+    const { data: allFlows, error: allFlowsError } = await db
       .from('company_flows')
       .select('id, flow_name, company_id, initial_product_plan_id')
       .order('created_at', { ascending: false });
@@ -41,10 +53,10 @@ export async function GET(
     
     // Get all flows for company
     // Use ilike for case-insensitive matching and ensure we're comparing strings
-    let flows;
+    let flows: FlowData[] | null = null;
     let error;
     
-    const { data: flowsQuery, error: queryError } = await supabase
+    const { data: flowsQuery, error: queryError } = await db
       .from('company_flows')
       .select('id, flow_name, initial_product_plan_id, confirmation_page_url, created_at, updated_at')
       .eq('company_id', String(companyId).trim())
@@ -80,7 +92,7 @@ export async function GET(
         console.log('Flows with product ID from allFlows:', flowsWithProductId.map(f => ({ id: f.id, initial_product_plan_id: f.initial_product_plan_id })));
         
         // Now query for full details
-        const { data: fullFlows, error: fullError } = await supabase
+        const { data: fullFlows, error: fullError } = await db
           .from('company_flows')
           .select('id, flow_name, initial_product_plan_id, confirmation_page_url, created_at, updated_at')
           .in('id', flowIds)
