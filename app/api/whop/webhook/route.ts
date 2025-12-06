@@ -284,103 +284,104 @@ export async function GET(request: NextRequest) {
       if (process.env.WHOP_API_KEY) {
         try {
           // First, try to get checkout config to see if it has setup_intent_id
-        const checkoutConfigResponse = await fetch(
-          `https://api.whop.com/api/v1/checkout_configurations/${checkoutConfigId}`,
-          {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        if (checkoutConfigResponse.ok) {
-          const checkoutConfig = await checkoutConfigResponse.json();
-          
-          if (checkoutConfig.setup_intent_id) {
-            const setupIntentResponse = await fetch(
-              `https://api.whop.com/api/v2/setup_intents/${checkoutConfig.setup_intent_id}`,
-              {
-                method: 'GET',
-                headers: {
-                  'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
-                  'Content-Type': 'application/json',
-                },
-              }
-            );
-            
-            if (setupIntentResponse.ok) {
-              const setupIntent = await setupIntentResponse.json();
-              return NextResponse.json({
-                setupIntentId: setupIntent.id,
-                memberId: setupIntent.member?.id,
-                email: setupIntent.member?.user?.email || setupIntent.member?.email || email || 'unknown',
-                paymentMethodId: setupIntent.payment_method?.id,
-                source: 'checkout_config_api',
-              });
+          const checkoutConfigResponse = await fetch(
+            `https://api.whop.com/api/v1/checkout_configurations/${checkoutConfigId}`,
+            {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
             }
-          } else {
-            // Checkout config exists but no setup_intent_id yet - list setup intents for this checkout config
-            const companyId = process.env.WHOP_COMPANY_ID;
-            const url = companyId 
-              ? `https://api.whop.com/api/v2/setup_intents?company_id=${companyId}&limit=10`
-              : 'https://api.whop.com/api/v2/setup_intents?limit=10';
-            
-            const setupIntentsResponse = await fetch(
-              url,
-              {
-                method: 'GET',
-                headers: {
-                  'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
-                  'Content-Type': 'application/json',
-                },
-              }
-            );
+          );
 
-            if (setupIntentsResponse.ok) {
-              const setupIntents = await setupIntentsResponse.json();
-              const setupIntent = setupIntents.data?.find(
-                (si: any) => si.checkout_configuration?.id === checkoutConfigId
+          if (checkoutConfigResponse.ok) {
+            const checkoutConfig = await checkoutConfigResponse.json();
+            
+            if (checkoutConfig.setup_intent_id) {
+              const setupIntentResponse = await fetch(
+                `https://api.whop.com/api/v2/setup_intents/${checkoutConfig.setup_intent_id}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
+                    'Content-Type': 'application/json',
+                  },
+                }
               );
               
-              if (setupIntent) {
-                const memberId = setupIntent.member?.id;
-                const setupIntentId = setupIntent.id;
-                const userEmail = setupIntent.member?.user?.email || setupIntent.member?.email || email;
-                
-                // Store in Supabase for future lookups if configured
-                if (memberId && setupIntentId && userEmail && isSupabaseConfigured() && supabase) {
-                  try {
-                    await supabase
-                      .from('whop_member_data')
-                      .upsert({
-                        email: userEmail.toLowerCase(),
-                        member_id: memberId,
-                        setup_intent_id: setupIntentId,
-                        payment_method_id: setupIntent.payment_method?.id || null,
-                        checkout_config_id: checkoutConfigId || null,
-                      }, {
-                        onConflict: 'email',
-                      });
-                  } catch (error) {
-                    console.error('Error storing in Supabase:', error);
-                  }
-                }
-                
+              if (setupIntentResponse.ok) {
+                const setupIntent = await setupIntentResponse.json();
                 return NextResponse.json({
-                  setupIntentId,
-                  memberId,
-                  email: userEmail || 'unknown',
+                  setupIntentId: setupIntent.id,
+                  memberId: setupIntent.member?.id,
+                  email: setupIntent.member?.user?.email || setupIntent.member?.email || email || 'unknown',
                   paymentMethodId: setupIntent.payment_method?.id,
-                  source: 'checkout_config_list_api',
+                  source: 'checkout_config_api',
                 });
+              }
+            } else {
+              // Checkout config exists but no setup_intent_id yet - list setup intents for this checkout config
+              const companyId = process.env.WHOP_COMPANY_ID;
+              const url = companyId 
+                ? `https://api.whop.com/api/v2/setup_intents?company_id=${companyId}&limit=10`
+                : 'https://api.whop.com/api/v2/setup_intents?limit=10';
+              
+              const setupIntentsResponse = await fetch(
+                url,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
+                    'Content-Type': 'application/json',
+                  },
+                }
+              );
+
+              if (setupIntentsResponse.ok) {
+                const setupIntents = await setupIntentsResponse.json();
+                const setupIntent = setupIntents.data?.find(
+                  (si: any) => si.checkout_configuration?.id === checkoutConfigId
+                );
+                
+                if (setupIntent) {
+                  const memberId = setupIntent.member?.id;
+                  const setupIntentId = setupIntent.id;
+                  const userEmail = setupIntent.member?.user?.email || setupIntent.member?.email || email;
+                  
+                  // Store in Supabase for future lookups if configured
+                  if (memberId && setupIntentId && userEmail && isSupabaseConfigured() && supabase) {
+                    try {
+                      await supabase
+                        .from('whop_member_data')
+                        .upsert({
+                          email: userEmail.toLowerCase(),
+                          member_id: memberId,
+                          setup_intent_id: setupIntentId,
+                          payment_method_id: setupIntent.payment_method?.id || null,
+                          checkout_config_id: checkoutConfigId || null,
+                        }, {
+                          onConflict: 'email',
+                        });
+                    } catch (error) {
+                      console.error('Error storing in Supabase:', error);
+                    }
+                  }
+                  
+                  return NextResponse.json({
+                    setupIntentId,
+                    memberId,
+                    email: userEmail || 'unknown',
+                    paymentMethodId: setupIntent.payment_method?.id,
+                    source: 'checkout_config_list_api',
+                  });
+                }
               }
             }
           }
+        } catch (error) {
+          console.error('Error retrieving from checkout config:', error);
         }
-      } catch (error) {
-        console.error('Error retrieving from checkout config:', error);
       }
     }
 
