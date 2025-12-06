@@ -1,6 +1,7 @@
 import { WhopIframeSdkProvider, WhopThemeScript } from "@whop/react";
 import { Theme } from "@whop/react/components";
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Whop App",
-	description: "My Whop App",
+	title: "Xperience Living",
+	description: "AI-powered product recommendations",
 };
 
 export default function RootLayout({
@@ -32,6 +33,16 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
+				{/* Microsoft Clarity tracking */}
+				<Script id="clarity-script" strategy="afterInteractive">
+					{`
+						(function(c,l,a,r,i,t,y){
+							c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+							t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+							y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+						})(window, document, "clarity", "script", "ud5vw0me7v");
+					`}
+				</Script>
 				<Theme accentColor="blue">
 					<WhopIframeSdkProvider>{children}</WhopIframeSdkProvider>
 				</Theme>
@@ -39,3 +50,4 @@ export default function RootLayout({
 		</html>
 	);
 }
+

@@ -1,71 +1,83 @@
-import { whopSdk } from "@/lib/whop-sdk";
-import { headers } from "next/headers";
-import { Button } from "./button";
+import { headers } from 'next/headers';
+import { whopSdk } from '@/lib/whop-sdk';
+import DashboardWithSubscription from './components/DashboardWithSubscription';
 
 export default async function DashboardPage({
-	params,
+  params,
 }: {
-	params: Promise<{ companyId: string }>;
+  params: Promise<{ companyId: string }>;
 }) {
-	const { companyId } = await params;
+  const { companyId } = await params;
+  
+  try {
+    // Use dontThrow in case token is missing (dev mode)
+    const result = await whopSdk.verifyUserToken(await headers(), { dontThrow: true });
+    
+    if (!result || !result.userId) {
+      // In dev mode, allow access without strict auth (for testing)
+      // In production, this should be blocked
+      if (process.env.NODE_ENV === 'production') {
+        return (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-2xl font-semibold text-gray-12 mb-4">Authentication Required</h1>
+              <p className="text-gray-10">Please access this page through the Whop dashboard.</p>
+            </div>
+          </div>
+        );
+      }
+      // Dev mode: allow access but show warning
+      return (
+        <div className="min-h-screen">
+          <div className="bg-yellow-500/20 border-b border-yellow-500/40 p-4 text-center">
+            <p className="text-yellow-700 dark:text-yellow-300 text-sm">
+              ⚠️ Development Mode: Authentication bypassed. Access through Whop dashboard in production.
+            </p>
+          </div>
+          <DashboardWithSubscription companyId={companyId} />
+        </div>
+      );
+    }
 
-	if (!(await isAdmin(companyId))) {
-		return <CustomerEmptyState />;
-	}
+    const { userId } = result;
 
-	return <ButtonPage />;
-}
+    // Check if user has admin access to this company
+    const access = await whopSdk.users.checkAccess(
+      companyId,
+      { id: userId }
+    );
 
-async function isAdmin(companyId: string) {
-	try {
-		const { userId } = await whopSdk.verifyUserToken(await headers());
-		const { accessLevel } = await whopSdk.access.checkIfUserHasAccessToCompany({
-			companyId,
-			userId,
-		});
+    if (access.access_level !== 'admin') {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-semibold text-gray-12 mb-4">Access Denied</h1>
+            <p className="text-gray-10">Admin access required to configure checkout flows.</p>
+          </div>
+        </div>
+      );
+    }
 
-		return accessLevel === "admin";
-	} catch (error) {
-		return false;
-	}
-}
-
-function CustomerEmptyState() {
-	return (
-		<div className="flex items-center justify-center h-48">
-			<div className="text-center">
-				<h3 className="text-lg font-medium mb-2 text-gray-12">
-					Access Restricted
-				</h3>
-				<p className="text-gray-10">
-					You do not have access to view this page.
-				</p>
-			</div>
-		</div>
-	);
-}
-
-function ButtonPage() {
-	return (
-		<div className="h-96 flex items-center justify-center p-6">
-			<div className="text-center">
-				{/* Main Button with Cool Glow */}
-				<div className="relative group mb-8">
-					{/* Outer Glow Ring */}
-					<div className="absolute -inset-4 bg-gradient-to-r from-purple-6 via-blue-5 to-purple-6 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 transition duration-500 group-hover:duration-200 animate-pulse" />
-
-					{/* Inner Glow Ring */}
-					<div className="absolute -inset-2 bg-gradient-to-r from-purple-5 via-blue-4 to-purple-5 rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition duration-300" />
-
-					{/* Button */}
-					<Button />
-				</div>
-
-				{/* Fun Text */}
-				<p className="text-purple-8 text-lg font-medium animate-pulse">
-					Seriously, don't do it... 👀
-				</p>
-			</div>
-		</div>
-	);
+    // Always allow dashboard access - subscription check and banner handled client-side
+    return (
+      <div className="min-h-screen">
+        <DashboardWithSubscription companyId={companyId} />
+      </div>
+    );
+  } catch (error) {
+    // Fallback error handling
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-semibold text-gray-12 mb-4">Authentication Error</h1>
+          <p className="text-gray-10 mb-4">
+            {error instanceof Error ? error.message : 'Failed to authenticate user'}
+          </p>
+          <p className="text-gray-9 text-sm">
+            Make sure you're accessing this through the Whop dashboard with the dev proxy enabled.
+          </p>
+        </div>
+      </div>
+    );
+  }
 }
