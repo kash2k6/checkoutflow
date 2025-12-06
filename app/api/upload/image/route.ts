@@ -13,6 +13,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // TypeScript: supabase is guaranteed to be non-null after the check above
+    const db = supabase;
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
@@ -53,7 +56,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await db.storage
       .from(BUCKET_NAME)
       .upload(filePath, buffer, {
         contentType: file.type,
@@ -67,7 +70,7 @@ export async function POST(request: NextRequest) {
       if (uploadError.message?.includes('not found') || uploadError.message?.includes('Bucket')) {
         console.log(`Bucket "${BUCKET_NAME}" not found, attempting to create it...`);
         
-        const { data: bucketData, error: createError } = await supabase.storage.createBucket(BUCKET_NAME, {
+        const { data: bucketData, error: createError } = await db.storage.createBucket(BUCKET_NAME, {
           public: true,
           fileSizeLimit: 5242880, // 5MB
           allowedMimeTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'],
@@ -87,7 +90,7 @@ export async function POST(request: NextRequest) {
         console.log(`Bucket "${BUCKET_NAME}" created successfully, retrying upload...`);
         
         // Retry upload after creating bucket
-        const { data: retryUploadData, error: retryError } = await supabase.storage
+        const { data: retryUploadData, error: retryError } = await db.storage
           .from(BUCKET_NAME)
           .upload(filePath, buffer, {
             contentType: file.type,
@@ -102,7 +105,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Get public URL for retry upload
-        const { data: retryUrlData } = supabase.storage
+        const { data: retryUrlData } = db.storage
           .from(BUCKET_NAME)
           .getPublicUrl(filePath);
 
@@ -127,7 +130,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get public URL
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = db.storage
       .from(BUCKET_NAME)
       .getPublicUrl(filePath);
 

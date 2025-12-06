@@ -20,6 +20,9 @@ export async function GET(
       );
     }
 
+    // TypeScript: supabase is guaranteed to be non-null after the check above
+    const db = supabase;
+
     // Build date filter
     let dateFilter = '';
     if (startDate) {
@@ -30,7 +33,7 @@ export async function GET(
     }
 
     // Get all flows for company (or specific flow)
-    let flowsQuery = supabase
+    let flowsQuery = db
       .from('company_flows')
       .select('id, flow_name, created_at');
     
@@ -48,7 +51,7 @@ export async function GET(
     const analytics = await Promise.all(
       (flows || []).map(async (flow) => {
         // Get visits
-        let visitsQuery = supabase
+        let visitsQuery = db
           .from('flow_visits')
           .select('id, page_type, visited_at', { count: 'exact' })
           .eq('flow_id', flow.id);
@@ -63,7 +66,7 @@ export async function GET(
         const { data: visits, count: visitsCount } = await visitsQuery;
 
         // Get purchases
-        let purchasesQuery = supabase
+        let purchasesQuery = db
           .from('flow_purchases')
           .select('id, purchase_type, amount, purchased_at', { count: 'exact' })
           .eq('flow_id', flow.id);
