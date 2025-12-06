@@ -20,8 +20,10 @@
 
   // Listen for redirect messages from iframes
   window.addEventListener('message', function(event) {
-    // Verify message is from our domain
-    if (event.origin !== baseUrl.replace(/\/$/, '')) {
+    // Verify message is from our domain (allow both with and without trailing slash)
+    const baseUrlNormalized = baseUrl.replace(/\/$/, '');
+    const eventOriginNormalized = event.origin.replace(/\/$/, '');
+    if (eventOriginNormalized !== baseUrlNormalized) {
       return;
     }
 

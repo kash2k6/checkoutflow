@@ -350,20 +350,33 @@ function CheckoutContent() {
           const handleRedirect = (url: string, shouldRedirectParent = false) => {
             const isInIframe = typeof window !== 'undefined' && window.parent !== window;
             
-            if (isInIframe && !shouldRedirectParent) {
-              // Send message to parent to update iframe src
-              window.parent.postMessage({
-                type: 'xperience-redirect',
-                url: url,
-                action: 'update-iframe'
-              }, '*');
-            } else if (isInIframe && shouldRedirectParent) {
-              // Send message to parent to redirect entire page
-              window.parent.postMessage({
-                type: 'xperience-redirect',
-                url: url,
-                action: 'redirect-parent'
-              }, '*');
+            if (isInIframe) {
+              if (shouldRedirectParent) {
+                // For external URLs, try to redirect parent page via postMessage
+                // This is for custom embed scripts that listen for this message
+                window.parent.postMessage({
+                  type: 'xperience-redirect',
+                  url: url,
+                  action: 'redirect-parent'
+                }, '*');
+                // Also try direct redirect (may not work due to same-origin policy, but worth trying)
+                try {
+                  window.top!.location.href = url;
+                } catch (e) {
+                  // Cross-origin, can't redirect parent - postMessage is the only option
+                  console.log('Cannot redirect parent due to cross-origin restrictions. Using postMessage.');
+                }
+              } else {
+                // For internal URLs, update iframe content directly
+                // This works in both Whop's iframe and custom embeds
+                window.location.href = url;
+                // Also send postMessage for custom embed scripts that might want to listen
+                window.parent.postMessage({
+                  type: 'xperience-redirect',
+                  url: url,
+                  action: 'update-iframe'
+                }, '*');
+              }
             } else {
               // Not in iframe, normal redirect
               window.location.href = url;
