@@ -242,54 +242,50 @@ function CheckoutContent() {
   }, [checkoutConfigId, productInfo, isLoading, error]);
 
   const handleCheckoutComplete = async () => {
-              // Setup mode checkout completed - payment method is now saved
-              const userData = localStorage.getItem('xperience_user_data');
-              if (!userData) {
-                alert('Please ensure your email is saved. Please contact support.');
-                return;
-              }
-
-              try {
-                const parsed = JSON.parse(userData);
-                if (!parsed.email) {
-                  alert('Email not found. Please contact support.');
-                  return;
-                }
-
+    try {
+      // Setup mode checkout completed - payment method is now saved
+      // The webhook should have saved the data to Supabase by now
+      
       const finalPlanId = flow?.initial_product_plan_id || planId;
       if (!finalPlanId) {
         alert('Product not configured. Please contact support.');
         return;
       }
 
-      // Get member ID and setup intent ID
+      // Get member ID and setup intent ID from Supabase/API using checkoutConfigId
                 let memberId: string | null = null;
                 let setupIntentId: string | null = null;
+                let userEmail: string | null = null;
                 
                 let attempts = 0;
-      const maxAttempts = 8;
+      const maxAttempts = 10;
 
                 while (!memberId && attempts < maxAttempts) {
                   attempts++;
-                  const waitTime = attempts === 1 ? 2000 : 1000;
+                  const waitTime = attempts === 1 ? 2000 : 1000; // Wait 2s first, then 1s
                   await new Promise(resolve => setTimeout(resolve, waitTime));
 
                   try {
+                    // Try to get data by checkoutConfigId first (most reliable)
                     const response = await fetch(
-                      `/api/whop/webhook?email=${encodeURIComponent(parsed.email)}&checkoutConfigId=${checkoutConfigId}`
+                      `/api/whop/webhook?checkoutConfigId=${checkoutConfigId}`
                     );
                     
                     if (response.ok) {
                       const data = await response.json();
                       memberId = data.memberId || null;
                       setupIntentId = data.setupIntentId || null;
+                      userEmail = data.email || null;
                       
                       if (memberId) {
                         localStorage.setItem('whop_member_id', memberId);
-                      if (setupIntentId) {
-                        localStorage.setItem('whop_setup_intent_id', setupIntentId);
-                      }
-              break;
+                        if (setupIntentId) {
+                          localStorage.setItem('whop_setup_intent_id', setupIntentId);
+                        }
+                        if (userEmail) {
+                          localStorage.setItem('xperience_user_data', JSON.stringify({ email: userEmail }));
+                        }
+                        break;
                       }
                     }
                   } catch (apiError) {
@@ -298,23 +294,33 @@ function CheckoutContent() {
         }
       }
 
+      // If still no memberId, try using email from localStorage as fallback
       if (!memberId) {
-        alert('Payment method saved! Processing your order. Please wait...');
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        const lastAttempt = await fetch(
-          `/api/whop/webhook?email=${encodeURIComponent(parsed.email)}`
-        );
-        if (lastAttempt.ok) {
-          const lastData = await lastAttempt.json();
-          if (lastData.memberId) {
-            memberId = lastData.memberId;
-            if (memberId) {
-              localStorage.setItem('whop_member_id', memberId);
-            }
-          }
+        const userData = localStorage.getItem('xperience_user_data');
+        if (userData) {
+          try {
+            const parsed = JSON.parse(userData);
+            if (parsed.email) {
+              const lastAttempt = await fetch(
+                `/api/whop/webhook?email=${encodeURIComponent(parsed.email)}&checkoutConfigId=${checkoutConfigId}`
+              );
+              if (lastAttempt.ok) {
+                const lastData = await lastAttempt.json();
+                if (lastData.memberId) {
+                  memberId = lastData.memberId;
+                  setupIntentId = lastData.setupIntentId || null;
+                  userEmail = lastData.email || parsed.email;
+                  if (memberId) {
+                    localStorage.setItem('whop_member_id', memberId);
                   }
                 }
+              }
+            }
+          } catch (e) {
+            console.error('Error parsing localStorage data:', e);
+          }
+        }
+      }
 
                 if (memberId) {
         // Charge the initial product
@@ -328,7 +334,7 @@ function CheckoutContent() {
                     body: JSON.stringify({
                       memberId,
             planId: finalPlanId,
-            userEmail: parsed.email,
+            userEmail: userEmail || undefined,
             companyId: companyId || undefined,
             flowId: flow?.id || undefined,
                     }),

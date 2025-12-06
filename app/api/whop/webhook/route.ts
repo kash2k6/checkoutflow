@@ -255,9 +255,35 @@ export async function GET(request: NextRequest) {
     }
 
     // Try to get by checkout config ID (if provided)
-    if (checkoutConfigId && process.env.WHOP_API_KEY) {
-      try {
-        // First, try to get checkout config to see if it has setup_intent_id
+    if (checkoutConfigId) {
+      // First, try Supabase lookup by checkout_config_id (fastest and most reliable)
+      if (isSupabaseConfigured() && supabase) {
+        try {
+          const { data, error } = await supabase
+            .from('whop_member_data')
+            .select('*')
+            .eq('checkout_config_id', checkoutConfigId)
+            .single();
+
+          if (!error && data) {
+            return NextResponse.json({
+              setupIntentId: data.setup_intent_id,
+              memberId: data.member_id,
+              email: data.email,
+              paymentMethodId: data.payment_method_id,
+              initialPlanId: data.initial_plan_id,
+              source: 'supabase_by_checkout_config',
+            });
+          }
+        } catch (error) {
+          console.error('Error querying Supabase by checkout_config_id:', error);
+        }
+      }
+
+      // Fallback to Whop API lookup if Supabase doesn't have it yet
+      if (process.env.WHOP_API_KEY) {
+        try {
+          // First, try to get checkout config to see if it has setup_intent_id
         const checkoutConfigResponse = await fetch(
           `https://api.whop.com/api/v1/checkout_configurations/${checkoutConfigId}`,
           {
