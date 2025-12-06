@@ -51,13 +51,14 @@ export async function createGame(formData: FormData) {
 
 	await sendUpdate(newGame.id);
 
-	await whopSdk.notifications.sendPushNotification({
-		title: "New 'Call it' game started",
-		content: question,
-		experienceId: newGame.experienceId,
-		isMention: true,
-		senderUserId: userId,
-	});
+	// TODO: Fix notification API - method may have changed
+	// await whopSdk.notifications.sendPushNotification({
+	// 	title: "New 'Call it' game started",
+	// 	content: question,
+	// 	experienceId: newGame.experienceId,
+	// 	isMention: true,
+	// 	senderUserId: userId,
+	// });
 
 	redirect(`/experiences/${experienceId}`);
 }
