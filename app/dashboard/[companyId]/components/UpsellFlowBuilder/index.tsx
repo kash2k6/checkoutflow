@@ -395,9 +395,9 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
       )}
 
       {/* Checkout Customization Modal */}
-      {showCheckoutCustomization && flow && (
+      {showCheckoutCustomization && flow && flow.id && (
         <CheckoutCustomization
-          flow={flow}
+          flow={flow as any}
           onClose={() => setShowCheckoutCustomization(false)}
           onSave={async (customization) => {
             const updatedFlow = {
