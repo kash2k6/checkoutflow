@@ -95,7 +95,7 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
           }
           const flowsList = flowsData.flows || [];
           console.log('Setting flows list:', flowsList);
-          console.log('Flow details:', JSON.stringify(flowsList.map(f => ({ 
+          console.log('Flow details:', JSON.stringify(flowsList.map((f: any) => ({ 
             id: f.id, 
             name: f.flow_name,
             initial_product_plan_id: f.initial_product_plan_id,

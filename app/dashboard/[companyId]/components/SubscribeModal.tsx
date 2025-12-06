@@ -53,7 +53,7 @@ export default function SubscribeModal({ isOpen, onClose, onSuccess }: Subscribe
         }, 1000);
       } else {
         // Purchase was cancelled or failed
-        if (result.status !== 'cancelled') {
+        if (result.status === 'error') {
           setError(result.error || 'Failed to complete purchase');
         }
         // If cancelled, just close without error

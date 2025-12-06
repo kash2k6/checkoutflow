@@ -383,9 +383,9 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
       )}
 
       {/* Confirmation Customization Modal */}
-      {showConfirmationCustomization && flow && (
+      {showConfirmationCustomization && flow && flow.id && (
         <ConfirmationCustomization
-          flow={flow}
+          flow={flow as any}
           onClose={() => setShowConfirmationCustomization(false)}
           onSave={(customization) => {
             setFlow({ ...flow, confirmation_customization: customization } as any);

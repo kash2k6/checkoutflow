@@ -115,9 +115,14 @@ export async function GET(
             return ff;
           });
           
-          if (mergedFlows.length > flows.length || mergedFlows.some(f => f.initial_product_plan_id && !flows.find(orig => orig.id === f.id && orig.initial_product_plan_id))) {
-            console.log('Using manually filtered flows with merged product IDs:', mergedFlows.length);
+          if (!flows) {
             flows = mergedFlows;
+          } else {
+            const currentFlows = flows; // Store in const to help TypeScript
+            if (mergedFlows.length > currentFlows.length || mergedFlows.some(f => f.initial_product_plan_id && !currentFlows.find(orig => orig.id === f.id && orig.initial_product_plan_id))) {
+              console.log('Using manually filtered flows with merged product IDs:', mergedFlows.length);
+              flows = mergedFlows;
+            }
           }
         }
       }

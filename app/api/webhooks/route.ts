@@ -100,10 +100,11 @@ async function afterVote(gameId: string) {
 	const game = await sendUpdate(gameId);
 	if (!game) return;
 
-	await whopSdk.notifications.sendPushNotification({
-		title: "New player has submitted their vote!",
-		subtitle: game.game.question,
-		content: `The pot is now at $${game.game.totalPoolSum}`,
-		experienceId: game.game.experienceId,
-	});
+	// TODO: Fix notification API - method may have changed
+	// await whopSdk.notifications.sendPushNotification({
+	// 	title: "New player has submitted their vote!",
+	// 	subtitle: game.game.question,
+	// 	content: `The pot is now at $${game.game.totalPoolSum}`,
+	// 	experienceId: game.game.experienceId,
+	// });
 }

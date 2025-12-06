@@ -309,7 +309,9 @@ function CheckoutContent() {
           const lastData = await lastAttempt.json();
           if (lastData.memberId) {
             memberId = lastData.memberId;
-            localStorage.setItem('whop_member_id', memberId);
+            if (memberId) {
+              localStorage.setItem('whop_member_id', memberId);
+            }
           }
                   }
                 }
