@@ -346,6 +346,30 @@ function CheckoutContent() {
           // Redirect to first upsell or confirmation
           const upsellNodes = flow?.nodes.filter(n => n.node_type === 'upsell').sort((a, b) => a.order_index - b.order_index) || [];
           
+          // Helper function to handle redirect (works for both iframe and standalone)
+          const handleRedirect = (url: string, shouldRedirectParent = false) => {
+            const isInIframe = typeof window !== 'undefined' && window.parent !== window;
+            
+            if (isInIframe && !shouldRedirectParent) {
+              // Send message to parent to update iframe src
+              window.parent.postMessage({
+                type: 'xperience-redirect',
+                url: url,
+                action: 'update-iframe'
+              }, '*');
+            } else if (isInIframe && shouldRedirectParent) {
+              // Send message to parent to redirect entire page
+              window.parent.postMessage({
+                type: 'xperience-redirect',
+                url: url,
+                action: 'redirect-parent'
+              }, '*');
+            } else {
+              // Not in iframe, normal redirect
+              window.location.href = url;
+            }
+          };
+          
           if (upsellNodes.length > 0) {
             // Redirect to first upsell
             const firstUpsell = upsellNodes[0];
@@ -354,7 +378,7 @@ function CheckoutContent() {
             let redirectUrl: URL;
             try {
               redirectUrl = new URL(firstUpsell.redirect_url);
-              // If it's an external URL, redirect there with params
+              // If it's an external URL, redirect parent page
               if (redirectUrl.origin !== window.location.origin) {
                 redirectUrl.searchParams.set('companyId', companyId || '');
                 redirectUrl.searchParams.set('flowId', flow?.id || '');
@@ -363,7 +387,7 @@ function CheckoutContent() {
                 if (setupIntentId) {
                   redirectUrl.searchParams.set('setupIntentId', setupIntentId);
                 }
-                window.location.href = redirectUrl.toString();
+                handleRedirect(redirectUrl.toString(), true); // Redirect parent for external URLs
                 return;
               }
             } catch (e) {
@@ -376,20 +400,31 @@ function CheckoutContent() {
             upsellUrl.searchParams.set('flowId', flow?.id || '');
             upsellUrl.searchParams.set('nodeId', firstUpsell.id);
             upsellUrl.searchParams.set('memberId', memberId);
-                    if (setupIntentId) {
+            if (setupIntentId) {
               upsellUrl.searchParams.set('setupIntentId', setupIntentId);
             }
-            window.location.href = upsellUrl.toString();
+            handleRedirect(upsellUrl.toString()); // Update iframe for internal URLs
           } else if (flow?.confirmation_page_url) {
             // Redirect to confirmation
             const redirectUrl = new URL(flow.confirmation_page_url);
             redirectUrl.searchParams.set('companyId', companyId || '');
             redirectUrl.searchParams.set('memberId', memberId);
-            window.location.href = redirectUrl.toString();
-                    } else {
+            
+            // Check if confirmation URL is external
+            const isExternal = redirectUrl.origin !== window.location.origin;
+            handleRedirect(redirectUrl.toString(), isExternal);
+          } else {
             // Default: show success message
-            alert('Payment successful! Thank you for your purchase.');
-                    }
+            const isInIframe = typeof window !== 'undefined' && window.parent !== window;
+            if (isInIframe) {
+              window.parent.postMessage({
+                type: 'xperience-complete',
+                message: 'Payment successful! Thank you for your purchase.'
+              }, '*');
+            } else {
+              alert('Payment successful! Thank you for your purchase.');
+            }
+          }
                   } else {
                     console.error('Error charging initial product:', chargeData);
           alert(`Payment setup completed, but there was an issue processing your order: ${chargeData.error || 'Unknown error'}. Please contact support.`);

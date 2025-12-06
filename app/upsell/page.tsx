@@ -197,6 +197,30 @@ interface CompanyFlow {
     return null;
   };
 
+  // Helper function to handle redirect (works for both iframe and standalone)
+  const handleRedirect = (url: string, shouldRedirectParent = false) => {
+    const isInIframe = typeof window !== 'undefined' && window.parent !== window;
+    
+    if (isInIframe && !shouldRedirectParent) {
+      // Send message to parent to update iframe src
+      window.parent.postMessage({
+        type: 'xperience-redirect',
+        url: url,
+        action: 'update-iframe'
+      }, '*');
+    } else if (isInIframe && shouldRedirectParent) {
+      // Send message to parent to redirect entire page
+      window.parent.postMessage({
+        type: 'xperience-redirect',
+        url: url,
+        action: 'redirect-parent'
+      }, '*');
+    } else {
+      // Not in iframe, normal redirect
+      window.location.href = url;
+    }
+  };
+
   const handleAccept = async () => {
     if (!currentNode) return;
     
@@ -275,7 +299,27 @@ interface CompanyFlow {
       
       if (nextAction.type === 'node' && nextAction.target) {
         // Redirect to next node
-        const redirectUrl = new URL(nextAction.target.redirect_url);
+        let redirectUrl: URL;
+        try {
+          redirectUrl = new URL(nextAction.target.redirect_url);
+          // If it's an external URL, redirect parent page
+          if (redirectUrl.origin !== window.location.origin) {
+            redirectUrl.searchParams.set('companyId', companyId || '');
+            redirectUrl.searchParams.set('flowId', flowId || '');
+            redirectUrl.searchParams.set('nodeId', nextAction.target.id);
+            redirectUrl.searchParams.set('memberId', memberId);
+            if (setupIntentIdFromUrl) {
+              redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
+            }
+            handleRedirect(redirectUrl.toString(), true); // Redirect parent for external URLs
+            return;
+          }
+        } catch (e) {
+          // If redirect_url is not a valid URL, treat it as a relative path
+        }
+        
+        // If it's our domain or a relative path, redirect to our /upsell page
+        redirectUrl = new URL('/upsell', window.location.origin);
         redirectUrl.searchParams.set('companyId', companyId || '');
         redirectUrl.searchParams.set('flowId', flowId || '');
         redirectUrl.searchParams.set('nodeId', nextAction.target.id);
@@ -283,21 +327,22 @@ interface CompanyFlow {
         if (setupIntentIdFromUrl) {
           redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
         }
-        window.location.href = redirectUrl.toString();
+        handleRedirect(redirectUrl.toString()); // Update iframe for internal URLs
       } else if (nextAction.type === 'confirmation' && nextAction.url) {
         // Redirect to confirmation page
         const redirectUrl = new URL(nextAction.url);
         redirectUrl.searchParams.set('companyId', companyId || '');
         redirectUrl.searchParams.set('flowId', flowId || '');
         redirectUrl.searchParams.set('memberId', memberId);
-        window.location.href = redirectUrl.toString();
+        const isExternal = redirectUrl.origin !== window.location.origin;
+        handleRedirect(redirectUrl.toString(), isExternal);
       } else if (nextAction.type === 'external_url' && nextAction.url) {
         // Redirect to external URL
         const redirectUrl = new URL(nextAction.url);
         redirectUrl.searchParams.set('companyId', companyId || '');
         redirectUrl.searchParams.set('flowId', flowId || '');
         redirectUrl.searchParams.set('memberId', memberId);
-        window.location.href = redirectUrl.toString();
+        handleRedirect(redirectUrl.toString(), true); // Always redirect parent for external URLs
       } else {
         // Fallback: show confirmation or redirect to confirmation page
         if (flow?.confirmation_page_url) {
@@ -305,7 +350,8 @@ interface CompanyFlow {
           redirectUrl.searchParams.set('companyId', companyId || '');
           redirectUrl.searchParams.set('flowId', flowId || '');
           redirectUrl.searchParams.set('memberId', memberId);
-          window.location.href = redirectUrl.toString();
+          const isExternal = redirectUrl.origin !== window.location.origin;
+          handleRedirect(redirectUrl.toString(), isExternal);
         } else {
           setShowConfirmation(true);
         }
@@ -333,7 +379,29 @@ interface CompanyFlow {
     
     if (nextAction.type === 'node' && nextAction.target) {
       // Redirect to next node
-      const redirectUrl = new URL(nextAction.target.redirect_url);
+      let redirectUrl: URL;
+      try {
+        redirectUrl = new URL(nextAction.target.redirect_url);
+        // If it's an external URL, redirect parent page
+        if (redirectUrl.origin !== window.location.origin) {
+          redirectUrl.searchParams.set('companyId', companyId || '');
+          redirectUrl.searchParams.set('flowId', flowId || '');
+          redirectUrl.searchParams.set('nodeId', nextAction.target.id);
+          if (memberIdFromUrl) {
+            redirectUrl.searchParams.set('memberId', memberIdFromUrl);
+          }
+          if (setupIntentIdFromUrl) {
+            redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
+          }
+          handleRedirect(redirectUrl.toString(), true); // Redirect parent for external URLs
+          return;
+        }
+      } catch (e) {
+        // If redirect_url is not a valid URL, treat it as a relative path
+      }
+      
+      // If it's our domain or a relative path, redirect to our /upsell page
+      redirectUrl = new URL('/upsell', window.location.origin);
       redirectUrl.searchParams.set('companyId', companyId || '');
       redirectUrl.searchParams.set('flowId', flowId || '');
       redirectUrl.searchParams.set('nodeId', nextAction.target.id);
@@ -343,7 +411,7 @@ interface CompanyFlow {
       if (setupIntentIdFromUrl) {
         redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
       }
-      window.location.href = redirectUrl.toString();
+      handleRedirect(redirectUrl.toString()); // Update iframe for internal URLs
     } else if (nextAction.type === 'confirmation' && nextAction.url) {
       // Redirect to confirmation page
       const redirectUrl = new URL(nextAction.url);
@@ -351,8 +419,9 @@ interface CompanyFlow {
       redirectUrl.searchParams.set('flowId', flowId || '');
       if (memberIdFromUrl) {
         redirectUrl.searchParams.set('memberId', memberIdFromUrl);
-              }
-      window.location.href = redirectUrl.toString();
+      }
+      const isExternal = redirectUrl.origin !== window.location.origin;
+      handleRedirect(redirectUrl.toString(), isExternal);
     } else if (nextAction.type === 'external_url' && nextAction.url) {
       // Redirect to external URL
       const redirectUrl = new URL(nextAction.url);
@@ -361,7 +430,7 @@ interface CompanyFlow {
       if (memberIdFromUrl) {
         redirectUrl.searchParams.set('memberId', memberIdFromUrl);
       }
-      window.location.href = redirectUrl.toString();
+      handleRedirect(redirectUrl.toString(), true); // Always redirect parent for external URLs
     } else {
       // Fallback: show confirmation or redirect to confirmation page
       if (flow?.confirmation_page_url) {
@@ -370,8 +439,9 @@ interface CompanyFlow {
         redirectUrl.searchParams.set('flowId', flowId || '');
         if (memberIdFromUrl) {
           redirectUrl.searchParams.set('memberId', memberIdFromUrl);
-                  }
-        window.location.href = redirectUrl.toString();
+        }
+        const isExternal = redirectUrl.origin !== window.location.origin;
+        handleRedirect(redirectUrl.toString(), isExternal);
       } else {
         setShowConfirmation(true);
       }

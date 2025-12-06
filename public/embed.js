@@ -15,6 +15,43 @@
 
   const baseUrl = getBaseUrl();
 
+  // Store iframe references for redirect handling
+  const iframeMap = new Map();
+
+  // Listen for redirect messages from iframes
+  window.addEventListener('message', function(event) {
+    // Verify message is from our domain
+    if (event.origin !== baseUrl.replace(/\/$/, '')) {
+      return;
+    }
+
+    if (event.data && event.data.type === 'xperience-redirect') {
+      // Find the iframe that sent this message
+      iframeMap.forEach((iframe, container) => {
+        if (iframe.contentWindow === event.source) {
+          if (event.data.action === 'update-iframe') {
+            // Update iframe src to show next page
+            iframe.src = event.data.url;
+          } else if (event.data.action === 'redirect-parent') {
+            // Redirect entire parent page
+            window.location.href = event.data.url;
+          }
+        }
+      });
+    }
+
+    if (event.data && event.data.type === 'xperience-complete') {
+      // Handle completion (could show a message or redirect)
+      iframeMap.forEach((iframe, container) => {
+        if (iframe.contentWindow === event.source) {
+          // Optionally show completion message or redirect
+          console.log('Checkout completed:', event.data.message);
+          // You could also show a success message in the container
+        }
+      });
+    }
+  });
+
   // Wait for DOM to be ready
   function init() {
     // Find all embed containers
@@ -42,6 +79,9 @@
       iframe.style.border = 'none';
       iframe.style.display = 'block';
       container.appendChild(iframe);
+      
+      // Store iframe reference for redirect handling
+      iframeMap.set(container, iframe);
     });
 
     // Process upsell embeds
@@ -68,6 +108,9 @@
       iframe.style.border = 'none';
       iframe.style.display = 'block';
       container.appendChild(iframe);
+      
+      // Store iframe reference for redirect handling
+      iframeMap.set(container, iframe);
     });
 
     // Process confirmation embeds
@@ -92,6 +135,9 @@
       iframe.style.border = 'none';
       iframe.style.display = 'block';
       container.appendChild(iframe);
+      
+      // Store iframe reference for redirect handling
+      iframeMap.set(container, iframe);
     });
   }
 
