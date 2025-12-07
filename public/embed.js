@@ -1,19 +1,23 @@
 (function() {
-  // Get base URL from the script's src
+  // Get base URL and parameters from the script's src
   function getBaseUrl() {
     const scripts = document.getElementsByTagName('script');
+    let scriptUrl = null;
     for (let i = 0; i < scripts.length; i++) {
       const src = scripts[i].src;
       if (src && src.includes('/embed.js')) {
+        scriptUrl = src;
         const url = new URL(src);
-        return url.origin;
+        return { origin: url.origin, fullUrl: src };
       }
     }
     // Fallback to current origin if script src not found
-    return window.location.origin;
+    return { origin: window.location.origin, fullUrl: null };
   }
 
-  const baseUrl = getBaseUrl();
+  const baseUrlInfo = getBaseUrl();
+  const baseUrl = baseUrlInfo.origin;
+  const scriptUrl = baseUrlInfo.fullUrl;
 
   // Store iframe references for redirect handling
   const iframeMap = new Map();
@@ -119,8 +123,18 @@
   }
 
   // Get URL parameters from multiple sources
-  function getAllUrlParams() {
+  function getAllUrlParams(scriptUrlParam) {
     const allParams = {};
+    
+    // First, try script tag URL if provided (most reliable)
+    if (scriptUrlParam) {
+      try {
+        const scriptParams = parseUrlParamsFromString(scriptUrlParam);
+        Object.assign(allParams, scriptParams);
+      } catch (e) {
+        console.warn('Could not parse script URL:', e);
+      }
+    }
     
     // Try current window location
     try {
@@ -166,13 +180,29 @@
       }
     }
     
+    // Also check any existing iframes on the page for their src URLs
+    try {
+      document.querySelectorAll('iframe[src*="upsell"], iframe[src*="checkout"], iframe[src*="confirmation"]').forEach(iframe => {
+        if (iframe.src) {
+          try {
+            const iframeParams = parseUrlParamsFromString(iframe.src);
+            Object.assign(allParams, iframeParams);
+          } catch (e) {
+            // Ignore
+          }
+        }
+      });
+    } catch (e) {
+      // Ignore
+    }
+    
     return allParams;
   }
 
   // Wait for DOM to be ready
   function init() {
-    // Get URL params from all possible sources
-    const allParams = getAllUrlParams();
+    // Get URL params from all possible sources (including script URL)
+    const allParams = getAllUrlParams(scriptUrl);
     
     // Also try standard URLSearchParams from current location
     let urlParams;
