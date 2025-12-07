@@ -585,8 +585,60 @@ interface CompanyFlow {
     );
   }
 
-  // Don't show confirmation unless we explicitly set it AND have purchased products
+  // Show confirmation page only if we have purchased products AND showConfirmation is true
   // This prevents it from rendering prematurely as part of the flow
+  if (showConfirmation && purchasedProducts.length > 0) {
+    const total = purchasedProducts.reduce((sum, product) => sum + product.price, 0);
+    const oneTimeProducts = purchasedProducts.filter(p => p.type === 'one_time');
+    const subscriptionProducts = purchasedProducts.filter(p => p.type === 'subscription');
+
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl bg-[#2a2a2a] border border-[#3a3a3a] rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-[#0D6B4D] to-[#0b5940] p-6 text-center">
+            <h1 className="text-3xl font-bold text-white mb-2">✅ Order Complete!</h1>
+            <p className="text-green-100 text-sm">Thank you for your purchase</p>
+          </div>
+
+          <div className="p-8">
+            <h2 className="text-xl font-semibold text-white mb-6">Your Purchases:</h2>
+            
+            <div className="space-y-4 mb-6">
+              {purchasedProducts.map((product, index) => (
+                <div key={index} className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-4 flex justify-between items-center">
+                  <div>
+                    <h3 className="text-white font-semibold">{product.name}</h3>
+                    <p className="text-gray-400 text-sm">
+                      {product.type === 'subscription' ? 'Subscription (Monthly)' : 'One-time Purchase'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white font-bold">${product.price.toFixed(2)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-[#3a3a3a] pt-4 mb-6">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-semibold text-white">Total:</span>
+                <span className="text-2xl font-bold text-[#0D6B4D]">${total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="bg-[#0D6B4D]/20 border border-[#0D6B4D]/40 rounded-lg p-4 mb-6">
+              <p className="text-[#0D6B4D] text-sm">
+                {subscriptionProducts.length > 0 && (
+                  <>You have {subscriptionProducts.length} active subscription{subscriptionProducts.length > 1 ? 's' : ''}. </>
+                )}
+                All products have been added to your account. Check your email for confirmation details.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const savings = currentNode.original_price && currentNode.price
     ? currentNode.original_price - currentNode.price
