@@ -36,7 +36,7 @@ export default function AlertDialog({
     info: <Info className="w-6 h-6 text-blue-500" />,
   };
 
-  const buttonColors = {
+  const buttonColors: Record<typeof type, 'green' | 'red' | 'yellow' | 'blue'> = {
     success: 'green',
     error: 'red',
     warning: 'yellow',
@@ -55,7 +55,7 @@ export default function AlertDialog({
         </Dialog.Description>
         <div className="flex justify-end gap-2 mt-6">
           <Button
-            color={buttonColors[type]}
+            color={buttonColors[type] as 'green' | 'red' | 'yellow' | 'blue'}
             variant="classic"
             size="2"
             onClick={handleConfirm}

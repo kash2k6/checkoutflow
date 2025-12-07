@@ -76,6 +76,12 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
   const [showEmbedModal, setShowEmbedModal] = useState(false);
   const [embedFlowId, setEmbedFlowId] = useState<string | null>(null);
   const [embedFlowName, setEmbedFlowName] = useState<string | null>(null);
+  const [alertDialog, setAlertDialog] = useState<{ open: boolean; title: string; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({
+    open: false,
+    title: '',
+    message: '',
+    type: 'info',
+  });
 
   // Load flows list on mount
   useEffect(() => {
