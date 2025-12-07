@@ -136,9 +136,16 @@
       checkoutContainers = document.querySelectorAll('[data-xperience-checkout]');
     }
     
-    if (upsellContainers.length === 0 && hasUpsellParams) {
+    // Only create upsell container if we have ALL required params
+    if (upsellContainers.length === 0 && urlCompanyId && urlFlowId && urlNodeId) {
       const autoContainer = document.createElement('div');
       autoContainer.setAttribute('data-xperience-upsell', '');
+      // Also set the params as data attributes so they're available when processing
+      if (urlCompanyId) autoContainer.setAttribute('data-company-id', urlCompanyId);
+      if (urlFlowId) autoContainer.setAttribute('data-flow-id', urlFlowId);
+      if (urlNodeId) autoContainer.setAttribute('data-node-id', urlNodeId);
+      if (urlMemberId) autoContainer.setAttribute('data-member-id', urlMemberId);
+      if (urlSetupIntentId) autoContainer.setAttribute('data-setup-intent-id', urlSetupIntentId);
       autoContainer.style.width = '100%';
       autoContainer.style.minWidth = '320px';
       autoContainer.style.minHeight = '600px';
