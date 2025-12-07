@@ -185,9 +185,9 @@
       }
     }
     
-    // Try current window location
+    // Try current window location (if not srcdoc)
     try {
-      if (window.location.href && window.location.href !== 'about:srcdoc') {
+      if (window.location.href && window.location.href !== 'about:srcdoc' && window.location.href !== 'about:blank') {
         const currentParams = parseUrlParamsFromString(window.location.href);
         Object.assign(allParams, currentParams);
       }
@@ -198,7 +198,7 @@
     // Try parent window if we're in an iframe (and same-origin)
     try {
       if (window.parent && window.parent !== window) {
-        if (window.parent.location.href && window.parent.location.href !== 'about:srcdoc') {
+        if (window.parent.location.href && window.parent.location.href !== 'about:srcdoc' && window.parent.location.href !== 'about:blank') {
           const parentParams = parseUrlParamsFromString(window.parent.location.href);
           Object.assign(allParams, parentParams);
         }
@@ -218,19 +218,20 @@
       }
     }
     
-    // Try top window if different from current
+    // Try top window (most reliable for getting the actual page URL)
     try {
-      if (window.top && window.top !== window && window.top !== window.parent) {
-        if (window.top.location.href && window.top.location.href !== 'about:srcdoc') {
-          const topParams = parseUrlParamsFromString(window.top.location.href);
-          Object.assign(allParams, topParams);
-        }
+      if (window.top && window.top.location.href && window.top.location.href !== 'about:srcdoc' && window.top.location.href !== 'about:blank') {
+        const topParams = parseUrlParamsFromString(window.top.location.href);
+        // Top window takes priority - merge it last so it overwrites
+        Object.keys(topParams).forEach(key => {
+          allParams[key] = topParams[key];
+        });
       }
     } catch (e) {
-      // Cross-origin, can't access top - that's expected
+      // Cross-origin, can't access top - that's expected for cross-origin iframes
     }
     
-    // Try document.referrer as last resort
+    // Try document.referrer as fallback
     if (document.referrer) {
       try {
         const referrerParams = parseUrlParamsFromString(document.referrer);
@@ -260,9 +261,9 @@
   }
 
   // Wait for DOM to be ready
-  function init() {
+  async function init() {
     // Get URL params from all possible sources (including script URL)
-    const allParams = getAllUrlParams(scriptUrl);
+    const allParams = await getAllUrlParams(scriptUrl);
     
     // Also try standard URLSearchParams from current location
     let urlParams;
