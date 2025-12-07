@@ -595,9 +595,16 @@ interface CompanyFlow {
     );
   }
 
-  // Show confirmation page only if we have purchased products AND showConfirmation is true
-  // This prevents it from rendering prematurely as part of the flow
-  if (showConfirmation && purchasedProducts.length > 0) {
+  // Show confirmation page ONLY if we have purchased products AND showConfirmation is explicitly true
+  // Double-check to prevent premature rendering - only show if we actually made a purchase
+  // Also check that we're not still loading and that we have a currentNode (means we're on upsell page)
+  const shouldShowConfirmation = showConfirmation === true && 
+                                  purchasedProducts && 
+                                  purchasedProducts.length > 0 &&
+                                  !loading &&
+                                  currentNode; // Only show if we have a current node (on upsell page)
+  
+  if (shouldShowConfirmation) {
     const total = purchasedProducts.reduce((sum, product) => sum + product.price, 0);
     const oneTimeProducts = purchasedProducts.filter(p => p.type === 'one_time');
     const subscriptionProducts = purchasedProducts.filter(p => p.type === 'subscription');
