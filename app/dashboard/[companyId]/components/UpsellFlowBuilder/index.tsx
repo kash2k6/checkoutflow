@@ -13,6 +13,7 @@ import NodeEditor from '../NodeEditor';
 import NodeLogicEditor from '../NodeLogicEditor';
 import ConfirmationCustomization from '../ConfirmationCustomization';
 import CheckoutCustomization from '../CheckoutCustomization';
+import AlertDialog, { ConfirmDialog } from '../AlertDialog';
 
 interface FlowNode {
   id: string;
@@ -89,6 +90,18 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
   const [showLogicEditor, setShowLogicEditor] = useState(false);
   const [showConfirmationCustomization, setShowConfirmationCustomization] = useState(false);
   const [showCheckoutCustomization, setShowCheckoutCustomization] = useState(false);
+  const [alertDialog, setAlertDialog] = useState<{ open: boolean; title: string; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({
+    open: false,
+    title: '',
+    message: '',
+    type: 'info',
+  });
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
+    open: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   // Load flow data
   useEffect(() => {
@@ -166,20 +179,40 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
       if (response.ok) {
         const savedFlow = await response.json();
         setFlow(savedFlow);
-        alert('Flow saved successfully!');
+        setAlertDialog({
+          open: true,
+          title: 'Success',
+          message: 'Flow saved successfully!',
+          type: 'success',
+        });
       } else {
         const error = await response.json();
-        alert(`Error saving flow: ${error.error || 'Unknown error'}`);
+        setAlertDialog({
+          open: true,
+          title: 'Error',
+          message: error.error || 'Unknown error',
+          type: 'error',
+        });
       }
     } catch (error) {
       console.error('Error saving flow:', error);
-      alert('Error saving flow');
+      setAlertDialog({
+        open: true,
+        title: 'Error',
+        message: 'Error saving flow',
+        type: 'error',
+      });
     }
   };
 
   const handleAddNode = (type: 'upsell' | 'downsell' | 'cross_sell') => {
     if (!flow || !flow.id) {
-      alert('Please save the flow first before adding nodes.');
+      setAlertDialog({
+        open: true,
+        title: 'Warning',
+        message: 'Please save the flow first before adding nodes.',
+        type: 'warning',
+      });
       return;
     }
     setNodeType(type);
@@ -194,7 +227,19 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
   };
 
   const handleDeleteNode = async (nodeId: string) => {
-    if (!confirm('Are you sure you want to delete this node?')) return;
+    if (!flow?.id) return;
+    
+    setConfirmDialog({
+      open: true,
+      title: 'Delete Node',
+      message: 'Are you sure you want to delete this node? This action cannot be undone.',
+      onConfirm: async () => {
+        await performDeleteNode(nodeId);
+      },
+    });
+  };
+
+  const performDeleteNode = async (nodeId: string) => {
     if (!flow?.id) return;
 
     try {
@@ -216,11 +261,21 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
         }
       } else {
         const errorData = await response.json();
-        alert(`Error deleting node: ${errorData.error || 'Unknown error'}`);
+        setAlertDialog({
+          open: true,
+          title: 'Error',
+          message: errorData.error || 'Unknown error',
+          type: 'error',
+        });
       }
     } catch (error) {
       console.error('Error deleting node:', error);
-      alert('Error deleting node');
+      setAlertDialog({
+        open: true,
+        title: 'Error',
+        message: 'Error deleting node',
+        type: 'error',
+      });
     }
   };
 
@@ -398,6 +453,25 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
         />
       )}
 
+      {/* Alert Dialog */}
+      <AlertDialog
+        open={alertDialog.open}
+        onOpenChange={(open) => setAlertDialog({ ...alertDialog, open })}
+        title={alertDialog.title}
+        message={alertDialog.message}
+        type={alertDialog.type}
+      />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        variant="danger"
+      />
+
       {/* Checkout Customization Modal */}
       {showCheckoutCustomization && flow && flow.id && (
         <CheckoutCustomization
@@ -447,6 +521,25 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
           }}
         />
       )}
+
+      {/* Alert Dialog */}
+      <AlertDialog
+        open={alertDialog.open}
+        onOpenChange={(open) => setAlertDialog({ ...alertDialog, open })}
+        title={alertDialog.title}
+        message={alertDialog.message}
+        type={alertDialog.type}
+      />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        variant="danger"
+      />
     </div>
   );
 }

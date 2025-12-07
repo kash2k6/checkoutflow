@@ -6,6 +6,7 @@ import { Button, Dialog } from '@whop/react/components';
 
 import UpsellFlowBuilder from './UpsellFlowBuilder';
 import EmbedCodeModal from './EmbedCodeModal';
+import AlertDialog from './AlertDialog';
 
 interface FlowNode {
   id: string;
@@ -159,7 +160,12 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
 
   const handleCreateNewFlow = async () => {
     if (!newFlowName.trim()) {
-      alert('Please enter a flow name');
+      setAlertDialog({
+        open: true,
+        title: 'Warning',
+        message: 'Please enter a flow name',
+        type: 'warning',
+      });
       return;
     }
 
@@ -195,11 +201,21 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
       } else {
         const errorData = await response.json();
         console.error('Error creating flow:', errorData);
-        alert(`Error creating flow: ${errorData.error || 'Unknown error'}`);
+        setAlertDialog({
+          open: true,
+          title: 'Error',
+          message: errorData.error || 'Unknown error',
+          type: 'error',
+        });
       }
     } catch (error) {
       console.error('Error creating flow:', error);
-      alert(`Error creating flow: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setAlertDialog({
+        open: true,
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        type: 'error',
+      });
     }
   };
 
@@ -433,6 +449,15 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
             flowName={embedFlowName}
           />
         )}
+
+        {/* Alert Dialog */}
+        <AlertDialog
+          open={alertDialog.open}
+          onOpenChange={(open) => setAlertDialog({ ...alertDialog, open })}
+          title={alertDialog.title}
+          message={alertDialog.message}
+          type={alertDialog.type}
+        />
       </div>
     );
   }
