@@ -68,11 +68,18 @@ interface CompanyFlow {
   const [loading, setLoading] = useState(true);
 
   // Reset confirmation state on page load to prevent it from showing prematurely
+  // This runs FIRST before anything else to ensure clean state
   useEffect(() => {
-    // Reset confirmation state when component mounts or URL changes
+    // Always reset confirmation state on mount/URL change - don't show confirmation on initial load
     setShowConfirmation(false);
     setPurchasedProducts([]);
   }, [companyId, flowId, nodeId]);
+  
+  // Also reset immediately on mount (before any other effects run)
+  useEffect(() => {
+    setShowConfirmation(false);
+    setPurchasedProducts([]);
+  }, []);
 
   // Load flow and node configuration
   useEffect(() => {
