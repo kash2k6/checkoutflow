@@ -282,6 +282,7 @@ interface CompanyFlow {
           amount: currentNode.price || 0,
           currency: 'usd',
           isSubscription: false, // Can be determined from plan if needed
+          companyId: companyId, // Pass companyId from URL params
         }),
       });
 

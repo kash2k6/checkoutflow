@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function POST(request: NextRequest) {
   try {
-    const { memberId, paymentMethodId, planId, amount, currency = 'usd', isSubscription = false } = await request.json();
+    const { memberId, paymentMethodId, planId, amount, currency = 'usd', isSubscription = false, companyId } = await request.json();
 
     // Validate required fields (amount can be 0 for free products, so check for null/undefined)
     if (!memberId || !planId || amount === null || amount === undefined) {
@@ -23,12 +23,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get company ID (required for v1 API)
-    const companyId = process.env.WHOP_COMPANY_ID;
-    if (!companyId) {
+    // Get company ID from request body, fallback to env variable
+    const finalCompanyId = companyId || process.env.WHOP_COMPANY_ID;
+    if (!finalCompanyId) {
       return NextResponse.json(
-        { error: 'WHOP_COMPANY_ID not configured' },
-        { status: 500 }
+        { error: 'Company ID is required. Please provide companyId in request body or set WHOP_COMPANY_ID environment variable.' },
+        { status: 400 }
       );
     }
 
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        company_id: companyId,
+        company_id: finalCompanyId,
         member_id: memberId,
         payment_method_id: finalPaymentMethodId,
         planId: planId, // Use planId (camelCase) at top level - works for both one-time and subscriptions
