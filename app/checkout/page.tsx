@@ -47,6 +47,10 @@ function CheckoutContent() {
   const [flow, setFlow] = useState<CompanyFlow | null>(null);
   const [productInfo, setProductInfo] = useState<{ name: string; price: string } | null>(null);
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('dark');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingMessage, setProcessingMessage] = useState('Processing your order, please wait...');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingMessage, setProcessingMessage] = useState('Processing your order, please wait...');
   const [sessionId] = useState(() => {
     // Generate or retrieve session ID
     if (typeof window !== 'undefined') {
@@ -242,15 +246,22 @@ function CheckoutContent() {
   }, [checkoutConfigId, productInfo, isLoading, error]);
 
   const handleCheckoutComplete = async () => {
+    // Show processing modal immediately after checkout completes
+    setIsProcessing(true);
+    setProcessingMessage('Processing your order, please wait...');
+    
     try {
       // Setup mode checkout completed - payment method is now saved
       // The webhook should have saved the data to Supabase by now
       
       const finalPlanId = flow?.initial_product_plan_id || planId;
       if (!finalPlanId) {
+        setIsProcessing(false);
         alert('Product not configured. Please contact support.');
         return;
       }
+      
+      setProcessingMessage('Retrieving your payment information...');
 
       // Get member ID and setup intent ID from Supabase/API using checkoutConfigId
                 let memberId: string | null = null;
@@ -324,6 +335,7 @@ function CheckoutContent() {
 
                 if (memberId) {
         // Charge the initial product
+                  setProcessingMessage('Charging your payment method...');
                   await new Promise(resolve => setTimeout(resolve, 1500));
                   
                   const chargeResponse = await fetch('/api/whop/charge-initial', {
@@ -458,6 +470,7 @@ function CheckoutContent() {
             }
           }
                   } else {
+                    setIsProcessing(false);
                     console.error('Error charging initial product:', chargeData);
                     const errorMsg = chargeData?.error?.error?.message || chargeData?.error?.message || 'Unknown error';
                     alert(`Payment setup completed, but there was an issue processing your order: ${errorMsg}. Please contact support.`);
@@ -483,9 +496,11 @@ function CheckoutContent() {
                     }
                   }
                 } else {
+                  setIsProcessing(false);
                   alert('Payment method saved successfully! However, we encountered an issue processing your order. Please contact support with your email address.');
                 }
               } catch (error) {
+                setIsProcessing(false);
                 console.error('Error processing checkout completion:', error);
                 alert('Payment method saved! However, we encountered an issue. Please contact support or try again in a moment.');
     }
