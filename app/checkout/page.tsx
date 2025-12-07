@@ -49,8 +49,6 @@ function CheckoutContent() {
   const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>('dark');
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingMessage, setProcessingMessage] = useState('Processing your order, please wait...');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processingMessage, setProcessingMessage] = useState('Processing your order, please wait...');
   const [sessionId] = useState(() => {
     // Generate or retrieve session ID
     if (typeof window !== 'undefined') {
@@ -274,6 +272,7 @@ function CheckoutContent() {
                 while (!memberId && attempts < maxAttempts) {
                   attempts++;
                   const waitTime = attempts === 1 ? 2000 : 1000; // Wait 2s first, then 1s
+                  setProcessingMessage(`Retrieving your payment information... (${attempts}/${maxAttempts})`);
                   await new Promise(resolve => setTimeout(resolve, waitTime));
 
                   try {
@@ -410,6 +409,11 @@ function CheckoutContent() {
                     if (isAlreadyHaveAccess) {
                       console.log('User already has access to product, proceeding to upsell flow');
                     }
+                    
+                    // Update processing message before redirect
+                    setProcessingMessage('Order processed successfully! Redirecting...');
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
           // Redirect to first upsell or confirmation
           const upsellNodes = flow?.nodes.filter(n => n.node_type === 'upsell').sort((a, b) => a.order_index - b.order_index) || [];
           
@@ -628,6 +632,52 @@ function CheckoutContent() {
           ) : null}
         </div>
       </div>
+
+      {/* Processing Modal - Shows after checkout completes while we process the order */}
+      {isProcessing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div 
+            className="mx-4 w-full max-w-md rounded-xl border p-8 shadow-2xl"
+            style={{
+              backgroundColor: effectiveTheme === 'dark' ? '#2a2a2a' : '#ffffff',
+              borderColor: effectiveTheme === 'dark' ? '#3a3a3a' : '#e5e7eb',
+            }}
+          >
+            <div className="text-center">
+              {/* Spinner */}
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center">
+                <div 
+                  className="h-16 w-16 animate-spin rounded-full border-4 border-t-transparent"
+                  style={{ 
+                    borderColor: custom.buttonColor || '#0D6B4D',
+                    borderTopColor: 'transparent',
+                  }}
+                />
+              </div>
+              
+              {/* Message */}
+              <h3 
+                className="mb-3 text-2xl font-bold"
+                style={{ color: textColorStyle }}
+              >
+                Processing Your Order
+              </h3>
+              <p 
+                className="text-base"
+                style={{ color: effectiveTheme === 'dark' ? '#9ca3af' : '#6b7280' }}
+              >
+                {processingMessage}
+              </p>
+              <p 
+                className="mt-3 text-sm"
+                style={{ color: effectiveTheme === 'dark' ? '#6b7280' : '#9ca3af' }}
+              >
+                Please do not close this window...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
