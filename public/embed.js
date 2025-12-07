@@ -370,12 +370,55 @@
       confirmationContainers = document.querySelectorAll('[data-xperience-confirmation]');
     }
 
+    // Helper function to make container fill its parent
+    function makeContainerFillParent(container) {
+      const parent = container.parentElement;
+      if (!parent) return;
+      
+      // If parent has a computed height, use it
+      const parentHeight = window.getComputedStyle(parent).height;
+      if (parentHeight && parentHeight !== 'auto' && parentHeight !== '0px') {
+        container.style.height = parentHeight;
+        return;
+      }
+      
+      // Try to get parent's offsetHeight
+      if (parent.offsetHeight && parent.offsetHeight > 0) {
+        container.style.height = parent.offsetHeight + 'px';
+        return;
+      }
+      
+      // Fallback: use viewport height or parent's scrollHeight
+      const height = parent.scrollHeight > 0 ? parent.scrollHeight : window.innerHeight;
+      container.style.height = Math.max(height, 600) + 'px';
+      
+      // Watch for parent size changes
+      if (window.ResizeObserver) {
+        const resizeObserver = new ResizeObserver(entries => {
+          for (const entry of entries) {
+            const newHeight = entry.contentRect.height;
+            if (newHeight > 0) {
+              container.style.height = Math.max(newHeight, 600) + 'px';
+            }
+          }
+        });
+        resizeObserver.observe(parent);
+      }
+    }
+
     // Process checkout embeds
     checkoutContainers.forEach(container => {
-      // Ensure container has height: 100% if not already set
-      if (!container.style.height || container.style.height === '') {
-        container.style.height = '100%';
+      // Make container fill its parent
+      makeContainerFillParent(container);
+      
+      // Ensure container has width and min-height
+      if (!container.style.width || container.style.width === '') {
+        container.style.width = '100%';
       }
+      if (!container.style.minHeight || container.style.minHeight === '') {
+        container.style.minHeight = '600px';
+      }
+      
       // Try data attributes first, then fallback to URL params
       const companyId = container.getAttribute('data-company-id') || urlCompanyId;
       const flowId = container.getAttribute('data-flow-id') || urlFlowId;
@@ -401,10 +444,17 @@
 
     // Process upsell embeds
     upsellContainers.forEach(container => {
-      // Ensure container has height: 100% if not already set
-      if (!container.style.height || container.style.height === '') {
-        container.style.height = '100%';
+      // Make container fill its parent
+      makeContainerFillParent(container);
+      
+      // Ensure container has width and min-height
+      if (!container.style.width || container.style.width === '') {
+        container.style.width = '100%';
       }
+      if (!container.style.minHeight || container.style.minHeight === '') {
+        container.style.minHeight = '600px';
+      }
+      
       // Skip if already processed or already has an iframe
       if (processedContainers.has(container) || container.querySelector('iframe')) {
         return;
@@ -485,10 +535,17 @@
 
     // Process confirmation embeds
     confirmationContainers.forEach(container => {
-      // Ensure container has height: 100% if not already set
-      if (!container.style.height || container.style.height === '') {
-        container.style.height = '100%';
+      // Make container fill its parent
+      makeContainerFillParent(container);
+      
+      // Ensure container has width and min-height
+      if (!container.style.width || container.style.width === '') {
+        container.style.width = '100%';
       }
+      if (!container.style.minHeight || container.style.minHeight === '') {
+        container.style.minHeight = '600px';
+      }
+      
       // Skip if already processed or already has an iframe
       if (processedContainers.has(container) || container.querySelector('iframe')) {
         return;
