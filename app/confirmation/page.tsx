@@ -19,6 +19,7 @@ function ConfirmationContent() {
   }>>([]);
 
   useEffect(() => {
+    console.log('Confirmation page loading with params:', { companyId, flowId, memberId, sessionId });
     const loadData = async () => {
       try {
         // Load flow configuration if companyId is provided
@@ -73,6 +74,7 @@ function ConfirmationContent() {
         console.error('Error loading data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
+        console.log('Confirmation page finished loading, products:', purchasedProducts.length);
         setLoading(false);
       }
     };
@@ -110,7 +112,9 @@ function ConfirmationContent() {
     console.error('Confirmation page error:', error);
   }
 
-  const total = purchasedProducts.reduce((sum, product) => sum + product.price, 0);
+  const total = purchasedProducts.length > 0 
+    ? purchasedProducts.reduce((sum, product) => sum + product.price, 0)
+    : 0;
   const oneTimeProducts = purchasedProducts.filter(p => p.type === 'one_time');
   const subscriptionProducts = purchasedProducts.filter(p => p.type === 'subscription');
 

@@ -46,12 +46,9 @@ export async function GET(
     // Filter by session ID if provided (to show only current transaction)
     if (sessionId) {
       query = query.eq('session_id', sessionId);
-    } else {
-      // If no session ID, filter by time window (last 30 minutes) as fallback
-      // This ensures we only show recent purchases from the current checkout session
-      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-      query = query.gte('purchased_at', thirtyMinutesAgo);
     }
+    // Removed the 30-minute time window filter - show all purchases for the member/flow
+    // This allows the confirmation page to display purchases even if they're older
 
     // Get purchases, ordered by purchase time
     const { data: purchases, error } = await query.order('purchased_at', { ascending: true });
