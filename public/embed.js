@@ -21,6 +21,10 @@
 
   // Store iframe references for redirect handling
   const iframeMap = new Map();
+  
+  // Flag to prevent multiple initializations
+  let isInitialized = false;
+  const processedContainers = new Set();
 
   // Store parent URL if we can get it via postMessage
   let parentUrlCache = null;
@@ -262,6 +266,12 @@
 
   // Wait for DOM to be ready
   async function init() {
+    // Prevent multiple initializations
+    if (isInitialized) {
+      console.log('Xperience Embed: Already initialized, skipping...');
+      return;
+    }
+    
     // Get URL params from all possible sources (including script URL)
     const allParams = await getAllUrlParams(scriptUrl);
     
@@ -378,6 +388,12 @@
 
     // Process upsell embeds
     upsellContainers.forEach(container => {
+      // Skip if already processed or already has an iframe
+      if (processedContainers.has(container) || container.querySelector('iframe')) {
+        return;
+      }
+      processedContainers.add(container);
+      
       // Try data attributes first, then fallback to URL params
       const companyId = container.getAttribute('data-company-id') || urlCompanyId;
       const flowId = container.getAttribute('data-flow-id') || urlFlowId;
@@ -421,26 +437,23 @@
       }
 
       const iframe = document.createElement('iframe');
-      let url = `${baseUrl}/upsell?companyId=${companyId}&flowId=${flowId}`;
-      if (nodeId) url += `&nodeId=${nodeId}`;
-      if (memberId) url += `&memberId=${memberId}`;
-      if (setupIntentId) url += `&setupIntentId=${setupIntentId}`;
       
-      // Also try to get ALL parameters from top window URL and pass them through
-      // This ensures we don't miss any parameters due to iframe restrictions
-      try {
-        if (window.top && window.top.location && window.top.location.href) {
-          const topUrl = new URL(window.top.location.href);
-          topUrl.searchParams.forEach((value, key) => {
-            // Only add params that aren't already in the URL
-            if (!url.includes(`${key}=`)) {
-              url += `&${key}=${encodeURIComponent(value)}`;
-            }
-          });
+      // Start with required params
+      let url = `${baseUrl}/upsell?companyId=${companyId}&flowId=${flowId}`;
+      
+      // Add all other parameters from allParams (which includes top window URL)
+      // This ensures we pass through ALL parameters we found, not just the known ones
+      Object.keys(allParams).forEach(key => {
+        const value = allParams[key];
+        if (value && !url.includes(`${key}=`)) {
+          url += `&${key}=${encodeURIComponent(value)}`;
         }
-      } catch (e) {
-        // Cross-origin, can't access - that's fine, we'll use what we have
-      }
+      });
+      
+      // Also explicitly add our known params if they exist (in case allParams missed them)
+      if (nodeId && !url.includes('nodeId=')) url += `&nodeId=${encodeURIComponent(nodeId)}`;
+      if (memberId && !url.includes('memberId=')) url += `&memberId=${encodeURIComponent(memberId)}`;
+      if (setupIntentId && !url.includes('setupIntentId=')) url += `&setupIntentId=${encodeURIComponent(setupIntentId)}`;
       
       iframe.src = url;
       iframe.style.width = '100%';
@@ -456,6 +469,12 @@
 
     // Process confirmation embeds
     confirmationContainers.forEach(container => {
+      // Skip if already processed or already has an iframe
+      if (processedContainers.has(container) || container.querySelector('iframe')) {
+        return;
+      }
+      processedContainers.add(container);
+      
       // Try data attributes first, then fallback to URL params
       const companyId = container.getAttribute('data-company-id') || urlCompanyId;
       const flowId = container.getAttribute('data-flow-id') || urlFlowId;
@@ -481,32 +500,42 @@
       // Store iframe reference for redirect handling
       iframeMap.set(container, iframe);
     });
+    
+    // Mark as initialized after processing all containers
+    isInitialized = true;
   }
 
   // Run initialization - try multiple times to ensure it works
   function runInit() {
+    // Don't run if already initialized
+    if (isInitialized) {
+      return;
+    }
+    
     try {
       init();
     } catch (error) {
       console.error('Xperience Embed initialization error:', error);
-      // Retry after a short delay
-      setTimeout(() => {
-        try {
-          init();
-        } catch (retryError) {
-          console.error('Xperience Embed retry failed:', retryError);
-        }
-      }, 500);
+      // Only retry once if initialization failed
+      if (!isInitialized) {
+        setTimeout(() => {
+          if (!isInitialized) {
+            try {
+              init();
+            } catch (retryError) {
+              console.error('Xperience Embed retry failed:', retryError);
+            }
+          }
+        }, 500);
+      }
     }
   }
 
+  // Only run initialization once
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', runInit);
   } else {
     // If already loaded, run immediately
     runInit();
   }
-  
-  // Also try running after a short delay in case DOM isn't fully ready
-  setTimeout(runInit, 100);
 })();
