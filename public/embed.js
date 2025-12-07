@@ -415,7 +415,8 @@
       }
 
       const iframe = document.createElement('iframe');
-      let url = `${baseUrl}/upsell?companyId=${companyId}&flowId=${flowId}&nodeId=${nodeId}`;
+      let url = `${baseUrl}/upsell?companyId=${companyId}&flowId=${flowId}`;
+      if (nodeId) url += `&nodeId=${nodeId}`;
       if (memberId) url += `&memberId=${memberId}`;
       if (setupIntentId) url += `&setupIntentId=${setupIntentId}`;
       iframe.src = url;
