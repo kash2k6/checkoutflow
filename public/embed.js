@@ -224,9 +224,30 @@
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  // Run initialization - try multiple times to ensure it works
+  function runInit() {
+    try {
+      init();
+    } catch (error) {
+      console.error('Xperience Embed initialization error:', error);
+      // Retry after a short delay
+      setTimeout(() => {
+        try {
+          init();
+        } catch (retryError) {
+          console.error('Xperience Embed retry failed:', retryError);
+        }
+      }, 500);
+    }
   }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runInit);
+  } else {
+    // If already loaded, run immediately
+    runInit();
+  }
+  
+  // Also try running after a short delay in case DOM isn't fully ready
+  setTimeout(runInit, 100);
 })();
