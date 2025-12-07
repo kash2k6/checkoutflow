@@ -23,44 +23,55 @@ function ConfirmationContent() {
       try {
         // Load flow configuration if companyId is provided
         if (companyId) {
-          const flowUrl = flowId 
-            ? `/api/flows/${companyId}?flowId=${flowId}`
-            : `/api/flows/${companyId}`;
-          const flowResponse = await fetch(flowUrl);
-          if (flowResponse.ok) {
-            const flowData = await flowResponse.json();
-            setFlow(flowData);
+          try {
+            const flowUrl = flowId 
+              ? `/api/flows/${companyId}?flowId=${flowId}`
+              : `/api/flows/${companyId}`;
+            const flowResponse = await fetch(flowUrl);
+            if (flowResponse.ok) {
+              const flowData = await flowResponse.json();
+              setFlow(flowData);
+            }
+          } catch (e) {
+            console.error('Error loading flow:', e);
           }
 
           // Load purchases from API using memberId
           if (memberId) {
-            const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
-            const purchasesResponse = await fetch(purchasesUrl);
-            if (purchasesResponse.ok) {
-              const purchasesData = await purchasesResponse.json();
-              if (purchasesData.purchases && purchasesData.purchases.length > 0) {
-                setPurchasedProducts(purchasesData.purchases);
+            try {
+              const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
+              const purchasesResponse = await fetch(purchasesUrl);
+              if (purchasesResponse.ok) {
+                const purchasesData = await purchasesResponse.json();
+                if (purchasesData.purchases && purchasesData.purchases.length > 0) {
+                  setPurchasedProducts(purchasesData.purchases);
+                  setLoading(false);
+                  return; // Exit early if we got products from API
+                }
               }
+            } catch (e) {
+              console.error('Error loading purchases:', e);
             }
           }
         }
 
         // Fallback: Try to get from localStorage (for same-domain redirects)
         // This works even without companyId
-        // Only check localStorage if we don't have memberId or if we didn't get products from API
-        if (!memberId) {
+        // Check localStorage if we don't have memberId or didn't get products from API
+        try {
           const storedProducts = localStorage.getItem('purchased_products');
           if (storedProducts) {
-            try {
-              const products = JSON.parse(storedProducts);
+            const products = JSON.parse(storedProducts);
+            if (Array.isArray(products) && products.length > 0) {
               setPurchasedProducts(products);
-            } catch (e) {
-              console.error('Error parsing stored products:', e);
             }
           }
+        } catch (e) {
+          console.error('Error parsing stored products:', e);
         }
       } catch (err) {
         console.error('Error loading data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
         setLoading(false);
       }
@@ -93,6 +104,10 @@ function ConfirmationContent() {
         <div className="text-white">Loading...</div>
       </div>
     );
+  }
+
+  if (error) {
+    console.error('Confirmation page error:', error);
   }
 
   const total = purchasedProducts.reduce((sum, product) => sum + product.price, 0);
