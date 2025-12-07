@@ -48,6 +48,23 @@ export async function POST(request: NextRequest) {
 
       if (error) throw error;
       flow = data;
+      
+      // If confirmation_page_url was updated, also update all edges with target_type='confirmation'
+      if (confirmation_page_url !== undefined) {
+        const { error: edgesError } = await supabase
+          .from('flow_edges')
+          .update({
+            target_url: confirmation_page_url || null,
+          })
+          .eq('flow_id', id)
+          .eq('target_type', 'confirmation');
+        
+        if (edgesError) {
+          console.error('Error updating confirmation edges:', edgesError);
+        } else {
+          console.log(`Updated confirmation edges for flow ${id} with new confirmation_page_url: ${confirmation_page_url || 'null'}`);
+        }
+      }
     } else {
       // Create new flow (initial_product_plan_id can be empty/null for new flows)
       const insertData: any = {
