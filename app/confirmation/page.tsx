@@ -20,44 +20,57 @@ function ConfirmationContent() {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!companyId) {
-        setLoading(false);
-        return;
-      }
-
       try {
+        if (!companyId) {
+          setError('Missing companyId parameter');
+          setLoading(false);
+          return;
+        }
+
         // Load flow configuration
-        const flowUrl = flowId 
-          ? `/api/flows/${companyId}?flowId=${flowId}`
-          : `/api/flows/${companyId}`;
-        const flowResponse = await fetch(flowUrl);
-        if (flowResponse.ok) {
-          const flowData = await flowResponse.json();
-          setFlow(flowData);
+        try {
+          const flowUrl = flowId 
+            ? `/api/flows/${encodeURIComponent(companyId)}?flowId=${encodeURIComponent(flowId)}`
+            : `/api/flows/${encodeURIComponent(companyId)}`;
+          const flowResponse = await fetch(flowUrl);
+          if (flowResponse.ok) {
+            const flowData = await flowResponse.json();
+            setFlow(flowData);
+          } else {
+            console.warn('Failed to load flow configuration:', flowResponse.status);
+          }
+        } catch (err) {
+          console.error('Error loading flow:', err);
         }
 
         // Load purchases from API using memberId
         if (memberId) {
-          const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
-          const purchasesResponse = await fetch(purchasesUrl);
-          if (purchasesResponse.ok) {
-            const purchasesData = await purchasesResponse.json();
-            if (purchasesData.purchases && purchasesData.purchases.length > 0) {
-              setPurchasedProducts(purchasesData.purchases);
+          try {
+            const purchasesUrl = `/api/purchases/${encodeURIComponent(companyId)}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${encodeURIComponent(flowId)}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
+            const purchasesResponse = await fetch(purchasesUrl);
+            if (purchasesResponse.ok) {
+              const purchasesData = await purchasesResponse.json();
+              if (purchasesData.purchases && purchasesData.purchases.length > 0) {
+                setPurchasedProducts(purchasesData.purchases);
+              }
+            } else {
+              console.warn('Failed to load purchases:', purchasesResponse.status);
             }
+          } catch (err) {
+            console.error('Error loading purchases:', err);
           }
         }
 
         // Fallback: Try to get from localStorage (for same-domain redirects)
-        if (!memberId) {
-          const storedProducts = localStorage.getItem('purchased_products');
-          if (storedProducts) {
-            try {
+        if (!memberId && typeof window !== 'undefined') {
+          try {
+            const storedProducts = localStorage.getItem('purchased_products');
+            if (storedProducts) {
               const products = JSON.parse(storedProducts);
               setPurchasedProducts(products);
-            } catch (e) {
-              console.error('Error parsing stored products:', e);
             }
+          } catch (e) {
+            console.error('Error parsing stored products:', e);
           }
         }
       } catch (err) {
@@ -69,7 +82,7 @@ function ConfirmationContent() {
     };
 
     loadData();
-  }, [companyId, flowId, memberId]);
+  }, [companyId, flowId, memberId, sessionId]);
 
   // Facebook Pixel tracking
   useEffect(() => {

@@ -375,32 +375,29 @@
       const parent = container.parentElement;
       if (!parent) return;
       
-      // If parent has a computed height, use it
-      const parentHeight = window.getComputedStyle(parent).height;
-      if (parentHeight && parentHeight !== 'auto' && parentHeight !== '0px') {
-        container.style.height = parentHeight;
-        return;
-      }
+      // Set height: 100% as default - this works if parent has any height
+      container.style.height = '100%';
       
-      // Try to get parent's offsetHeight
-      if (parent.offsetHeight && parent.offsetHeight > 0) {
-        container.style.height = parent.offsetHeight + 'px';
-        return;
-      }
+      // Check if parent has a computed height
+      const parentComputedHeight = window.getComputedStyle(parent).height;
+      const parentHasHeight = parentComputedHeight && parentComputedHeight !== 'auto' && parentComputedHeight !== '0px';
       
-      // Fallback: use viewport height or parent's scrollHeight
-      const height = parent.scrollHeight > 0 ? parent.scrollHeight : window.innerHeight;
-      container.style.height = Math.max(height, 600) + 'px';
-      
-      // Watch for parent size changes
-      if (window.ResizeObserver) {
-        const resizeObserver = new ResizeObserver(entries => {
-          for (const entry of entries) {
-            const newHeight = entry.contentRect.height;
-            if (newHeight > 0) {
-              container.style.height = Math.max(newHeight, 600) + 'px';
-            }
+      // If parent doesn't have an explicit height, use ResizeObserver to set pixel height
+      if (!parentHasHeight && window.ResizeObserver) {
+        const updateHeight = () => {
+          const parentHeight = parent.offsetHeight || parent.clientHeight || parent.scrollHeight;
+          if (parentHeight > 0) {
+            // Use the larger of parent height or 600px minimum
+            container.style.height = Math.max(parentHeight, 600) + 'px';
           }
+        };
+        
+        // Wait a bit for layout to settle, then update
+        setTimeout(updateHeight, 0);
+        
+        // Watch for changes
+        const resizeObserver = new ResizeObserver(() => {
+          updateHeight();
         });
         resizeObserver.observe(parent);
       }
