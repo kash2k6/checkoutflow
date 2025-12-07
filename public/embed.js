@@ -59,21 +59,55 @@
     // Get URL params once for all containers
     const urlParams = new URLSearchParams(window.location.search);
     
+    // Determine page type from URL params or container presence
+    const hasCheckoutParams = urlParams.get('companyId') && !urlParams.get('nodeId');
+    const hasUpsellParams = urlParams.get('companyId') && urlParams.get('flowId') && urlParams.get('nodeId');
+    const hasConfirmationParams = urlParams.get('companyId') && urlParams.get('memberId');
+    
     // Find all embed containers
     let checkoutContainers = document.querySelectorAll('[data-xperience-checkout]');
     let upsellContainers = document.querySelectorAll('[data-xperience-upsell]');
     let confirmationContainers = document.querySelectorAll('[data-xperience-confirmation]');
 
-    // Process checkout embeds
-    const urlParams = new URLSearchParams(window.location.search);
+    // Auto-create containers based on URL params if none exist (for external page embeds)
+    if (checkoutContainers.length === 0 && hasCheckoutParams) {
+      const autoContainer = document.createElement('div');
+      autoContainer.setAttribute('data-xperience-checkout', '');
+      autoContainer.style.width = '100%';
+      autoContainer.style.minWidth = '320px';
+      autoContainer.style.minHeight = '600px';
+      document.body.appendChild(autoContainer);
+      checkoutContainers = document.querySelectorAll('[data-xperience-checkout]');
+    }
     
+    if (upsellContainers.length === 0 && hasUpsellParams) {
+      const autoContainer = document.createElement('div');
+      autoContainer.setAttribute('data-xperience-upsell', '');
+      autoContainer.style.width = '100%';
+      autoContainer.style.minWidth = '320px';
+      autoContainer.style.minHeight = '600px';
+      document.body.appendChild(autoContainer);
+      upsellContainers = document.querySelectorAll('[data-xperience-upsell]');
+    }
+    
+    if (confirmationContainers.length === 0 && hasConfirmationParams) {
+      const autoContainer = document.createElement('div');
+      autoContainer.setAttribute('data-xperience-confirmation', '');
+      autoContainer.style.width = '100%';
+      autoContainer.style.minWidth = '320px';
+      autoContainer.style.minHeight = '600px';
+      document.body.appendChild(autoContainer);
+      confirmationContainers = document.querySelectorAll('[data-xperience-confirmation]');
+    }
+
+    // Process checkout embeds
     checkoutContainers.forEach(container => {
       // Try data attributes first, then fallback to URL params
       const companyId = container.getAttribute('data-company-id') || urlParams.get('companyId');
       const flowId = container.getAttribute('data-flow-id') || urlParams.get('flowId');
       
       if (!companyId) {
-        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing companyId attribute or URL parameter</div>';
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing companyId. Please add data-company-id attribute or companyId URL parameter.</div>';
         return;
       }
 
@@ -93,19 +127,6 @@
     });
 
     // Process upsell embeds
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // If no upsell containers found but we have URL params, create one automatically
-    if (upsellContainers.length === 0 && urlParams.get('nodeId') && urlParams.get('companyId')) {
-      const autoContainer = document.createElement('div');
-      autoContainer.setAttribute('data-xperience-upsell', '');
-      autoContainer.style.width = '100%';
-      autoContainer.style.minWidth = '320px';
-      autoContainer.style.minHeight = '600px';
-      document.body.appendChild(autoContainer);
-      upsellContainers = document.querySelectorAll('[data-xperience-upsell]');
-    }
-    
     upsellContainers.forEach(container => {
       // Try data attributes first, then fallback to URL params
       const companyId = container.getAttribute('data-company-id') || urlParams.get('companyId');
@@ -115,7 +136,11 @@
       const setupIntentId = container.getAttribute('data-setup-intent-id') || urlParams.get('setupIntentId');
       
       if (!companyId || !flowId || !nodeId) {
-        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing required attributes: companyId, flowId, and nodeId. Please add data attributes or URL parameters.</div>';
+        const missing = [];
+        if (!companyId) missing.push('companyId');
+        if (!flowId) missing.push('flowId');
+        if (!nodeId) missing.push('nodeId');
+        container.innerHTML = `<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing required parameters: ${missing.join(', ')}. Please add as URL parameters or data attributes.</div>`;
         return;
       }
 
@@ -143,7 +168,7 @@
       const memberId = container.getAttribute('data-member-id') || urlParams.get('memberId');
       
       if (!companyId) {
-        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing companyId attribute or URL parameter</div>';
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing companyId. Please add data-company-id attribute or companyId URL parameter.</div>';
         return;
       }
 
