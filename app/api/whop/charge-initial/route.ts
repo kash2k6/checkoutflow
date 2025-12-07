@@ -143,6 +143,57 @@ export async function POST(request: NextRequest) {
       planId: planId,
     });
 
+    // Track initial purchase in database if we have flowId and companyId
+    if (flowId && companyId && planId) {
+      try {
+        if (isSupabaseConfigured() && supabase) {
+          // Get plan amount from payment or try to fetch from Whop API
+          let amount = 0;
+          if (payment.total) {
+            amount = payment.total / 100; // Convert from cents
+          } else if (payment.amount) {
+            amount = payment.amount / 100;
+          } else {
+            // Try to get from Whop API
+            try {
+              const planResponse = await fetch(
+                `https://api.whop.com/api/v2/plans/${planId}`,
+                {
+                  headers: {
+                    'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
+                  },
+                }
+              );
+              if (planResponse.ok) {
+                const planData = await planResponse.json();
+                amount = planData.initial_price || planData.price || 0;
+              }
+            } catch (e) {
+              console.error('Error fetching plan price:', e);
+            }
+          }
+
+          await supabase
+            .from('flow_purchases')
+            .insert({
+              flow_id: flowId,
+              company_id: companyId,
+              member_id: memberId,
+              plan_id: planId,
+              purchase_type: 'initial',
+              node_id: null, // Initial purchase has no node_id
+              amount: amount,
+              currency: payment.currency || 'usd',
+              session_id: null, // Can be added if we track sessions
+            });
+          console.log('Initial purchase tracked in database:', { flowId, companyId, memberId, planId, amount });
+        }
+      } catch (trackError) {
+        // Don't fail the charge if tracking fails, just log it
+        console.error('Error tracking initial purchase in database:', trackError);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       paymentId: payment.id,
