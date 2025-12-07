@@ -276,12 +276,12 @@
     // Also try manual parsing from current location
     const manualParams = parseUrlParams();
     
-    // Merge all sources - prioritize current location, then allParams
-    const urlCompanyId = urlParams.get('companyId') || manualParams.companyId || allParams.companyId;
-    const urlFlowId = urlParams.get('flowId') || manualParams.flowId || allParams.flowId;
-    const urlNodeId = urlParams.get('nodeId') || manualParams.nodeId || allParams.nodeId;
-    const urlMemberId = urlParams.get('memberId') || manualParams.memberId || allParams.memberId;
-    const urlSetupIntentId = urlParams.get('setupIntentId') || manualParams.setupIntentId || allParams.setupIntentId;
+    // Merge all sources - prioritize allParams (which includes top window), then current location
+    const urlCompanyId = allParams.companyId || urlParams.get('companyId') || manualParams.companyId;
+    const urlFlowId = allParams.flowId || urlParams.get('flowId') || manualParams.flowId;
+    const urlNodeId = allParams.nodeId || urlParams.get('nodeId') || manualParams.nodeId;
+    const urlMemberId = allParams.memberId || urlParams.get('memberId') || manualParams.memberId;
+    const urlSetupIntentId = allParams.setupIntentId || urlParams.get('setupIntentId') || manualParams.setupIntentId;
     
     // Debug: log all param sources
     console.log('Xperience Embed - Param sources:', {
