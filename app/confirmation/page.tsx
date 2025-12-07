@@ -18,41 +18,56 @@ function ConfirmationContent() {
   }>>([]);
 
   useEffect(() => {
-    const loadFlow = async () => {
+    const loadData = async () => {
       if (!companyId) {
         setLoading(false);
         return;
       }
 
       try {
-        const url = flowId 
+        // Load flow configuration
+        const flowUrl = flowId 
           ? `/api/flows/${companyId}?flowId=${flowId}`
           : `/api/flows/${companyId}`;
-        const response = await fetch(url);
-        if (response.ok) {
-          const flowData = await response.json();
+        const flowResponse = await fetch(flowUrl);
+        if (flowResponse.ok) {
+          const flowData = await flowResponse.json();
           setFlow(flowData);
         }
+
+        // Load purchases from API using memberId
+        if (memberId) {
+          const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}`;
+          const purchasesResponse = await fetch(purchasesUrl);
+          if (purchasesResponse.ok) {
+            const purchasesData = await purchasesResponse.json();
+            if (purchasesData.purchases && purchasesData.purchases.length > 0) {
+              setPurchasedProducts(purchasesData.purchases);
+            }
+          }
+        }
+
+        // Fallback: Try to get from localStorage (for same-domain redirects)
+        if (!memberId) {
+          const storedProducts = localStorage.getItem('purchased_products');
+          if (storedProducts) {
+            try {
+              const products = JSON.parse(storedProducts);
+              setPurchasedProducts(products);
+            } catch (e) {
+              console.error('Error parsing stored products:', e);
+            }
+          }
+        }
       } catch (err) {
-        console.error('Error loading flow:', err);
+        console.error('Error loading data:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadFlow();
-
-    // Try to get from localStorage as fallback
-    const storedProducts = localStorage.getItem('purchased_products');
-    if (storedProducts) {
-      try {
-        const products = JSON.parse(storedProducts);
-        setPurchasedProducts(products);
-      } catch (e) {
-        console.error('Error parsing stored products:', e);
-      }
-    }
-    
-    setLoading(false);
-  }, [companyId, flowId]);
+    loadData();
+  }, [companyId, flowId, memberId]);
 
   // Facebook Pixel tracking
   useEffect(() => {
