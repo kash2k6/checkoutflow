@@ -22,6 +22,30 @@
   // Store iframe references for redirect handling
   const iframeMap = new Map();
 
+  // Store parent URL if we can get it via postMessage
+  let parentUrlCache = null;
+
+  // Listen for URL response from parent (when we request it)
+  window.addEventListener('message', function(event) {
+    // Handle parent URL response
+    if (event.data && event.data.type === 'xperience-url-response') {
+      parentUrlCache = event.data.url;
+      return;
+    }
+  });
+
+  // Request parent URL via postMessage
+  function requestParentUrl() {
+    if (window.parent === window) return null;
+    
+    try {
+      window.parent.postMessage({ type: 'xperience-request-url' }, '*');
+    } catch (e) {
+      // Can't send message
+    }
+    return null;
+  }
+
   // Listen for redirect messages from iframes
   window.addEventListener('message', function(event) {
     // Verify message is from our domain (allow both with and without trailing slash)
@@ -122,8 +146,33 @@
     return params;
   }
 
+  // Request URL from parent window via postMessage (for cross-origin iframes)
+  function requestUrlFromParent() {
+    return new Promise((resolve) => {
+      if (window.parent === window) {
+        resolve(null);
+        return;
+      }
+      
+      const timeout = setTimeout(() => {
+        resolve(null);
+      }, 500);
+      
+      const messageHandler = (event) => {
+        if (event.data && event.data.type === 'xperience-url-response') {
+          clearTimeout(timeout);
+          window.removeEventListener('message', messageHandler);
+          resolve(event.data.url);
+        }
+      };
+      
+      window.addEventListener('message', messageHandler);
+      window.parent.postMessage({ type: 'xperience-request-url' }, '*');
+    });
+  }
+
   // Get URL parameters from multiple sources
-  function getAllUrlParams(scriptUrlParam) {
+  async function getAllUrlParams(scriptUrlParam) {
     const allParams = {};
     
     // First, try script tag URL if provided (most reliable)
@@ -155,7 +204,18 @@
         }
       }
     } catch (e) {
-      // Cross-origin, can't access parent - that's expected
+      // Cross-origin, can't access parent directly - try postMessage
+      if (window.parent !== window) {
+        try {
+          const parentUrl = await requestUrlFromParent();
+          if (parentUrl) {
+            const parentParams = parseUrlParamsFromString(parentUrl);
+            Object.assign(allParams, parentParams);
+          }
+        } catch (e) {
+          // Ignore
+        }
+      }
     }
     
     // Try top window if different from current
@@ -259,8 +319,11 @@
       checkoutContainers = document.querySelectorAll('[data-xperience-checkout]');
     }
     
-    // Only create upsell container if we have ALL required params
-    if (upsellContainers.length === 0 && urlCompanyId && urlFlowId && urlNodeId) {
+    // Create upsell container if we have companyId and flowId (nodeId might come later)
+    // Also check pathname to see if we're on an upsell page
+    const pathname = window.location.pathname || '';
+    const isUpsellPath = pathname.includes('upsell');
+    if (upsellContainers.length === 0 && (urlCompanyId && urlFlowId && urlNodeId) || (urlCompanyId && urlFlowId && isUpsellPath)) {
       const autoContainer = document.createElement('div');
       autoContainer.setAttribute('data-xperience-upsell', '');
       // Also set the params as data attributes so they're available when processing
