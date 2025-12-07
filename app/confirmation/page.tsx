@@ -8,6 +8,7 @@ function ConfirmationContent() {
   const companyId = searchParams.get('companyId');
   const flowId = searchParams.get('flowId');
   const memberId = searchParams.get('memberId');
+  const sessionId = searchParams.get('sessionId'); // Session ID to filter by current transaction
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [flow, setFlow] = useState<any>(null);
@@ -37,7 +38,7 @@ function ConfirmationContent() {
 
         // Load purchases from API using memberId
         if (memberId) {
-          const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}`;
+          const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
           const purchasesResponse = await fetch(purchasesUrl);
           if (purchasesResponse.ok) {
             const purchasesData = await purchasesResponse.json();

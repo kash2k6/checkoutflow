@@ -14,6 +14,7 @@ export async function GET(
     const { searchParams } = request.nextUrl;
     const memberId = searchParams.get('memberId');
     const flowId = searchParams.get('flowId');
+    const sessionId = searchParams.get('sessionId'); // Session ID to filter by current transaction
 
     if (!memberId) {
       return NextResponse.json(
@@ -40,6 +41,16 @@ export async function GET(
 
     if (flowId) {
       query = query.eq('flow_id', flowId);
+    }
+
+    // Filter by session ID if provided (to show only current transaction)
+    if (sessionId) {
+      query = query.eq('session_id', sessionId);
+    } else {
+      // If no session ID, filter by time window (last 30 minutes) as fallback
+      // This ensures we only show recent purchases from the current checkout session
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      query = query.gte('purchased_at', thirtyMinutesAgo);
     }
 
     // Get purchases, ordered by purchase time

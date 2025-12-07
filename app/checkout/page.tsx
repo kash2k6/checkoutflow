@@ -348,6 +348,7 @@ function CheckoutContent() {
             userEmail: userEmail || undefined,
             companyId: companyId || undefined,
             flowId: flow?.id || undefined,
+            sessionId: sessionId || undefined, // Pass session ID to track current transaction
                     }),
                   });
                   
@@ -457,6 +458,13 @@ function CheckoutContent() {
             const redirectUrl = new URL(flow.confirmation_page_url);
             redirectUrl.searchParams.set('companyId', companyId || '');
             redirectUrl.searchParams.set('memberId', memberId);
+            if (flowId) {
+              redirectUrl.searchParams.set('flowId', flowId);
+            }
+            // Pass session ID to filter purchases by current transaction
+            if (sessionId) {
+              redirectUrl.searchParams.set('sessionId', sessionId);
+            }
             
             // Check if confirmation URL is external
             const isExternal = redirectUrl.origin !== window.location.origin;

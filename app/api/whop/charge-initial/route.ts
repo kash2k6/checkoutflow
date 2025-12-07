@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
               node_id: null, // Initial purchase has no node_id
               amount: amount,
               currency: payment.currency || 'usd',
-              session_id: null, // Can be added if we track sessions
+              session_id: sessionId || null, // Session ID to track current transaction
             });
           console.log('Initial purchase tracked in database:', { flowId, companyId, memberId, planId, amount });
         }
