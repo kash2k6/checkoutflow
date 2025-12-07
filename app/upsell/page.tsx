@@ -549,7 +549,9 @@ interface CompanyFlow {
       const targetNode = flow?.nodes.find(n => n.id === edge.to_node_id);
       return { type: 'node', target: targetNode || null, url: null };
     } else if (edge.target_type === 'confirmation') {
-      return { type: 'confirmation', target: null, url: edge.target_url || flow?.confirmation_page_url || null };
+      // Always use the flow's current confirmation_page_url (in case it was updated)
+      // Fallback to edge.target_url if flow doesn't have one
+      return { type: 'confirmation', target: null, url: flow?.confirmation_page_url || edge.target_url || null };
     } else if (edge.target_type === 'external_url' && edge.target_url) {
       return { type: 'external_url', target: null, url: edge.target_url };
       }

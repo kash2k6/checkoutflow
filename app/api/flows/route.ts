@@ -144,6 +144,25 @@ export async function PUT(request: NextRequest) {
 
     if (error) throw error;
 
+    // If confirmation_page_url was updated, also update all edges with target_type='confirmation'
+    // to use the new URL (so they don't have stale URLs)
+    if (confirmation_page_url !== undefined) {
+      const { error: edgesError } = await supabase
+        .from('flow_edges')
+        .update({
+          target_url: confirmation_page_url || null,
+        })
+        .eq('flow_id', id)
+        .eq('target_type', 'confirmation');
+      
+      if (edgesError) {
+        console.error('Error updating confirmation edges:', edgesError);
+        // Don't fail the request, just log the error
+      } else {
+        console.log(`Updated confirmation edges for flow ${id} with new confirmation_page_url: ${confirmation_page_url || 'null'}`);
+      }
+    }
+
     // Get nodes for this flow
     const { data: nodes } = await supabase
       .from('flow_nodes')
