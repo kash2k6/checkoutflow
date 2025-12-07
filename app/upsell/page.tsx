@@ -98,10 +98,17 @@ interface CompanyFlow {
 
       try {
         // Use flowId if provided, otherwise get first flow for company
+        // Add cache-busting timestamp to ensure fresh data (especially for confirmation_page_url)
+        const timestamp = Date.now();
         const apiUrl = flowId 
-          ? `/api/flows/${companyId}?flowId=${flowId}`
-          : `/api/flows/${companyId}`;
-        const response = await fetch(apiUrl);
+          ? `/api/flows/${companyId}?flowId=${flowId}&_t=${timestamp}`
+          : `/api/flows/${companyId}?_t=${timestamp}`;
+        const response = await fetch(apiUrl, {
+          cache: 'no-store', // Prevent browser caching
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        });
         
         // Check if response indicates subscription is required
         if (response.status === 403) {

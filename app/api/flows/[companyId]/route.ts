@@ -174,6 +174,11 @@ export async function GET(
     response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
     
+    // Prevent caching to ensure fresh data (important for confirmation_page_url updates)
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
     return response;
   } catch (error) {
     console.error('Error fetching flow:', error);
