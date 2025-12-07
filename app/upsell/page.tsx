@@ -817,7 +817,7 @@ interface CompanyFlow {
                   borderColor: `${custom.primaryColor || '#0D6B4D'}40`
                 }}
               >
-                <p className="font-semibold" style={{ color: custom.primaryColor || '#0D6B4D' }}>
+                <p className="font-semibold" style={{ color: custom.textColor || '#ffffff' }}>
                   💰 You Save ${savings.toFixed(2)}!
                 </p>
               </div>
