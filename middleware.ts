@@ -17,6 +17,12 @@ export function middleware(request: NextRequest) {
     response.headers.delete('X-Frame-Options');
     // Set Content-Security-Policy to allow all origins
     response.headers.set('Content-Security-Policy', 'frame-ancestors *;');
+    // Prevent caching for confirmation page to avoid stale content
+    if (pathname.startsWith('/confirmation')) {
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+    }
   }
 
   return response;
