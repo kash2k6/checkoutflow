@@ -874,7 +874,7 @@ interface CompanyFlow {
 
           {/* Trust Badge */}
           <div className="mt-8 text-center">
-            <p className="text-xs" style={{ color: custom.textColor ? 'rgba(255,255,255,0.5)' : '#6b7280' }}>
+            <p className="text-xs" style={{ color: custom.textColor || '#ffffff', opacity: 0.6 }}>
               {custom.trustBadgeText || '🔒 Secure one-click checkout • No need to enter payment details again'}
             </p>
           </div>

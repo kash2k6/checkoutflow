@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button, Dialog } from '@whop/react/components';
+import { Accordion } from './Accordion';
 
 interface ConfirmationCustomizationProps {
   flow: {
@@ -61,11 +62,9 @@ export default function ConfirmationCustomization({
 
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8" style={{ marginTop: 'var(--space-4)' }}>
           {/* Form Section */}
-          <div className="space-y-4 overflow-y-auto max-h-[calc(95vh-200px)] pr-2">
-            <h3 className="text-lg font-semibold text-gray-12 mb-4">Configuration</h3>
-            
-            {/* Colors */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="space-y-2 overflow-y-auto max-h-[calc(95vh-200px)] pr-2">
+            <Accordion title="Colors">
+              <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-12 font-semibold mb-2 text-sm">Primary Color</label>
                 <div className="flex gap-2">
@@ -200,51 +199,53 @@ export default function ConfirmationCustomization({
                   />
                 </div>
               </div>
-            </div>
+              </div>
+            </Accordion>
 
-            {/* Text Content */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Title (leave empty for default)</label>
-                <input
-                  type="text"
-                  value={custom.headerTitle || ''}
-                  onChange={(e) => setCustom({ ...custom, headerTitle: e.target.value })}
-                  placeholder="e.g., ✅ Order Complete!"
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 placeholder:text-gray-9 text-sm"
-                />
+            <Accordion title="Text Content">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Title (leave empty for default)</label>
+                  <input
+                    type="text"
+                    value={custom.headerTitle || ''}
+                    onChange={(e) => setCustom({ ...custom, headerTitle: e.target.value })}
+                    placeholder="e.g., ✅ Order Complete!"
+                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 placeholder:text-gray-9 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Subtitle</label>
+                  <input
+                    type="text"
+                    value={custom.headerSubtitle || ''}
+                    onChange={(e) => setCustom({ ...custom, headerSubtitle: e.target.value })}
+                    placeholder="e.g., Thank you for your purchase"
+                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 placeholder:text-gray-9 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Emoji</label>
+                  <input
+                    type="text"
+                    value={custom.headerEmoji || '✅'}
+                    onChange={(e) => setCustom({ ...custom, headerEmoji: e.target.value })}
+                    placeholder="✅"
+                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 placeholder:text-gray-9 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-12 font-semibold mb-2 text-sm">Message Text (leave empty for default)</label>
+                  <textarea
+                    value={custom.messageText || ''}
+                    onChange={(e) => setCustom({ ...custom, messageText: e.target.value })}
+                    placeholder="All products have been added to your account. Check your email for confirmation details."
+                    rows={3}
+                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 placeholder:text-gray-9 text-sm"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Subtitle</label>
-                <input
-                  type="text"
-                  value={custom.headerSubtitle || ''}
-                  onChange={(e) => setCustom({ ...custom, headerSubtitle: e.target.value })}
-                  placeholder="e.g., Thank you for your purchase"
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 placeholder:text-gray-9 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Emoji</label>
-                <input
-                  type="text"
-                  value={custom.headerEmoji || '✅'}
-                  onChange={(e) => setCustom({ ...custom, headerEmoji: e.target.value })}
-                  placeholder="✅"
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 placeholder:text-gray-9 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Message Text (leave empty for default)</label>
-                <textarea
-                  value={custom.messageText || ''}
-                  onChange={(e) => setCustom({ ...custom, messageText: e.target.value })}
-                  placeholder="All products have been added to your account. Check your email for confirmation details."
-                  rows={3}
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 placeholder:text-gray-9 text-sm"
-                />
-              </div>
-            </div>
+            </Accordion>
           </div>
 
           {/* Preview Section */}

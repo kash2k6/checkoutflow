@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Dialog, Button } from '@whop/react/components';
+import { Accordion } from './Accordion';
 
 interface FlowNode {
   id?: string;
@@ -277,113 +278,112 @@ export default function NodeEditor({
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ marginTop: 'var(--space-4)' }}>
           {/* Form Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-12 mb-4">Configuration</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Product Selection */}
-          <div>
-            <label className="block text-gray-12 font-semibold mb-2">
-              Product Plan <span className="text-red-400">*</span>
-            </label>
-            <select
-              value={formData.plan_id}
-              onChange={(e) => setFormData({ ...formData, plan_id: e.target.value })}
-              className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
-              required
-            >
-              <option value="">Select a product...</option>
-              {plans.map(plan => (
-                <option key={plan.id} value={plan.id}>
-                  {plan.title} - ${plan.initial_price} {plan.currency.toUpperCase()}
-                </option>
-              ))}
-            </select>
-          </div>
+            <form onSubmit={handleSubmit} className="space-y-2">
+          <Accordion title="Basic Information">
+            <div className="space-y-4">
+              {/* Product Selection */}
+              <div>
+                <label className="block text-gray-12 font-semibold mb-2">
+                  Product Plan <span className="text-red-400">*</span>
+                </label>
+                <select
+                  value={formData.plan_id}
+                  onChange={(e) => setFormData({ ...formData, plan_id: e.target.value })}
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                  required
+                >
+                  <option value="">Select a product...</option>
+                  {plans.map(plan => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.title} - ${plan.initial_price} {plan.currency.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          {/* Title */}
-          <div>
-            <label className="block text-gray-12 font-semibold mb-2">Title</label>
-            <input
-              type="text"
-              value={formData.title || ''}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="e.g., Never Run Out - Subscribe & Save!"
-              className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
-            />
-          </div>
+              {/* Title */}
+              <div>
+                <label className="block text-gray-12 font-semibold mb-2">Title</label>
+                <input
+                  type="text"
+                  value={formData.title || ''}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g., Never Run Out - Subscribe & Save!"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                />
+              </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-gray-12 font-semibold mb-2">Description</label>
-            <textarea
-              value={formData.description || ''}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="e.g., Get this product delivered monthly. Cancel anytime. Save 15% with subscription!"
-              rows={3}
-              className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
-            />
-          </div>
+              {/* Description */}
+              <div>
+                <label className="block text-gray-12 font-semibold mb-2">Description</label>
+                <textarea
+                  value={formData.description || ''}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="e.g., Get this product delivered monthly. Cancel anytime. Save 15% with subscription!"
+                  rows={3}
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                />
+              </div>
 
-          {/* Price */}
-          <div>
-            <label className="block text-gray-12 font-semibold mb-2">Price</label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.price || ''}
-              onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || null })}
-              placeholder={selectedPlan ? `Default: $${selectedPlan.initial_price}` : 'Enter price'}
-              className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
-            />
-          </div>
+              {/* Price */}
+              <div>
+                <label className="block text-gray-12 font-semibold mb-2">Price</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.price || ''}
+                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || null })}
+                  placeholder={selectedPlan ? `Default: $${selectedPlan.initial_price}` : 'Enter price'}
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                />
+              </div>
 
-          {/* Original Price */}
-          <div>
-            <label className="block text-gray-12 font-semibold mb-2">Original Price (for showing savings)</label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.original_price || ''}
-              onChange={(e) => setFormData({ ...formData, original_price: parseFloat(e.target.value) || null })}
-              placeholder="Enter original price to show savings"
-              className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
-            />
-          </div>
+              {/* Original Price */}
+              <div>
+                <label className="block text-gray-12 font-semibold mb-2">Original Price (for showing savings)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.original_price || ''}
+                  onChange={(e) => setFormData({ ...formData, original_price: parseFloat(e.target.value) || null })}
+                  placeholder="Enter original price to show savings"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                />
+              </div>
 
-          {/* Redirect URL */}
-          <div>
-            <label className="block text-gray-12 font-semibold mb-2">
-              Redirect URL (where this page is hosted) <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="url"
-              value={formData.redirect_url}
-              onChange={(e) => setFormData({ ...formData, redirect_url: e.target.value })}
-              placeholder="https://yourdomain.com/upsell"
-              className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
-              required
-            />
-            <p className="text-gray-400 text-sm mt-1">
-              This is the URL where your {nodeType} page will be embedded. Users will be redirected here.
-            </p>
-          </div>
+              {/* Redirect URL */}
+              <div>
+                <label className="block text-gray-12 font-semibold mb-2">
+                  Redirect URL (where this page is hosted) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="url"
+                  value={formData.redirect_url}
+                  onChange={(e) => setFormData({ ...formData, redirect_url: e.target.value })}
+                  placeholder="https://yourdomain.com/upsell"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                  required
+                />
+                <p className="text-gray-400 text-sm mt-1">
+                  This is the URL where your {nodeType} page will be embedded. Users will be redirected here.
+                </p>
+              </div>
 
-          {/* Order Index */}
-          <div>
-            <label className="block text-gray-12 font-semibold mb-2">Order (display order within same type)</label>
-            <input
-              type="number"
-              value={formData.order_index || 0}
-              onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
-              className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
-            />
-          </div>
+              {/* Order Index */}
+              <div>
+                <label className="block text-gray-12 font-semibold mb-2">Order (display order within same type)</label>
+                <input
+                  type="number"
+                  value={formData.order_index || 0}
+                  onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                />
+              </div>
+            </div>
+          </Accordion>
 
-          {/* Customization Section */}
-          <div className="pt-6 border-t border-gray-a4">
-            <h3 className="text-lg font-semibold text-gray-12 mb-4">Brand Customization</h3>
-            
-            {/* Colors */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
+          <Accordion title="Colors">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-12 font-semibold mb-2 text-sm">Primary Color</label>
                 <div className="flex gap-2">
@@ -561,9 +561,10 @@ export default function NodeEditor({
                 </div>
               </div>
             </div>
+          </Accordion>
 
-            {/* Text Content */}
-            <div className="space-y-4 mb-4">
+          <Accordion title="Text Content">
+            <div className="space-y-4">
               <div>
                 <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Title (leave empty for default)</label>
                 <input
@@ -643,27 +644,30 @@ export default function NodeEditor({
                 />
               </div>
             </div>
+          </Accordion>
 
-            {/* Button Style */}
-            <div>
-              <label className="block text-gray-12 font-semibold mb-2 text-sm">Button Style</label>
-              <select
-                value={formData.customization?.buttonStyle || 'pill'}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  customization: { ...formData.customization, buttonStyle: e.target.value as 'rounded' | 'square' | 'pill' }
-                })}
-                className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 text-sm"
-              >
-                <option value="pill">Pill (Rounded)</option>
-                <option value="rounded">Rounded</option>
-                <option value="square">Square</option>
-              </select>
+          <Accordion title="Button Settings">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-12 font-semibold mb-2 text-sm">Button Style</label>
+                <select
+                  value={formData.customization?.buttonStyle || 'pill'}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    customization: { ...formData.customization, buttonStyle: e.target.value as 'rounded' | 'square' | 'pill' }
+                  })}
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 text-sm"
+                >
+                  <option value="pill">Pill (Rounded)</option>
+                  <option value="rounded">Rounded</option>
+                  <option value="square">Square</option>
+                </select>
+              </div>
             </div>
+          </Accordion>
 
-            {/* Product Image */}
-            <div>
-              <label className="block text-gray-12 font-semibold mb-2 text-sm">Product Image</label>
+          <Accordion title="Product Image">
+            <div className="space-y-4">
               
               {/* File Upload */}
               <div className="mb-3">
@@ -728,8 +732,7 @@ export default function NodeEditor({
                 </div>
               )}
             </div>
-          </div>
-
+          </Accordion>
             </form>
           </div>
 
