@@ -605,11 +605,18 @@ interface CompanyFlow {
   // Show confirmation page ONLY if we have purchased products AND showConfirmation is explicitly true
   // Double-check to prevent premature rendering - only show if we actually made a purchase
   // Also check that we're not still loading and that we have a currentNode (means we're on upsell page)
+  // Only show confirmation if:
+  // 1. showConfirmation is explicitly true
+  // 2. We have purchased products with actual prices (> 0)
+  // 3. We're not loading
+  // 4. We have a currentNode (we're on upsell page)
+  const hasPurchasedProducts = purchasedProducts && 
+                                purchasedProducts.length > 0 && 
+                                purchasedProducts.some(p => p.price > 0); // Must have at least one product with price > 0
   const shouldShowConfirmation = showConfirmation === true && 
-                                  purchasedProducts && 
-                                  purchasedProducts.length > 0 &&
+                                  hasPurchasedProducts &&
                                   !loading &&
-                                  currentNode; // Only show if we have a current node (on upsell page)
+                                  currentNode;
   
   if (shouldShowConfirmation) {
     const total = purchasedProducts.reduce((sum, product) => sum + product.price, 0);
