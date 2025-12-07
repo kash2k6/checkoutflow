@@ -274,7 +274,7 @@ export default function NodeEditor({
           Configure the {nodeType === 'upsell' ? 'upsell' : nodeType === 'downsell' ? 'downsell' : 'cross-sell'} offer details
         </Dialog.Description>
 
-        <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ marginTop: 'var(--space-4)' }}>
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ marginTop: 'var(--space-4)' }}>
           {/* Form Section */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-12 mb-4">Configuration</h3>
