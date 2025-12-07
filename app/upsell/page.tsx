@@ -102,8 +102,25 @@ interface CompanyFlow {
           ? `/api/flows/${companyId}?flowId=${flowId}`
           : `/api/flows/${companyId}`;
         const response = await fetch(apiUrl);
+        
+        // Check if response indicates subscription is required
+        if (response.status === 403) {
+          const errorData = await response.json();
+          setError(errorData.error || 'Funnel access requires an active subscription. Please contact the company owner to subscribe.');
+          setLoading(false);
+          return;
+        }
+        
         if (response.ok) {
           const flowData = await response.json();
+          
+          // Check if funnel is disabled due to missing subscription
+          if (flowData.enabled === false || !flowData.enabled) {
+            setError('This funnel is currently disabled. The company owner needs an active subscription to enable funnels. Please contact support.');
+            setLoading(false);
+            return;
+          }
+          
           setFlow(flowData);
           
           // Find the current node
@@ -113,6 +130,12 @@ interface CompanyFlow {
           } else {
             setError('Node not found in flow configuration');
           }
+        } else if (response.status === 404) {
+          setError('Flow configuration not found');
+        } else if (response.status === 403) {
+          // Already handled above, but keep for safety
+          const errorData = await response.json().catch(() => ({}));
+          setError(errorData.error || 'Funnel access requires an active subscription.');
         } else {
           setError('Flow configuration not found');
         }

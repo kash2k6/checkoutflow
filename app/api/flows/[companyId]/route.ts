@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { headers } from 'next/headers';
 import { whopSdk } from '@/lib/whop-sdk';
-import { checkSubscriptionAccess } from '@/lib/subscription-access';
+import { checkSubscriptionAccess, checkCompanyAdminSubscription } from '@/lib/subscription-access';
 
 // Get flow for a company
 export async function GET(
@@ -86,24 +86,58 @@ export async function GET(
 
     if (nodesError) throw nodesError;
 
-    // Check subscription status for authenticated requests (company owner)
-    // For customer-facing requests (unauthenticated), we'll check subscription separately
+    /**
+     * SUBSCRIPTION CHECK FOR FUNNELS
+     * 
+     * Funnels require the company owner/admin to have an active subscription.
+     * This check ensures only paying customers can use funnel features.
+     * 
+     * For authenticated requests (dashboard): Check the authenticated user's subscription
+     * For unauthenticated requests (customers): Check if any admin of the company has an active subscription
+     * 
+     * If no active subscription is found, the funnel is blocked completely.
+     */
     let isEnabled = true;
     let subscriptionStatus = null;
     
     try {
       const result = await whopSdk.verifyUserToken(await headers(), { dontThrow: true });
       if (result && result.userId) {
-        // This is an authenticated request (dashboard) - check subscription
+        // This is an authenticated request (dashboard) - check the authenticated user's subscription
         subscriptionStatus = await checkSubscriptionAccess(result.userId);
         isEnabled = subscriptionStatus.hasAccess;
+      } else {
+        // This is an unauthenticated request (customer-facing page)
+        // Check if any admin of the target company has an active subscription
+        subscriptionStatus = await checkCompanyAdminSubscription(companyId);
+        isEnabled = subscriptionStatus.hasAccess;
       }
-      // For unauthenticated requests (customers), we allow access for now
-      // Subscription check will happen at the customer-facing page level
     } catch (error) {
       console.error('Error checking subscription in flow endpoint:', error);
-      // On error, allow access
-      isEnabled = true;
+      // On error, block access to be safe (fail closed)
+      isEnabled = false;
+      subscriptionStatus = {
+        hasAccess: false,
+        isTrial: false,
+        isExpired: true,
+      };
+    }
+
+    // If subscription check failed, return error response
+    if (!isEnabled) {
+      const errorResponse = NextResponse.json(
+        { 
+          error: 'Funnel access requires an active subscription. Please subscribe to enable your funnels.',
+          enabled: false,
+          subscriptionStatus: subscriptionStatus ? {
+            hasAccess: subscriptionStatus.hasAccess,
+            isTrial: subscriptionStatus.isTrial,
+          } : null,
+        },
+        { status: 403 }
+      );
+      errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+      return errorResponse;
     }
 
     const response = NextResponse.json({
