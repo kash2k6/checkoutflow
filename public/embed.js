@@ -356,8 +356,8 @@
     }
     
     // Only auto-create confirmation container if we're actually on a confirmation page
-    // Don't create it on upsell or checkout pages
-    if (confirmationContainers.length === 0 && hasConfirmationParams && !isUpsellPath && !isCheckoutPath) {
+    // Don't create it on upsell or checkout pages - ONLY on confirmation/thankyou paths
+    if (confirmationContainers.length === 0 && hasConfirmationParams && isConfirmationPath) {
       const autoContainer = document.createElement('div');
       autoContainer.setAttribute('data-xperience-confirmation', '');
       autoContainer.style.width = '100%';
