@@ -7,7 +7,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
  */
 export async function POST(request: NextRequest) {
   try {
-    const { memberId, planId, userEmail, paymentMethodId: providedPaymentMethodId, companyId: providedCompanyId, flowId } = await request.json();
+    const { memberId, planId, userEmail, paymentMethodId: providedPaymentMethodId, companyId: providedCompanyId, flowId, sessionId } = await request.json();
 
     if (!memberId || !planId) {
       return NextResponse.json(
