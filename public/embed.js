@@ -61,17 +61,59 @@
     return urlParams.get(key);
   }
 
+  // Helper to parse URL parameters manually as fallback
+  function parseUrlParams() {
+    const params = {};
+    const search = window.location.search || '';
+    const hash = window.location.hash || '';
+    
+    // Parse search params
+    if (search) {
+      search.substring(1).split('&').forEach(param => {
+        const [key, value] = param.split('=');
+        if (key && value) {
+          params[key] = decodeURIComponent(value);
+        }
+      });
+    }
+    
+    // Parse hash params (some frameworks use hash for routing)
+    if (hash && hash.includes('?')) {
+      const hashQuery = hash.split('?')[1];
+      hashQuery.split('&').forEach(param => {
+        const [key, value] = param.split('=');
+        if (key && value) {
+          params[key] = decodeURIComponent(value);
+        }
+      });
+    }
+    
+    return params;
+  }
+
   // Wait for DOM to be ready
   function init() {
-    // Get URL params once for all containers
-    const urlParams = new URLSearchParams(window.location.search);
+    // Get URL params - try URLSearchParams first, then manual parsing as fallback
+    let urlParams;
+    try {
+      urlParams = new URLSearchParams(window.location.search);
+    } catch (e) {
+      console.warn('URLSearchParams failed, using manual parser:', e);
+      const manualParams = parseUrlParams();
+      urlParams = {
+        get: (key) => manualParams[key] || null
+      };
+    }
     
-    // Read all possible URL parameters
-    const urlCompanyId = urlParams.get('companyId');
-    const urlFlowId = urlParams.get('flowId');
-    const urlNodeId = urlParams.get('nodeId');
-    const urlMemberId = urlParams.get('memberId');
-    const urlSetupIntentId = urlParams.get('setupIntentId');
+    // Also try manual parsing as backup
+    const manualParams = parseUrlParams();
+    
+    // Read all possible URL parameters - try URLSearchParams first, then manual
+    const urlCompanyId = urlParams.get('companyId') || manualParams.companyId;
+    const urlFlowId = urlParams.get('flowId') || manualParams.flowId;
+    const urlNodeId = urlParams.get('nodeId') || manualParams.nodeId;
+    const urlMemberId = urlParams.get('memberId') || manualParams.memberId;
+    const urlSetupIntentId = urlParams.get('setupIntentId') || manualParams.setupIntentId;
     
     // Determine page type from URL params
     const hasCheckoutParams = urlCompanyId && !urlNodeId;
