@@ -405,13 +405,18 @@
         }
       });
       
-      if (!companyId || !flowId || !nodeId) {
+      if (!companyId || !flowId) {
         const missing = [];
         if (!companyId) missing.push('companyId');
         if (!flowId) missing.push('flowId');
-        if (!nodeId) missing.push('nodeId');
         container.innerHTML = `<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing required parameters: ${missing.join(', ')}. URL: ${window.location.href}</div>`;
         return;
+      }
+
+      // If nodeId is missing, we'll let the upsell page handle it
+      // It can read nodeId from the parent page URL or from its own URL
+      if (!nodeId) {
+        console.warn('Xperience Embed: nodeId not found. Upsell page will need to read it from URL parameters.');
       }
 
       const iframe = document.createElement('iframe');
