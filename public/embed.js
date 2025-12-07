@@ -436,6 +436,12 @@
       iframe.style.height = '100%';
       iframe.style.border = 'none';
       iframe.style.display = 'block';
+      
+      // Add iframe attributes for better cross-origin compatibility
+      iframe.setAttribute('allow', 'payment; fullscreen; camera; microphone');
+      iframe.setAttribute('loading', 'lazy');
+      iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+      
       container.appendChild(iframe);
       
       // Store iframe reference for redirect handling
@@ -527,6 +533,12 @@
       iframe.style.height = '100%';
       iframe.style.border = 'none';
       iframe.style.display = 'block';
+      
+      // Add iframe attributes for better cross-origin compatibility
+      iframe.setAttribute('allow', 'payment; fullscreen; camera; microphone');
+      iframe.setAttribute('loading', 'lazy');
+      iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+      
       container.appendChild(iframe);
       
       // Store iframe reference for redirect handling
@@ -571,6 +583,23 @@
       iframe.style.height = '100%';
       iframe.style.border = 'none';
       iframe.style.display = 'block';
+      
+      // Add iframe attributes for better cross-origin compatibility (especially for Framer)
+      iframe.setAttribute('allow', 'payment; fullscreen; camera; microphone');
+      iframe.setAttribute('loading', 'lazy');
+      iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+      
+      // Try to detect if we're in Framer and add additional attributes
+      const isFramer = window.location.hostname.includes('framer') || 
+                       window.location.hostname.includes('framerusercontent') ||
+                       document.referrer.includes('framer');
+      
+      if (isFramer) {
+        // Framer may need explicit sandbox permissions
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox');
+        console.log('Detected Framer environment, added sandbox permissions');
+      }
+      
       container.appendChild(iframe);
       
       // Store iframe reference for redirect handling
