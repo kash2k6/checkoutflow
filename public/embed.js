@@ -375,29 +375,32 @@
       const parent = container.parentElement;
       if (!parent) return;
       
-      // Set height: 100% as default - this works if parent has any height
-      container.style.height = '100%';
+      // If parent has a computed height, use it
+      const parentHeight = window.getComputedStyle(parent).height;
+      if (parentHeight && parentHeight !== 'auto' && parentHeight !== '0px') {
+        container.style.height = parentHeight;
+        return;
+      }
       
-      // Check if parent has a computed height
-      const parentComputedHeight = window.getComputedStyle(parent).height;
-      const parentHasHeight = parentComputedHeight && parentComputedHeight !== 'auto' && parentComputedHeight !== '0px';
+      // Try to get parent's offsetHeight
+      if (parent.offsetHeight && parent.offsetHeight > 0) {
+        container.style.height = parent.offsetHeight + 'px';
+        return;
+      }
       
-      // If parent doesn't have an explicit height, use ResizeObserver to set pixel height
-      if (!parentHasHeight && window.ResizeObserver) {
-        const updateHeight = () => {
-          const parentHeight = parent.offsetHeight || parent.clientHeight || parent.scrollHeight;
-          if (parentHeight > 0) {
-            // Use the larger of parent height or 600px minimum
-            container.style.height = Math.max(parentHeight, 600) + 'px';
+      // Fallback: use viewport height or parent's scrollHeight
+      const height = parent.scrollHeight > 0 ? parent.scrollHeight : window.innerHeight;
+      container.style.height = Math.max(height, 600) + 'px';
+      
+      // Watch for parent size changes
+      if (window.ResizeObserver) {
+        const resizeObserver = new ResizeObserver(entries => {
+          for (const entry of entries) {
+            const newHeight = entry.contentRect.height;
+            if (newHeight > 0) {
+              container.style.height = Math.max(newHeight, 600) + 'px';
+            }
           }
-        };
-        
-        // Wait a bit for layout to settle, then update
-        setTimeout(updateHeight, 0);
-        
-        // Watch for changes
-        const resizeObserver = new ResizeObserver(() => {
-          updateHeight();
         });
         resizeObserver.observe(parent);
       }
@@ -426,8 +429,8 @@
       }
 
       const iframe = document.createElement('iframe');
-      let url = `${baseUrl}/checkout?companyId=${encodeURIComponent(companyId)}`;
-      if (flowId) url += `&flowId=${encodeURIComponent(flowId)}`;
+      let url = `${baseUrl}/checkout?companyId=${companyId}`;
+      if (flowId) url += `&flowId=${flowId}`;
       iframe.src = url;
       iframe.style.width = '100%';
       iframe.style.height = '100%';
@@ -503,7 +506,7 @@
       const iframe = document.createElement('iframe');
       
       // Start with required params
-      let url = `${baseUrl}/upsell?companyId=${encodeURIComponent(companyId)}&flowId=${encodeURIComponent(flowId)}`;
+      let url = `${baseUrl}/upsell?companyId=${companyId}&flowId=${flowId}`;
       
       // Add all other parameters from allParams (which includes top window URL)
       // This ensures we pass through ALL parameters we found, not just the known ones
@@ -560,9 +563,9 @@
       }
 
       const iframe = document.createElement('iframe');
-      let url = `${baseUrl}/confirmation?companyId=${encodeURIComponent(companyId)}`;
-      if (flowId) url += `&flowId=${encodeURIComponent(flowId)}`;
-      if (memberId) url += `&memberId=${encodeURIComponent(memberId)}`;
+      let url = `${baseUrl}/confirmation?companyId=${companyId}`;
+      if (flowId) url += `&flowId=${flowId}`;
+      if (memberId) url += `&memberId=${memberId}`;
       iframe.src = url;
       iframe.style.width = '100%';
       iframe.style.height = '100%';

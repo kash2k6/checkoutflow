@@ -21,61 +21,46 @@ function ConfirmationContent() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        if (!companyId) {
-          setError('Missing companyId parameter');
-          setLoading(false);
-          return;
-        }
-
-        // Load flow configuration
-        try {
+        // Load flow configuration if companyId is provided
+        if (companyId) {
           const flowUrl = flowId 
-            ? `/api/flows/${encodeURIComponent(companyId)}?flowId=${encodeURIComponent(flowId)}`
-            : `/api/flows/${encodeURIComponent(companyId)}`;
+            ? `/api/flows/${companyId}?flowId=${flowId}`
+            : `/api/flows/${companyId}`;
           const flowResponse = await fetch(flowUrl);
           if (flowResponse.ok) {
             const flowData = await flowResponse.json();
             setFlow(flowData);
-          } else {
-            console.warn('Failed to load flow configuration:', flowResponse.status);
           }
-        } catch (err) {
-          console.error('Error loading flow:', err);
-        }
 
-        // Load purchases from API using memberId
-        if (memberId) {
-          try {
-            const purchasesUrl = `/api/purchases/${encodeURIComponent(companyId)}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${encodeURIComponent(flowId)}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
+          // Load purchases from API using memberId
+          if (memberId) {
+            const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
             const purchasesResponse = await fetch(purchasesUrl);
             if (purchasesResponse.ok) {
               const purchasesData = await purchasesResponse.json();
               if (purchasesData.purchases && purchasesData.purchases.length > 0) {
                 setPurchasedProducts(purchasesData.purchases);
               }
-            } else {
-              console.warn('Failed to load purchases:', purchasesResponse.status);
             }
-          } catch (err) {
-            console.error('Error loading purchases:', err);
           }
         }
 
         // Fallback: Try to get from localStorage (for same-domain redirects)
-        if (!memberId && typeof window !== 'undefined') {
-          try {
-            const storedProducts = localStorage.getItem('purchased_products');
-            if (storedProducts) {
+        // This works even without companyId
+        // Only check localStorage if we don't have memberId or if we didn't get products from API
+        if (!memberId) {
+          const storedProducts = localStorage.getItem('purchased_products');
+          if (storedProducts) {
+            try {
               const products = JSON.parse(storedProducts);
               setPurchasedProducts(products);
+            } catch (e) {
+              console.error('Error parsing stored products:', e);
             }
-          } catch (e) {
-            console.error('Error parsing stored products:', e);
           }
         }
       } catch (err) {
         console.error('Error loading data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load confirmation page');
       } finally {
         setLoading(false);
       }
@@ -106,22 +91,6 @@ function ConfirmationContent() {
     return (
       <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="text-red-500 mb-4">⚠️ Error</div>
-          <div className="text-white mb-2">{error}</div>
-          <div className="text-gray-400 text-sm">
-            {companyId && <div>Company ID: {companyId}</div>}
-            {flowId && <div>Flow ID: {flowId}</div>}
-            {memberId && <div>Member ID: {memberId}</div>}
-          </div>
-        </div>
       </div>
     );
   }
