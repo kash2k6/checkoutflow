@@ -19,6 +19,8 @@ function ConfirmationContent() {
   }>>([]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     console.log('Confirmation page loading with params:', { companyId, flowId, memberId, sessionId });
     console.log('Window location:', window.location.href);
     console.log('Is in iframe:', window.self !== window.top);
@@ -117,6 +119,7 @@ function ConfirmationContent() {
     };
 
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId, flowId, memberId, sessionId]);
 
   // Facebook Pixel tracking
@@ -182,23 +185,23 @@ function ConfirmationContent() {
       : 'All products have been added to your account. Check your email for confirmation details.';
   };
 
-  // Log diagnostic info for debugging
+  // Log diagnostic info for debugging (only once after initial load)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      console.log('Confirmation page render diagnostics:', {
-        inIframe: window.self !== window.top,
-        parentOrigin: window.self !== window.top ? document.referrer : 'same-origin',
-        currentOrigin: window.location.origin,
-        hasCompanyId: !!companyId,
-        hasFlowId: !!flowId,
-        hasMemberId: !!memberId,
-        productsCount: purchasedProducts.length,
-        hasFlow: !!flow,
-        loading: loading,
-        error: error,
-      });
-    }
-  }, [companyId, flowId, memberId, purchasedProducts.length, flow, loading, error]);
+    if (typeof window === 'undefined' || loading) return;
+    
+    console.log('Confirmation page render diagnostics:', {
+      inIframe: window.self !== window.top,
+      parentOrigin: window.self !== window.top ? document.referrer : 'same-origin',
+      currentOrigin: window.location.origin,
+      hasCompanyId: !!companyId,
+      hasFlowId: !!flowId,
+      hasMemberId: !!memberId,
+      productsCount: purchasedProducts.length,
+      hasFlow: !!flow,
+      loading: loading,
+      error: error,
+    });
+  }, [loading]); // Only log when loading changes
 
   return (
     <div 
