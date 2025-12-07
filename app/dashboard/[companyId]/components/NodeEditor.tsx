@@ -489,6 +489,30 @@ export default function NodeEditor({
                 </div>
               </div>
               <div>
+                <label className="block text-gray-12 font-semibold mb-2 text-sm">Card Text Color</label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    value={formData.customization?.textColor || '#ffffff'}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      customization: { ...formData.customization, textColor: e.target.value }
+                    })}
+                    className="w-16 h-10 rounded cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={formData.customization?.textColor || '#ffffff'}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      customization: { ...formData.customization, textColor: e.target.value }
+                    })}
+                    className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 text-sm"
+                    placeholder="#ffffff"
+                  />
+                </div>
+              </div>
+              <div>
                 <label className="block text-gray-12 font-semibold mb-2 text-sm">Card Background</label>
                 <div className="flex gap-2">
                   <input
@@ -710,9 +734,9 @@ export default function NodeEditor({
           </div>
 
           {/* Preview Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 sticky top-4 self-start">
             <h3 className="text-lg font-semibold text-gray-12 mb-4">Live Preview</h3>
-            <div className="bg-gray-a1 dark:bg-gray-a2 border border-gray-a4 rounded-xl overflow-hidden">
+            <div className="bg-gray-a1 dark:bg-gray-a2 border border-gray-a4 rounded-xl overflow-hidden max-h-[600px] overflow-y-auto">
               <div className="w-full max-w-2xl mx-auto" style={{ backgroundColor: custom.backgroundColor || '#1a1a1a' }}>
                 {/* Preview Header */}
                 <div 
@@ -822,7 +846,7 @@ export default function NodeEditor({
 
                   {/* Preview Trust Badge */}
                   <div className="mt-8 text-center">
-                    <p className="text-xs" style={{ color: custom.textColor ? 'rgba(255,255,255,0.5)' : '#6b7280' }}>
+                    <p className="text-xs" style={{ color: custom.textColor || '#ffffff', opacity: 0.6 }}>
                       {custom.trustBadgeText || '🔒 Secure one-click checkout • No need to enter payment details again'}
                     </p>
                   </div>

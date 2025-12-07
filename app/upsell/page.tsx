@@ -781,7 +781,7 @@ interface CompanyFlow {
             <h2 className="text-2xl font-bold mb-3" style={{ color: custom.textColor || '#ffffff' }}>
               {currentNode.title || 'Special Offer'}
             </h2>
-            <p className="text-lg mb-4" style={{ color: custom.textColor ? 'rgba(255,255,255,0.7)' : '#d1d5db' }}>
+            <p className="text-lg mb-4" style={{ color: custom.textColor || '#ffffff', opacity: 0.8 }}>
               {currentNode.description || 'Get this amazing product at a special price!'}
             </p>
             
@@ -790,18 +790,18 @@ interface CompanyFlow {
                 <div className="text-4xl font-bold" style={{ color: custom.primaryColor || '#0D6B4D' }}>
                   ${currentNode.price?.toFixed(2) || '0.00'}
                 </div>
-                <div className="text-sm mt-1" style={{ color: custom.textColor ? 'rgba(255,255,255,0.5)' : '#9ca3af' }}>
+                <div className="text-sm mt-1" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>
                   {custom.priceLabel || 'One-time Price'}
                 </div>
               </div>
               {savings > 0 && currentNode.original_price && (
                 <>
-                  <div style={{ color: custom.textColor ? 'rgba(255,255,255,0.5)' : '#6b7280' }}>vs</div>
+                  <div style={{ color: custom.textColor || '#ffffff', opacity: 0.6 }}>vs</div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold line-through" style={{ color: custom.textColor ? 'rgba(255,255,255,0.5)' : '#6b7280' }}>
+                    <div className="text-2xl font-bold line-through" style={{ color: custom.textColor || '#ffffff', opacity: 0.6 }}>
                       ${currentNode.original_price.toFixed(2)}
                     </div>
-                    <div className="text-sm mt-1" style={{ color: custom.textColor ? 'rgba(255,255,255,0.5)' : '#9ca3af' }}>
+                    <div className="text-sm mt-1" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>
                       {custom.originalPriceLabel || 'Regular Price'}
                     </div>
                   </div>

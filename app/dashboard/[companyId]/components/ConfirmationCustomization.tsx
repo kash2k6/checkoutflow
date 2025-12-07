@@ -59,9 +59,9 @@ export default function ConfirmationCustomization({
         <Dialog.Title>Customize Confirmation Page</Dialog.Title>
         <Dialog.Description>Configure the appearance and content of your confirmation page</Dialog.Description>
 
-        <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-2 gap-8" style={{ marginTop: 'var(--space-4)' }}>
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8" style={{ marginTop: 'var(--space-4)' }}>
           {/* Form Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto max-h-[calc(95vh-200px)] pr-2">
             <h3 className="text-lg font-semibold text-gray-12 mb-4">Configuration</h3>
             
             {/* Colors */}
@@ -141,6 +141,24 @@ export default function ConfirmationCustomization({
                     type="text"
                     value={custom.headerTextColor || '#ffffff'}
                     onChange={(e) => setCustom({ ...custom, headerTextColor: e.target.value })}
+                    className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 text-sm"
+                    placeholder="#ffffff"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-gray-12 font-semibold mb-2 text-sm">Card Text Color</label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    value={custom.textColor || '#ffffff'}
+                    onChange={(e) => setCustom({ ...custom, textColor: e.target.value })}
+                    className="w-20 h-12 rounded cursor-pointer border-2 border-gray-a4 hover:border-gray-a5 transition-colors"
+                  />
+                  <input
+                    type="text"
+                    value={custom.textColor || '#ffffff'}
+                    onChange={(e) => setCustom({ ...custom, textColor: e.target.value })}
                     className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 text-sm"
                     placeholder="#ffffff"
                   />
@@ -230,9 +248,9 @@ export default function ConfirmationCustomization({
           </div>
 
           {/* Preview Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 sticky top-4 self-start">
             <h3 className="text-lg font-semibold text-gray-12 mb-4">Live Preview</h3>
-            <div className="bg-gray-a1 dark:bg-gray-a2 border border-gray-a4 rounded-xl overflow-hidden">
+            <div className="bg-gray-a1 dark:bg-gray-a2 border border-gray-a4 rounded-xl overflow-hidden max-h-[600px] overflow-y-auto">
               <div className="w-full mx-auto" style={{ backgroundColor: custom.backgroundColor || '#1a1a1a' }}>
                 {/* Preview Header */}
                 <div 

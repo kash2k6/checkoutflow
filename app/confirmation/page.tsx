@@ -188,13 +188,13 @@ function ConfirmationContent() {
                 {purchasedProducts.map((product, index) => (
                   <div key={index} className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-4 flex justify-between items-center">
                     <div>
-                      <h3 className="text-white font-semibold">{product.name}</h3>
-                      <p className="text-gray-400 text-sm">
+                      <h3 className="font-semibold" style={{ color: custom.textColor || '#ffffff' }}>{product.name}</h3>
+                      <p className="text-sm" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>
                         {product.type === 'subscription' ? 'Subscription (Monthly)' : 'One-time Purchase'}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-white font-bold">${product.price.toFixed(2)}</p>
+                      <p className="font-bold" style={{ color: custom.textColor || '#ffffff' }}>${product.price.toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
@@ -209,7 +209,7 @@ function ConfirmationContent() {
             </>
           ) : (
             <div className="mb-6">
-              <p style={{ color: custom.textColor ? 'rgba(255,255,255,0.6)' : '#9ca3af' }}>Your order has been processed successfully.</p>
+              <p style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>Your order has been processed successfully.</p>
             </div>
           )}
 
@@ -220,7 +220,7 @@ function ConfirmationContent() {
               borderColor: `${custom.primaryColor || '#0D6B4D'}40`
             }}
           >
-            <p className="text-sm" style={{ color: custom.primaryColor || '#0D6B4D' }}>
+            <p className="text-sm" style={{ color: custom.textColor || '#ffffff' }}>
               {getMessageText()}
             </p>
           </div>

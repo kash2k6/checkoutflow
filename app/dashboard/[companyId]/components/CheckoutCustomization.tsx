@@ -116,9 +116,9 @@ export default function CheckoutCustomization({
         <Dialog.Title>Customize Checkout Page</Dialog.Title>
         <Dialog.Description>Configure the appearance and theme of your checkout page</Dialog.Description>
 
-        <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-2 gap-8" style={{ marginTop: 'var(--space-4)' }}>
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8" style={{ marginTop: 'var(--space-4)' }}>
           {/* Form Section */}
-          <div className="space-y-6">
+          <div className="space-y-6 overflow-y-auto max-h-[calc(95vh-200px)] pr-2">
             <h3 className="text-lg font-semibold text-gray-12 mb-4">Configuration</h3>
             
             {/* Theme Selection */}
@@ -311,9 +311,9 @@ export default function CheckoutCustomization({
           </div>
 
           {/* Preview Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 sticky top-4 self-start">
             <h3 className="text-lg font-semibold text-gray-12 mb-4">Live Preview</h3>
-            <div className="bg-gray-a1 dark:bg-gray-a2 border border-gray-a4 rounded-xl overflow-hidden">
+            <div className="bg-gray-a1 dark:bg-gray-a2 border border-gray-a4 rounded-xl overflow-hidden max-h-[600px] overflow-y-auto">
               <div 
                 className="w-full mx-auto p-8"
                 style={{ 
