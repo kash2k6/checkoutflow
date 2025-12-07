@@ -425,6 +425,23 @@
       if (nodeId) url += `&nodeId=${nodeId}`;
       if (memberId) url += `&memberId=${memberId}`;
       if (setupIntentId) url += `&setupIntentId=${setupIntentId}`;
+      
+      // Also try to get ALL parameters from top window URL and pass them through
+      // This ensures we don't miss any parameters due to iframe restrictions
+      try {
+        if (window.top && window.top.location && window.top.location.href) {
+          const topUrl = new URL(window.top.location.href);
+          topUrl.searchParams.forEach((value, key) => {
+            // Only add params that aren't already in the URL
+            if (!url.includes(`${key}=`)) {
+              url += `&${key}=${encodeURIComponent(value)}`;
+            }
+          });
+        }
+      } catch (e) {
+        // Cross-origin, can't access - that's fine, we'll use what we have
+      }
+      
       iframe.src = url;
       iframe.style.width = '100%';
       iframe.style.height = '100%';
