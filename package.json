@@ -8,7 +8,8 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "next lint",
-		"db:push": "drizzle-kit push"
+		"db:push": "drizzle-kit push",
+		"test:subscription": "tsx scripts/test-subscription-check.ts"
 	},
 	"dependencies": {
 		"@paralleldrive/cuid2": "^2.2.2",

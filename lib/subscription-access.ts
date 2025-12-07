@@ -44,17 +44,21 @@ export interface SubscriptionStatus {
 export async function checkSubscriptionAccess(userId: string): Promise<SubscriptionStatus> {
   const companyId = COMPANY_ID;
 
-  // Use subscription-specific API key, fallback to main API key
+  // Use subscription-specific API key (REQUIRED for subscription checks), fallback to main API key
   const apiKey = process.env.WHOP_SUBSCRIPTION_API_KEY || process.env.WHOP_API_KEY;
   
   if (!apiKey) {
-    console.error('WHOP_SUBSCRIPTION_API_KEY or WHOP_API_KEY environment variable is not set');
+    console.error('[checkSubscriptionAccess] WHOP_SUBSCRIPTION_API_KEY or WHOP_API_KEY environment variable is not set');
     return {
       hasAccess: false,
       isTrial: false,
       isExpired: true,
     };
   }
+  
+  // Log which API key is being used (first few chars only for security)
+  const keySource = process.env.WHOP_SUBSCRIPTION_API_KEY ? 'WHOP_SUBSCRIPTION_API_KEY' : 'WHOP_API_KEY';
+  console.log(`[checkSubscriptionAccess] Using ${keySource} (${apiKey.substring(0, 20)}...)`);
 
   try {
     // Query memberships using REST API - faster than SDK methods
@@ -127,8 +131,8 @@ export async function checkSubscriptionAccess(userId: string): Promise<Subscript
       membership: {
         id: activeMembership.id,
         status: activeMembership.status,
-        plan_id: activeMembership.plan_id,
-        user_id: activeMembership.user_id,
+        plan_id: activeMembership.plan?.id || activeMembership.plan_id,
+        user_id: activeMembership.user?.id || activeMembership.user_id || activeMembership.member?.user?.id,
         created_at: activeMembership.created_at,
         trial_end: activeMembership.trial_end,
       },
@@ -154,17 +158,21 @@ export async function checkSubscriptionAccess(userId: string): Promise<Subscript
 export async function checkCompanyAdminSubscription(targetCompanyId: string): Promise<SubscriptionStatus> {
   const subscriptionCompanyId = COMPANY_ID;
 
-  // Use subscription-specific API key, fallback to main API key
+  // Use subscription-specific API key (REQUIRED for subscription checks), fallback to main API key
   const apiKey = process.env.WHOP_SUBSCRIPTION_API_KEY || process.env.WHOP_API_KEY;
   
   if (!apiKey) {
-    console.error('WHOP_SUBSCRIPTION_API_KEY or WHOP_API_KEY environment variable is not set');
+    console.error('[checkCompanyAdminSubscription] WHOP_SUBSCRIPTION_API_KEY or WHOP_API_KEY environment variable is not set');
     return {
       hasAccess: false,
       isTrial: false,
       isExpired: true,
     };
   }
+  
+  // Log which API key is being used (first few chars only for security)
+  const keySource = process.env.WHOP_SUBSCRIPTION_API_KEY ? 'WHOP_SUBSCRIPTION_API_KEY' : 'WHOP_API_KEY';
+  console.log(`[checkCompanyAdminSubscription] Using ${keySource} (${apiKey.substring(0, 20)}...)`);
 
   try {
     // Get company members/admins from Whop API
@@ -172,8 +180,7 @@ export async function checkCompanyAdminSubscription(targetCompanyId: string): Pr
     const url = new URL('https://api.whop.com/api/v1/memberships');
     url.searchParams.set('company_id', subscriptionCompanyId);
     url.searchParams.set('plan_ids', SUBSCRIPTION_PLAN_ID);
-    // Get all active memberships for our subscription plan
-    url.searchParams.set('status', 'active,trialing');
+    // Note: Some Whop API versions may not support status filter, so we'll filter client-side
 
     const response = await fetch(url.toString(), {
       method: 'GET',
@@ -201,12 +208,33 @@ export async function checkCompanyAdminSubscription(targetCompanyId: string): Pr
     }
 
     const data = await response.json();
-    const memberships = data.data || [];
+    const allMemberships = data.data || [];
+    
+    // Filter for active/trialing memberships (in case API doesn't support status filter)
+    const memberships = allMemberships.filter((m: any) => {
+      const status = m.status?.toLowerCase();
+      return status === 'active' || status === 'trialing';
+    });
+    
+    console.log(`[checkCompanyAdminSubscription] Found ${memberships.length} active subscription(s) out of ${allMemberships.length} total`);
 
     // For each active membership, check if the user is an admin of the target company
+    // Note: Whop API returns user ID in membership.user.id (not membership.user_id)
     for (const membership of memberships) {
-      const userId = membership.user_id;
-      if (!userId) continue;
+      // Try multiple possible fields for user ID (API structure may vary)
+      const userId = membership.user?.id || membership.user_id || membership.member?.user?.id || membership.member?.user_id;
+      
+      if (!userId) {
+        console.log(`[checkCompanyAdminSubscription] Skipping membership ${membership.id} - no user_id found`);
+        console.log(`[checkCompanyAdminSubscription] Membership structure:`, {
+          hasUser: !!membership.user,
+          hasMember: !!membership.member,
+          userKeys: membership.user ? Object.keys(membership.user) : [],
+        });
+        continue;
+      }
+      
+      console.log(`[checkCompanyAdminSubscription] Found user ${userId} with subscription, checking if admin of company ${targetCompanyId}`);
 
       try {
         // Check if this user has admin access to the target company
@@ -221,6 +249,8 @@ export async function checkCompanyAdminSubscription(targetCompanyId: string): Pr
           const isExpired = membership.status?.toLowerCase() === 'canceled' || 
                            membership.status?.toLowerCase() === 'expired';
 
+          console.log(`[checkCompanyAdminSubscription] ✅ User ${userId} is admin of ${targetCompanyId} and has active subscription!`);
+          
           return {
             hasAccess: true,
             isTrial,
@@ -228,8 +258,8 @@ export async function checkCompanyAdminSubscription(targetCompanyId: string): Pr
             membership: {
               id: membership.id,
               status: membership.status,
-              plan_id: membership.plan_id,
-              user_id: membership.user_id,
+              plan_id: membership.plan?.id || membership.plan_id,
+              user_id: userId,
               created_at: membership.created_at,
               trial_end: membership.trial_end,
             },

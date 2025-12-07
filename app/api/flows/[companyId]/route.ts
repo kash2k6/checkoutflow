@@ -104,16 +104,30 @@ export async function GET(
       const result = await whopSdk.verifyUserToken(await headers(), { dontThrow: true });
       if (result && result.userId) {
         // This is an authenticated request (dashboard) - check the authenticated user's subscription
+        console.log(`[Subscription Check] Authenticated request for user ${result.userId}`);
         subscriptionStatus = await checkSubscriptionAccess(result.userId);
         isEnabled = subscriptionStatus.hasAccess;
+        console.log(`[Subscription Check] User subscription status:`, {
+          hasAccess: subscriptionStatus.hasAccess,
+          isTrial: subscriptionStatus.isTrial,
+          isExpired: subscriptionStatus.isExpired,
+        });
       } else {
         // This is an unauthenticated request (customer-facing page)
         // Check if any admin of the target company has an active subscription
+        console.log(`[Subscription Check] Unauthenticated request for company ${companyId}`);
         subscriptionStatus = await checkCompanyAdminSubscription(companyId);
         isEnabled = subscriptionStatus.hasAccess;
+        console.log(`[Subscription Check] Company admin subscription status:`, {
+          hasAccess: subscriptionStatus.hasAccess,
+          isTrial: subscriptionStatus.isTrial,
+          isExpired: subscriptionStatus.isExpired,
+          membershipId: subscriptionStatus.membership?.id,
+          userId: subscriptionStatus.membership?.user_id,
+        });
       }
     } catch (error) {
-      console.error('Error checking subscription in flow endpoint:', error);
+      console.error('[Subscription Check] Error checking subscription in flow endpoint:', error);
       // On error, block access to be safe (fail closed)
       isEnabled = false;
       subscriptionStatus = {
