@@ -106,7 +106,7 @@ export async function GET(
       isEnabled = true;
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       ...flow,
       nodes: nodes || [],
       enabled: isEnabled, // Funnel is enabled/disabled based on subscription
@@ -115,12 +115,30 @@ export async function GET(
         isTrial: subscriptionStatus.isTrial,
       } : null,
     });
+    
+    // Add CORS headers for cross-origin iframe embedding
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+    
+    return response;
   } catch (error) {
     console.error('Error fetching flow:', error);
-    return NextResponse.json(
+    const errorResponse = NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to fetch flow' },
       { status: 500 }
     );
+    errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+    return errorResponse;
   }
+}
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS() {
+  const response = new NextResponse(null, { status: 200 });
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  return response;
 }
 

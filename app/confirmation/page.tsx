@@ -41,7 +41,14 @@ function ConfirmationContent() {
           if (memberId) {
             try {
               const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
-              const purchasesResponse = await fetch(purchasesUrl);
+              const purchasesResponse = await fetch(purchasesUrl, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                credentials: 'omit', // Don't send cookies in cross-origin requests
+              });
+              
               if (purchasesResponse.ok) {
                 const purchasesData = await purchasesResponse.json();
                 if (purchasesData.purchases && purchasesData.purchases.length > 0) {
@@ -49,9 +56,12 @@ function ConfirmationContent() {
                   setLoading(false);
                   return; // Exit early if we got products from API
                 }
+              } else {
+                console.warn('Purchases API returned non-OK status:', purchasesResponse.status);
               }
             } catch (e) {
-              console.error('Error loading purchases:', e);
+              console.error('Error loading purchases (may be CORS issue):', e);
+              // Continue to try localStorage fallback
             }
           }
         }
@@ -59,16 +69,20 @@ function ConfirmationContent() {
         // Fallback: Try to get from localStorage (for same-domain redirects)
         // This works even without companyId
         // Check localStorage if we don't have memberId or didn't get products from API
+        // Note: localStorage may not be accessible in cross-origin iframes
         try {
-          const storedProducts = localStorage.getItem('purchased_products');
-          if (storedProducts) {
-            const products = JSON.parse(storedProducts);
-            if (Array.isArray(products) && products.length > 0) {
-              setPurchasedProducts(products);
+          if (typeof window !== 'undefined' && window.localStorage) {
+            const storedProducts = localStorage.getItem('purchased_products');
+            if (storedProducts) {
+              const products = JSON.parse(storedProducts);
+              if (Array.isArray(products) && products.length > 0) {
+                setPurchasedProducts(products);
+              }
             }
           }
         } catch (e) {
-          console.error('Error parsing stored products:', e);
+          // localStorage access might be blocked in cross-origin iframes - that's okay
+          console.warn('Could not access localStorage (may be cross-origin iframe):', e);
         }
       } catch (err) {
         console.error('Error loading data:', err);
