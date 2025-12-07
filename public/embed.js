@@ -61,6 +61,33 @@
     return urlParams.get(key);
   }
 
+  // Helper to parse URL parameters from a URL string
+  function parseUrlParamsFromString(urlString) {
+    const params = {};
+    if (!urlString) return params;
+    
+    try {
+      const url = new URL(urlString);
+      url.searchParams.forEach((value, key) => {
+        params[key] = value;
+      });
+    } catch (e) {
+      // Fallback manual parsing
+      const queryIndex = urlString.indexOf('?');
+      if (queryIndex >= 0) {
+        const query = urlString.substring(queryIndex + 1);
+        query.split('&').forEach(param => {
+          const [key, value] = param.split('=');
+          if (key && value) {
+            params[key] = decodeURIComponent(value);
+          }
+        });
+      }
+    }
+    
+    return params;
+  }
+
   // Helper to parse URL parameters manually as fallback
   function parseUrlParams() {
     const params = {};
@@ -91,29 +118,95 @@
     return params;
   }
 
+  // Get URL parameters from multiple sources
+  function getAllUrlParams() {
+    const allParams = {};
+    
+    // Try current window location
+    try {
+      if (window.location.href && window.location.href !== 'about:srcdoc') {
+        const currentParams = parseUrlParamsFromString(window.location.href);
+        Object.assign(allParams, currentParams);
+      }
+    } catch (e) {
+      console.warn('Could not parse current location:', e);
+    }
+    
+    // Try parent window if we're in an iframe (and same-origin)
+    try {
+      if (window.parent && window.parent !== window) {
+        if (window.parent.location.href && window.parent.location.href !== 'about:srcdoc') {
+          const parentParams = parseUrlParamsFromString(window.parent.location.href);
+          Object.assign(allParams, parentParams);
+        }
+      }
+    } catch (e) {
+      // Cross-origin, can't access parent - that's expected
+    }
+    
+    // Try top window if different from current
+    try {
+      if (window.top && window.top !== window && window.top !== window.parent) {
+        if (window.top.location.href && window.top.location.href !== 'about:srcdoc') {
+          const topParams = parseUrlParamsFromString(window.top.location.href);
+          Object.assign(allParams, topParams);
+        }
+      }
+    } catch (e) {
+      // Cross-origin, can't access top - that's expected
+    }
+    
+    // Try document.referrer as last resort
+    if (document.referrer) {
+      try {
+        const referrerParams = parseUrlParamsFromString(document.referrer);
+        Object.assign(allParams, referrerParams);
+      } catch (e) {
+        // Ignore
+      }
+    }
+    
+    return allParams;
+  }
+
   // Wait for DOM to be ready
   function init() {
-    // Get URL params - try URLSearchParams first, then manual parsing as fallback
+    // Get URL params from all possible sources
+    const allParams = getAllUrlParams();
+    
+    // Also try standard URLSearchParams from current location
     let urlParams;
     try {
       urlParams = new URLSearchParams(window.location.search);
     } catch (e) {
-      console.warn('URLSearchParams failed, using manual parser:', e);
-      const manualParams = parseUrlParams();
-      urlParams = {
-        get: (key) => manualParams[key] || null
-      };
+      urlParams = { get: () => null };
     }
     
-    // Also try manual parsing as backup
+    // Also try manual parsing from current location
     const manualParams = parseUrlParams();
     
-    // Read all possible URL parameters - try URLSearchParams first, then manual
-    const urlCompanyId = urlParams.get('companyId') || manualParams.companyId;
-    const urlFlowId = urlParams.get('flowId') || manualParams.flowId;
-    const urlNodeId = urlParams.get('nodeId') || manualParams.nodeId;
-    const urlMemberId = urlParams.get('memberId') || manualParams.memberId;
-    const urlSetupIntentId = urlParams.get('setupIntentId') || manualParams.setupIntentId;
+    // Merge all sources - prioritize current location, then allParams
+    const urlCompanyId = urlParams.get('companyId') || manualParams.companyId || allParams.companyId;
+    const urlFlowId = urlParams.get('flowId') || manualParams.flowId || allParams.flowId;
+    const urlNodeId = urlParams.get('nodeId') || manualParams.nodeId || allParams.nodeId;
+    const urlMemberId = urlParams.get('memberId') || manualParams.memberId || allParams.memberId;
+    const urlSetupIntentId = urlParams.get('setupIntentId') || manualParams.setupIntentId || allParams.setupIntentId;
+    
+    // Debug: log all param sources
+    console.log('Xperience Embed - Param sources:', {
+      currentLocation: window.location.href,
+      currentSearch: window.location.search,
+      allParams: allParams,
+      finalParams: {
+        companyId: urlCompanyId,
+        flowId: urlFlowId,
+        nodeId: urlNodeId,
+        memberId: urlMemberId,
+        setupIntentId: urlSetupIntentId,
+      },
+      inIframe: window.parent !== window,
+      referrer: document.referrer,
+    });
     
     // Determine page type from URL params
     const hasCheckoutParams = urlCompanyId && !urlNodeId;
