@@ -21,14 +21,14 @@ export async function GET(
     
     if (pageType === 'checkout') {
       embedScript = `<script async defer src="${baseUrl}/embed.js"></script>
-<div data-xperience-checkout data-company-id="${companyId}"${flowId ? ` data-flow-id="${flowId}"` : ''} style="width: 100%; height: 100%; min-width: 320px; min-height: 600px;"></div>`.trim();
+<div data-xperience-checkout data-company-id="${companyId}"${flowId ? ` data-flow-id="${flowId}"` : ''} style="width: 100%; height: 100%; min-width: 320px;"></div>`.trim();
     } else if (pageType === 'upsell') {
       embedScript = `<script async defer src="${baseUrl}/embed.js"></script>
-<div data-xperience-upsell data-company-id="${companyId}"${flowId ? ` data-flow-id="${flowId}"` : ''} style="width: 100%; height: 100%; min-width: 320px; min-height: 600px;"></div>
+<div data-xperience-upsell data-company-id="${companyId}"${flowId ? ` data-flow-id="${flowId}"` : ''} style="width: 100%; height: 100%; min-width: 320px;"></div>
 <!-- Note: flowId and nodeId can be passed via URL params or data attributes -->`.trim();
     } else if (pageType === 'confirmation') {
       embedScript = `<script async defer src="${baseUrl}/embed.js"></script>
-<div data-xperience-confirmation data-company-id="${companyId}"${flowId ? ` data-flow-id="${flowId}"` : ''} style="width: 100%; height: 100%; min-width: 320px; min-height: 600px;"></div>`.trim();
+<div data-xperience-confirmation data-company-id="${companyId}"${flowId ? ` data-flow-id="${flowId}"` : ''} style="width: 100%; height: 100%; min-width: 320px;"></div>`.trim();
     }
 
     return NextResponse.json({

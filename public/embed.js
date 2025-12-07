@@ -332,7 +332,6 @@
       autoContainer.style.width = '100%';
       autoContainer.style.height = '100%';
       autoContainer.style.minWidth = '320px';
-      autoContainer.style.minHeight = '600px';
       document.body.appendChild(autoContainer);
       checkoutContainers = document.querySelectorAll('[data-xperience-checkout]');
     }
@@ -352,7 +351,6 @@
       autoContainer.style.width = '100%';
       autoContainer.style.height = '100%';
       autoContainer.style.minWidth = '320px';
-      autoContainer.style.minHeight = '600px';
       document.body.appendChild(autoContainer);
       upsellContainers = document.querySelectorAll('[data-xperience-upsell]');
     }
@@ -365,7 +363,6 @@
       autoContainer.style.width = '100%';
       autoContainer.style.height = '100%';
       autoContainer.style.minWidth = '320px';
-      autoContainer.style.minHeight = '600px';
       document.body.appendChild(autoContainer);
       confirmationContainers = document.querySelectorAll('[data-xperience-confirmation]');
     }
@@ -415,9 +412,6 @@
       if (!container.style.width || container.style.width === '') {
         container.style.width = '100%';
       }
-      if (!container.style.minHeight || container.style.minHeight === '') {
-        container.style.minHeight = '600px';
-      }
       
       // Try data attributes first, then fallback to URL params
       const companyId = container.getAttribute('data-company-id') || urlCompanyId;
@@ -456,9 +450,6 @@
       // Ensure container has width and min-height
       if (!container.style.width || container.style.width === '') {
         container.style.width = '100%';
-      }
-      if (!container.style.minHeight || container.style.minHeight === '') {
-        container.style.minHeight = '600px';
       }
       
       // Skip if already processed or already has an iframe
@@ -553,9 +544,6 @@
       // Ensure container has width and min-height
       if (!container.style.width || container.style.width === '') {
         container.style.width = '100%';
-      }
-      if (!container.style.minHeight || container.style.minHeight === '') {
-        container.style.minHeight = '600px';
       }
       
       // Skip if already processed or already has an iframe
