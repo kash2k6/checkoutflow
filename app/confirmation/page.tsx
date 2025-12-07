@@ -62,6 +62,7 @@ function ConfirmationContent() {
         }
       } catch (err) {
         console.error('Error loading data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load confirmation page');
       } finally {
         setLoading(false);
       }
@@ -92,6 +93,22 @@ function ConfirmationContent() {
     return (
       <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">⚠️ Error</div>
+          <div className="text-white mb-2">{error}</div>
+          <div className="text-gray-400 text-sm">
+            {companyId && <div>Company ID: {companyId}</div>}
+            {flowId && <div>Flow ID: {flowId}</div>}
+            {memberId && <div>Member ID: {memberId}</div>}
+          </div>
+        </div>
       </div>
     );
   }

@@ -429,8 +429,8 @@
       }
 
       const iframe = document.createElement('iframe');
-      let url = `${baseUrl}/checkout?companyId=${companyId}`;
-      if (flowId) url += `&flowId=${flowId}`;
+      let url = `${baseUrl}/checkout?companyId=${encodeURIComponent(companyId)}`;
+      if (flowId) url += `&flowId=${encodeURIComponent(flowId)}`;
       iframe.src = url;
       iframe.style.width = '100%';
       iframe.style.height = '100%';
@@ -506,7 +506,7 @@
       const iframe = document.createElement('iframe');
       
       // Start with required params
-      let url = `${baseUrl}/upsell?companyId=${companyId}&flowId=${flowId}`;
+      let url = `${baseUrl}/upsell?companyId=${encodeURIComponent(companyId)}&flowId=${encodeURIComponent(flowId)}`;
       
       // Add all other parameters from allParams (which includes top window URL)
       // This ensures we pass through ALL parameters we found, not just the known ones
@@ -563,9 +563,9 @@
       }
 
       const iframe = document.createElement('iframe');
-      let url = `${baseUrl}/confirmation?companyId=${companyId}`;
-      if (flowId) url += `&flowId=${flowId}`;
-      if (memberId) url += `&memberId=${memberId}`;
+      let url = `${baseUrl}/confirmation?companyId=${encodeURIComponent(companyId)}`;
+      if (flowId) url += `&flowId=${encodeURIComponent(flowId)}`;
+      if (memberId) url += `&memberId=${encodeURIComponent(memberId)}`;
       iframe.src = url;
       iframe.style.width = '100%';
       iframe.style.height = '100%';
