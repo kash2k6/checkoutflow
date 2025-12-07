@@ -34,7 +34,7 @@ export async function GET(
     // Build query to get purchases
     let query = db
       .from('flow_purchases')
-      .select('*, flow_nodes:node_id(title, plan_id), company_flows:flow_id(initial_product_plan_id)')
+      .select('*')
       .eq('member_id', memberId)
       .eq('company_id', companyId);
 
@@ -50,10 +50,28 @@ export async function GET(
       throw error;
     }
 
+    // Get node titles and product names if we have node_ids
+    const nodeIds = (purchases || [])
+      .map((p: any) => p.node_id)
+      .filter((id: string | null) => id !== null);
+    
+    let nodeTitles: Record<string, string> = {};
+    if (nodeIds.length > 0 && flowId) {
+      const { data: nodes } = await db
+        .from('flow_nodes')
+        .select('id, title')
+        .in('id', nodeIds);
+      
+      if (nodes) {
+        nodes.forEach((node: any) => {
+          nodeTitles[node.id] = node.title || 'Product';
+        });
+      }
+    }
+
     // Format purchases for the confirmation page
     const formattedPurchases = (purchases || []).map((purchase: any) => {
-      const nodeTitle = purchase.flow_nodes?.title;
-      const planId = purchase.flow_nodes?.plan_id || purchase.company_flows?.initial_product_plan_id || purchase.plan_id;
+      const nodeTitle = purchase.node_id ? nodeTitles[purchase.node_id] : null;
       
       return {
         name: nodeTitle || 'Product',
