@@ -199,7 +199,14 @@ export async function checkCompanyAdminSubscription(targetCompanyId: string): Pr
       } catch {
         errorMessage = errorText || errorMessage;
       }
-      console.error('Failed to check company admin subscription:', response.status, errorMessage);
+      console.error('[checkCompanyAdminSubscription] API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorMessage,
+        url: url.toString(),
+        companyId: subscriptionCompanyId,
+        planId: SUBSCRIPTION_PLAN_ID,
+      });
       return {
         hasAccess: false,
         isTrial: false,

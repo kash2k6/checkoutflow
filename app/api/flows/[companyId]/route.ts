@@ -128,6 +128,11 @@ export async function GET(
       }
     } catch (error) {
       console.error('[Subscription Check] Error checking subscription in flow endpoint:', error);
+      console.error('[Subscription Check] Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        companyId,
+      });
       // On error, block access to be safe (fail closed)
       isEnabled = false;
       subscriptionStatus = {
