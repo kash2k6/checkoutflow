@@ -67,6 +67,13 @@ interface CompanyFlow {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Reset confirmation state on page load to prevent it from showing prematurely
+  useEffect(() => {
+    // Reset confirmation state when component mounts or URL changes
+    setShowConfirmation(false);
+    setPurchasedProducts([]);
+  }, [companyId, flowId, nodeId]);
+
   // Load flow and node configuration
   useEffect(() => {
     const loadFlow = async () => {
@@ -464,7 +471,10 @@ interface CompanyFlow {
         const isExternal = redirectUrl.origin !== window.location.origin;
         handleRedirect(redirectUrl.toString(), isExternal);
       } else {
-        setShowConfirmation(true);
+        // Only show confirmation if we have purchased products, don't show as fallback
+        if (purchasedProducts.length > 0) {
+          setShowConfirmation(true);
+        }
       }
     }
   };
