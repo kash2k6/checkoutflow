@@ -19,12 +19,6 @@ function ConfirmationContent() {
   }>>([]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    console.log('Confirmation page loading with params:', { companyId, flowId, memberId, sessionId });
-    console.log('Window location:', window.location.href);
-    console.log('Is in iframe:', window.self !== window.top);
-    
     const loadData = async () => {
       try {
         // Load flow configuration if companyId is provided
@@ -33,7 +27,6 @@ function ConfirmationContent() {
             const flowUrl = flowId 
               ? `/api/flows/${companyId}?flowId=${flowId}`
               : `/api/flows/${companyId}`;
-            console.log('Fetching flow from:', flowUrl);
             const flowResponse = await fetch(flowUrl, {
               method: 'GET',
               headers: {
@@ -41,56 +34,41 @@ function ConfirmationContent() {
               },
               credentials: 'omit',
             });
-            console.log('Flow response status:', flowResponse.status);
             if (flowResponse.ok) {
               const flowData = await flowResponse.json();
-              console.log('Flow data loaded:', !!flowData);
               setFlow(flowData);
-            } else {
-              console.warn('Flow API returned non-OK status:', flowResponse.status, flowResponse.statusText);
             }
           } catch (e) {
             console.error('Error loading flow:', e);
-            // Don't set error state - page should still render
           }
 
           // Load purchases from API using memberId
           if (memberId) {
             try {
               const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
-              console.log('Fetching purchases from:', purchasesUrl);
               const purchasesResponse = await fetch(purchasesUrl, {
                 method: 'GET',
                 headers: {
                   'Content-Type': 'application/json',
                 },
-                credentials: 'omit', // Don't send cookies in cross-origin requests
+                credentials: 'omit',
               });
-              console.log('Purchases response status:', purchasesResponse.status);
               
               if (purchasesResponse.ok) {
                 const purchasesData = await purchasesResponse.json();
-                console.log('Purchases data loaded:', purchasesData.purchases?.length || 0, 'items');
                 if (purchasesData.purchases && purchasesData.purchases.length > 0) {
                   setPurchasedProducts(purchasesData.purchases);
                   setLoading(false);
-                  return; // Exit early if we got products from API
+                  return;
                 }
-              } else {
-                const errorText = await purchasesResponse.text();
-                console.warn('Purchases API returned non-OK status:', purchasesResponse.status, errorText);
               }
             } catch (e) {
-              console.error('Error loading purchases (may be CORS issue):', e);
-              // Continue to try localStorage fallback
+              console.error('Error loading purchases:', e);
             }
           }
         }
 
-        // Fallback: Try to get from localStorage (for same-domain redirects)
-        // This works even without companyId
-        // Check localStorage if we don't have memberId or didn't get products from API
-        // Note: localStorage may not be accessible in cross-origin iframes
+        // Fallback: Try to get from localStorage
         try {
           if (typeof window !== 'undefined' && window.localStorage) {
             const storedProducts = localStorage.getItem('purchased_products');
@@ -102,24 +80,19 @@ function ConfirmationContent() {
             }
           }
         } catch (e) {
-          // localStorage access might be blocked in cross-origin iframes - that's okay
-          console.warn('Could not access localStorage (may be cross-origin iframe):', e);
+          // localStorage may be blocked in cross-origin iframes
         }
       } catch (err) {
         console.error('Error loading data:', err);
-        // Only set error if it's critical (no companyId and no way to show anything)
         if (!companyId && !memberId) {
           setError(err instanceof Error ? err.message : 'Failed to load data');
         }
       } finally {
-        console.log('Confirmation page finished loading, products:', purchasedProducts.length);
-        console.log('Flow loaded:', !!flow);
         setLoading(false);
       }
     };
 
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId, flowId, memberId, sessionId]);
 
   // Facebook Pixel tracking
@@ -148,20 +121,6 @@ function ConfirmationContent() {
     );
   }
 
-  // Show error message to user if there's a critical error
-  if (error && !companyId) {
-    return (
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="text-red-500 mb-4">⚠️ Error Loading Page</div>
-          <div className="text-white text-sm mb-4">{error}</div>
-          <div className="text-gray-400 text-xs">
-            Please check the URL parameters or contact support.
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const total = purchasedProducts.length > 0 
     ? purchasedProducts.reduce((sum, product) => sum + product.price, 0)
@@ -185,23 +144,6 @@ function ConfirmationContent() {
       : 'All products have been added to your account. Check your email for confirmation details.';
   };
 
-  // Log diagnostic info for debugging (only once after initial load)
-  useEffect(() => {
-    if (typeof window === 'undefined' || loading) return;
-    
-    console.log('Confirmation page render diagnostics:', {
-      inIframe: window.self !== window.top,
-      parentOrigin: window.self !== window.top ? document.referrer : 'same-origin',
-      currentOrigin: window.location.origin,
-      hasCompanyId: !!companyId,
-      hasFlowId: !!flowId,
-      hasMemberId: !!memberId,
-      productsCount: purchasedProducts.length,
-      hasFlow: !!flow,
-      loading: loading,
-      error: error,
-    });
-  }, [loading]); // Only log when loading changes
 
   return (
     <div 
