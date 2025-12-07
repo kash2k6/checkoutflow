@@ -310,9 +310,15 @@
     });
     
     // Determine page type from URL params
-    const hasCheckoutParams = urlCompanyId && !urlNodeId;
-    const hasUpsellParams = urlCompanyId && urlFlowId && urlNodeId;
-    const hasConfirmationParams = urlCompanyId && urlMemberId;
+    const pathname = window.location.pathname || '';
+    const isCheckoutPath = pathname.includes('checkout');
+    const isUpsellPath = pathname.includes('upsell');
+    const isConfirmationPath = pathname.includes('confirmation') || pathname.includes('thankyou');
+    
+    const hasCheckoutParams = urlCompanyId && !urlNodeId && !urlMemberId;
+    const hasUpsellParams = urlCompanyId && urlFlowId && (urlNodeId || isUpsellPath);
+    // Only show confirmation if we're on a confirmation path OR if we have memberId but NO nodeId (meaning we're done with upsells)
+    const hasConfirmationParams = urlCompanyId && urlMemberId && (!urlNodeId && !isUpsellPath && !isCheckoutPath) || isConfirmationPath;
     
     // Find all embed containers
     let checkoutContainers = document.querySelectorAll('[data-xperience-checkout]');
@@ -332,9 +338,8 @@
     
     // Create upsell container if we have companyId and flowId (nodeId might come later)
     // Also check pathname to see if we're on an upsell page
-    const pathname = window.location.pathname || '';
-    const isUpsellPath = pathname.includes('upsell');
-    if (upsellContainers.length === 0 && (urlCompanyId && urlFlowId && urlNodeId) || (urlCompanyId && urlFlowId && isUpsellPath)) {
+    // Don't create if we're on confirmation path
+    if (upsellContainers.length === 0 && hasUpsellParams && !isConfirmationPath) {
       const autoContainer = document.createElement('div');
       autoContainer.setAttribute('data-xperience-upsell', '');
       // Also set the params as data attributes so they're available when processing
@@ -350,7 +355,9 @@
       upsellContainers = document.querySelectorAll('[data-xperience-upsell]');
     }
     
-    if (confirmationContainers.length === 0 && hasConfirmationParams) {
+    // Only auto-create confirmation container if we're actually on a confirmation page
+    // Don't create it on upsell or checkout pages
+    if (confirmationContainers.length === 0 && hasConfirmationParams && !isUpsellPath && !isCheckoutPath) {
       const autoContainer = document.createElement('div');
       autoContainer.setAttribute('data-xperience-confirmation', '');
       autoContainer.style.width = '100%';
