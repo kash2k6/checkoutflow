@@ -69,12 +69,44 @@ export async function GET(
       }
     }
 
+    // Get initial product name from flow if we have initial purchases
+    let initialProductName = 'Product';
+    if (flowId) {
+      const { data: flowData } = await db
+        .from('company_flows')
+        .select('initial_product_plan_id')
+        .eq('id', flowId)
+        .single();
+      
+      // Try to get product name from Whop API if we have plan ID
+      if (flowData?.initial_product_plan_id && process.env.WHOP_API_KEY) {
+        try {
+          const planResponse = await fetch(
+            `https://api.whop.com/api/v2/plans/${flowData.initial_product_plan_id}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
+              },
+            }
+          );
+          if (planResponse.ok) {
+            const planData = await planResponse.json();
+            initialProductName = planData.title || planData.product?.title || 'Product';
+          }
+        } catch (e) {
+          console.error('Error fetching plan name:', e);
+        }
+      }
+    }
+
     // Format purchases for the confirmation page
     const formattedPurchases = (purchases || []).map((purchase: any) => {
       const nodeTitle = purchase.node_id ? nodeTitles[purchase.node_id] : null;
+      // For initial purchases without node_id, use initial product name
+      const productName = nodeTitle || (purchase.purchase_type === 'initial' ? initialProductName : 'Product');
       
       return {
-        name: nodeTitle || 'Product',
+        name: productName,
         price: Number(purchase.amount) || 0,
         type: purchase.purchase_type === 'initial' ? 'one_time' : 'one_time', // Most are one-time for now
         purchaseType: purchase.purchase_type,

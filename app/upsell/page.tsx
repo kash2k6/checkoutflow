@@ -289,6 +289,12 @@ interface CompanyFlow {
           currency: 'usd',
           isSubscription: false, // Can be determined from plan if needed
           companyId: companyId, // Pass companyId from URL params
+          flowId: flowId, // Pass flowId to track purchase
+          nodeId: currentNode.id, // Pass nodeId to track which upsell was purchased
+          purchaseType: currentNode.node_type === 'upsell' ? 'upsell' : 
+                       currentNode.node_type === 'downsell' ? 'downsell' : 
+                       currentNode.node_type === 'cross_sell' ? 'cross_sell' : 'upsell',
+          sessionId: sessionStorage.getItem('flow_session_id') || null, // Pass session ID for tracking
         }),
       });
 

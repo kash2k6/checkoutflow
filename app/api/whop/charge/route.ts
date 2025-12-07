@@ -6,7 +6,19 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function POST(request: NextRequest) {
   try {
-    const { memberId, paymentMethodId, planId, amount, currency = 'usd', isSubscription = false, companyId } = await request.json();
+    const { 
+      memberId, 
+      paymentMethodId, 
+      planId, 
+      amount, 
+      currency = 'usd', 
+      isSubscription = false, 
+      companyId,
+      flowId,
+      nodeId,
+      purchaseType = 'upsell', // 'initial', 'upsell', 'downsell', 'cross_sell'
+      sessionId,
+    } = await request.json();
 
     // Validate required fields (amount can be 0 for free products, so check for null/undefined)
     if (!memberId || !planId || amount === null || amount === undefined) {
@@ -98,6 +110,32 @@ export async function POST(request: NextRequest) {
     }
 
     const payment = await response.json();
+
+    // Track purchase in database if we have flowId and companyId
+    if (flowId && companyId && planId && purchaseType) {
+      try {
+        const { supabase, isSupabaseConfigured } = await import('@/lib/supabase');
+        if (isSupabaseConfigured() && supabase) {
+          await supabase
+            .from('flow_purchases')
+            .insert({
+              flow_id: flowId,
+              company_id: companyId,
+              member_id: memberId,
+              plan_id: planId,
+              purchase_type: purchaseType,
+              node_id: nodeId || null,
+              amount: amount || 0,
+              currency: currency || 'usd',
+              session_id: sessionId || null,
+            });
+          console.log('Purchase tracked in database:', { flowId, companyId, memberId, planId, purchaseType, amount });
+        }
+      } catch (trackError) {
+        // Don't fail the charge if tracking fails, just log it
+        console.error('Error tracking purchase in database:', trackError);
+      }
+    }
 
     return NextResponse.json({
       success: true,
