@@ -20,6 +20,9 @@ function ConfirmationContent() {
 
   useEffect(() => {
     console.log('Confirmation page loading with params:', { companyId, flowId, memberId, sessionId });
+    console.log('Window location:', window.location.href);
+    console.log('Is in iframe:', window.self !== window.top);
+    
     const loadData = async () => {
       try {
         // Load flow configuration if companyId is provided
@@ -28,19 +31,32 @@ function ConfirmationContent() {
             const flowUrl = flowId 
               ? `/api/flows/${companyId}?flowId=${flowId}`
               : `/api/flows/${companyId}`;
-            const flowResponse = await fetch(flowUrl);
+            console.log('Fetching flow from:', flowUrl);
+            const flowResponse = await fetch(flowUrl, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'omit',
+            });
+            console.log('Flow response status:', flowResponse.status);
             if (flowResponse.ok) {
               const flowData = await flowResponse.json();
+              console.log('Flow data loaded:', !!flowData);
               setFlow(flowData);
+            } else {
+              console.warn('Flow API returned non-OK status:', flowResponse.status, flowResponse.statusText);
             }
           } catch (e) {
             console.error('Error loading flow:', e);
+            // Don't set error state - page should still render
           }
 
           // Load purchases from API using memberId
           if (memberId) {
             try {
               const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
+              console.log('Fetching purchases from:', purchasesUrl);
               const purchasesResponse = await fetch(purchasesUrl, {
                 method: 'GET',
                 headers: {
@@ -48,16 +64,19 @@ function ConfirmationContent() {
                 },
                 credentials: 'omit', // Don't send cookies in cross-origin requests
               });
+              console.log('Purchases response status:', purchasesResponse.status);
               
               if (purchasesResponse.ok) {
                 const purchasesData = await purchasesResponse.json();
+                console.log('Purchases data loaded:', purchasesData.purchases?.length || 0, 'items');
                 if (purchasesData.purchases && purchasesData.purchases.length > 0) {
                   setPurchasedProducts(purchasesData.purchases);
                   setLoading(false);
                   return; // Exit early if we got products from API
                 }
               } else {
-                console.warn('Purchases API returned non-OK status:', purchasesResponse.status);
+                const errorText = await purchasesResponse.text();
+                console.warn('Purchases API returned non-OK status:', purchasesResponse.status, errorText);
               }
             } catch (e) {
               console.error('Error loading purchases (may be CORS issue):', e);
@@ -86,9 +105,13 @@ function ConfirmationContent() {
         }
       } catch (err) {
         console.error('Error loading data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load data');
+        // Only set error if it's critical (no companyId and no way to show anything)
+        if (!companyId && !memberId) {
+          setError(err instanceof Error ? err.message : 'Failed to load data');
+        }
       } finally {
         console.log('Confirmation page finished loading, products:', purchasedProducts.length);
+        console.log('Flow loaded:', !!flow);
         setLoading(false);
       }
     };
@@ -122,8 +145,19 @@ function ConfirmationContent() {
     );
   }
 
-  if (error) {
-    console.error('Confirmation page error:', error);
+  // Show error message to user if there's a critical error
+  if (error && !companyId) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 mb-4">⚠️ Error Loading Page</div>
+          <div className="text-white text-sm mb-4">{error}</div>
+          <div className="text-gray-400 text-xs">
+            Please check the URL parameters or contact support.
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const total = purchasedProducts.length > 0 
@@ -147,6 +181,24 @@ function ConfirmationContent() {
       ? `You have ${subscriptionProducts.length} active subscription${subscriptionProducts.length > 1 ? 's' : ''}. All products have been added to your account. Check your email for confirmation details.`
       : 'All products have been added to your account. Check your email for confirmation details.';
   };
+
+  // Log diagnostic info for debugging
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      console.log('Confirmation page render diagnostics:', {
+        inIframe: window.self !== window.top,
+        parentOrigin: window.self !== window.top ? document.referrer : 'same-origin',
+        currentOrigin: window.location.origin,
+        hasCompanyId: !!companyId,
+        hasFlowId: !!flowId,
+        hasMemberId: !!memberId,
+        productsCount: purchasedProducts.length,
+        hasFlow: !!flow,
+        loading: loading,
+        error: error,
+      });
+    }
+  }, [companyId, flowId, memberId, purchasedProducts.length, flow, loading, error]);
 
   return (
     <div 
