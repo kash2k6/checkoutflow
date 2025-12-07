@@ -578,8 +578,8 @@ interface CompanyFlow {
     );
   }
 
-  // Show confirmation page
-  if (showConfirmation) {
+  // Show confirmation page only if we have purchased products
+  if (showConfirmation && purchasedProducts.length > 0) {
     const total = purchasedProducts.reduce((sum, product) => sum + product.price, 0);
     const oneTimeProducts = purchasedProducts.filter(p => p.type === 'one_time');
     const subscriptionProducts = purchasedProducts.filter(p => p.type === 'subscription');
