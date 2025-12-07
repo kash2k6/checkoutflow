@@ -342,46 +342,65 @@ function CheckoutContent() {
                   
                   const chargeData = await chargeResponse.json();
                   
-                  if (chargeResponse.ok) {
+                  // Helper function to handle redirect (works for both iframe and standalone)
+                  const handleRedirect = (url: string, shouldRedirectParent = false) => {
+                    const isInIframe = typeof window !== 'undefined' && window.parent !== window;
+                    
+                    if (isInIframe) {
+                      if (shouldRedirectParent) {
+                        // For external URLs, try to redirect parent page via postMessage
+                        // This is for custom embed scripts that listen for this message
+                        window.parent.postMessage({
+                          type: 'xperience-redirect',
+                          url: url,
+                          action: 'redirect-parent'
+                        }, '*');
+                        // Also try direct redirect (may not work due to same-origin policy, but worth trying)
+                        try {
+                          window.top!.location.href = url;
+                        } catch (e) {
+                          // Cross-origin, can't redirect parent - postMessage is the only option
+                          console.log('Cannot redirect parent due to cross-origin restrictions. Using postMessage.');
+                        }
+                      } else {
+                        // For internal URLs, update iframe content directly
+                        // This works in both Whop's iframe and custom embeds
+                        window.location.href = url;
+                        // Also send postMessage for custom embed scripts that might want to listen
+                        window.parent.postMessage({
+                          type: 'xperience-redirect',
+                          url: url,
+                          action: 'update-iframe'
+                        }, '*');
+                      }
+                    } else {
+                      // Not in iframe, normal redirect
+                      window.location.href = url;
+                    }
+                  };
+                  
+                  // Check if we should proceed to redirect even if charge failed
+                  // This handles cases like "already have access" where the user already owns the product
+                  const errorMessage = chargeData?.error?.error?.message || chargeData?.error?.message || '';
+                  const isAlreadyHaveAccess = errorMessage.toLowerCase().includes('already have access') ||
+                                            errorMessage.toLowerCase().includes('already has access');
+                  const shouldProceed = chargeResponse.ok || isAlreadyHaveAccess;
+                  
+                  console.log('Charge response:', {
+                    ok: chargeResponse.ok,
+                    status: chargeResponse.status,
+                    errorMessage: errorMessage,
+                    isAlreadyHaveAccess: isAlreadyHaveAccess,
+                    shouldProceed: shouldProceed
+                  });
+                  
+                  if (shouldProceed) {
+                    if (isAlreadyHaveAccess) {
+                      console.log('User already has access to product, proceeding to upsell flow');
+                    }
           // Redirect to first upsell or confirmation
           const upsellNodes = flow?.nodes.filter(n => n.node_type === 'upsell').sort((a, b) => a.order_index - b.order_index) || [];
           
-          // Helper function to handle redirect (works for both iframe and standalone)
-          const handleRedirect = (url: string, shouldRedirectParent = false) => {
-            const isInIframe = typeof window !== 'undefined' && window.parent !== window;
-            
-            if (isInIframe) {
-              if (shouldRedirectParent) {
-                // For external URLs, try to redirect parent page via postMessage
-                // This is for custom embed scripts that listen for this message
-                window.parent.postMessage({
-                  type: 'xperience-redirect',
-                  url: url,
-                  action: 'redirect-parent'
-                }, '*');
-                // Also try direct redirect (may not work due to same-origin policy, but worth trying)
-                try {
-                  window.top!.location.href = url;
-                } catch (e) {
-                  // Cross-origin, can't redirect parent - postMessage is the only option
-                  console.log('Cannot redirect parent due to cross-origin restrictions. Using postMessage.');
-                }
-              } else {
-                // For internal URLs, update iframe content directly
-                // This works in both Whop's iframe and custom embeds
-                window.location.href = url;
-                // Also send postMessage for custom embed scripts that might want to listen
-                window.parent.postMessage({
-                  type: 'xperience-redirect',
-                  url: url,
-                  action: 'update-iframe'
-                }, '*');
-              }
-            } else {
-              // Not in iframe, normal redirect
-              window.location.href = url;
-            }
-          };
           
           if (upsellNodes.length > 0) {
             // Redirect to first upsell
@@ -440,7 +459,28 @@ function CheckoutContent() {
           }
                   } else {
                     console.error('Error charging initial product:', chargeData);
-          alert(`Payment setup completed, but there was an issue processing your order: ${chargeData.error || 'Unknown error'}. Please contact support.`);
+                    const errorMsg = chargeData?.error?.error?.message || chargeData?.error?.message || 'Unknown error';
+                    alert(`Payment setup completed, but there was an issue processing your order: ${errorMsg}. Please contact support.`);
+                    
+                    // Even on error, if we have memberId, we can still try to redirect to upsell
+                    // (user might want to see upsells even if initial charge failed)
+                    if (memberId && flow?.nodes && flow.nodes.length > 0) {
+                      console.log('Attempting to redirect to upsell despite charge error');
+                      const upsellNodes = flow.nodes.filter(n => n.node_type === 'upsell').sort((a, b) => a.order_index - b.order_index);
+                      if (upsellNodes.length > 0) {
+                        const firstUpsell = upsellNodes[0];
+                        const upsellUrl = new URL('/upsell', window.location.origin);
+                        upsellUrl.searchParams.set('companyId', companyId || '');
+                        upsellUrl.searchParams.set('flowId', flow?.id || '');
+                        upsellUrl.searchParams.set('nodeId', firstUpsell.id);
+                        upsellUrl.searchParams.set('memberId', memberId);
+                        if (setupIntentId) {
+                          upsellUrl.searchParams.set('setupIntentId', setupIntentId);
+                        }
+                        handleRedirect(upsellUrl.toString());
+                        return; // Exit early after redirect
+                      }
+                    }
                   }
                 } else {
                   alert('Payment method saved successfully! However, we encountered an issue processing your order. Please contact support with your email address.');

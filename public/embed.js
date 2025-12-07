@@ -56,18 +56,24 @@
 
   // Wait for DOM to be ready
   function init() {
+    // Get URL params once for all containers
+    const urlParams = new URLSearchParams(window.location.search);
+    
     // Find all embed containers
-    const checkoutContainers = document.querySelectorAll('[data-xperience-checkout]');
-    const upsellContainers = document.querySelectorAll('[data-xperience-upsell]');
-    const confirmationContainers = document.querySelectorAll('[data-xperience-confirmation]');
+    let checkoutContainers = document.querySelectorAll('[data-xperience-checkout]');
+    let upsellContainers = document.querySelectorAll('[data-xperience-upsell]');
+    let confirmationContainers = document.querySelectorAll('[data-xperience-confirmation]');
 
     // Process checkout embeds
+    const urlParams = new URLSearchParams(window.location.search);
+    
     checkoutContainers.forEach(container => {
-      const companyId = container.getAttribute('data-company-id');
-      const flowId = container.getAttribute('data-flow-id');
+      // Try data attributes first, then fallback to URL params
+      const companyId = container.getAttribute('data-company-id') || urlParams.get('companyId');
+      const flowId = container.getAttribute('data-flow-id') || urlParams.get('flowId');
       
       if (!companyId) {
-        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing companyId attribute</div>';
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing companyId attribute or URL parameter</div>';
         return;
       }
 
@@ -87,15 +93,29 @@
     });
 
     // Process upsell embeds
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // If no upsell containers found but we have URL params, create one automatically
+    if (upsellContainers.length === 0 && urlParams.get('nodeId') && urlParams.get('companyId')) {
+      const autoContainer = document.createElement('div');
+      autoContainer.setAttribute('data-xperience-upsell', '');
+      autoContainer.style.width = '100%';
+      autoContainer.style.minWidth = '320px';
+      autoContainer.style.minHeight = '600px';
+      document.body.appendChild(autoContainer);
+      upsellContainers = document.querySelectorAll('[data-xperience-upsell]');
+    }
+    
     upsellContainers.forEach(container => {
-      const companyId = container.getAttribute('data-company-id');
-      const flowId = container.getAttribute('data-flow-id');
-      const nodeId = container.getAttribute('data-node-id') || new URLSearchParams(window.location.search).get('nodeId');
-      const memberId = container.getAttribute('data-member-id') || new URLSearchParams(window.location.search).get('memberId');
-      const setupIntentId = container.getAttribute('data-setup-intent-id') || new URLSearchParams(window.location.search).get('setupIntentId');
+      // Try data attributes first, then fallback to URL params
+      const companyId = container.getAttribute('data-company-id') || urlParams.get('companyId');
+      const flowId = container.getAttribute('data-flow-id') || urlParams.get('flowId');
+      const nodeId = container.getAttribute('data-node-id') || urlParams.get('nodeId');
+      const memberId = container.getAttribute('data-member-id') || urlParams.get('memberId');
+      const setupIntentId = container.getAttribute('data-setup-intent-id') || urlParams.get('setupIntentId');
       
       if (!companyId || !flowId || !nodeId) {
-        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing required attributes: companyId, flowId, and nodeId</div>';
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing required attributes: companyId, flowId, and nodeId. Please add data attributes or URL parameters.</div>';
         return;
       }
 
@@ -117,12 +137,13 @@
 
     // Process confirmation embeds
     confirmationContainers.forEach(container => {
-      const companyId = container.getAttribute('data-company-id');
-      const flowId = container.getAttribute('data-flow-id');
-      const memberId = container.getAttribute('data-member-id') || new URLSearchParams(window.location.search).get('memberId');
+      // Try data attributes first, then fallback to URL params
+      const companyId = container.getAttribute('data-company-id') || urlParams.get('companyId');
+      const flowId = container.getAttribute('data-flow-id') || urlParams.get('flowId');
+      const memberId = container.getAttribute('data-member-id') || urlParams.get('memberId');
       
       if (!companyId) {
-        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing companyId attribute</div>';
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing companyId attribute or URL parameter</div>';
         return;
       }
 
