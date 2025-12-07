@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Dialog, Button } from '@whop/react/components';
 
 interface FlowNode {
   id: string;
@@ -156,30 +157,25 @@ export default function NodeLogicEditor({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-a1/80 dark:bg-gray-a1/80 backdrop-blur-sm">
-        <div className="bg-white dark:bg-gray-a2 border border-gray-a4 rounded-xl p-6">
+      <Dialog.Root open={true} onOpenChange={(open) => !open && onClose()}>
+        <Dialog.Content size="2">
+          <Dialog.Title>Loading</Dialog.Title>
           <div className="text-gray-12">Loading...</div>
-        </div>
-      </div>
+        </Dialog.Content>
+      </Dialog.Root>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-a1/80 dark:bg-gray-a1/80 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-a2 border border-gray-a4 rounded-xl p-6 w-full max-w-2xl shadow-lg">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-12">Configure Accept/Decline Logic</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-10 hover:text-gray-12 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+    <Dialog.Root open={true} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Content 
+        size="3" 
+        style={{ maxWidth: '32rem' }}
+      >
+        <Dialog.Title>Configure Accept/Decline Logic</Dialog.Title>
+        <Dialog.Description>Set where users go when they accept or decline this offer</Dialog.Description>
 
-        <div className="space-y-6">
+        <div className="space-y-6" style={{ marginTop: 'var(--space-4)' }}>
           {/* Accept Logic */}
           <div>
             <h3 className="text-lg font-semibold text-gray-12 mb-4">When User Accepts:</h3>
@@ -296,21 +292,11 @@ export default function NodeLogicEditor({
         </div>
 
         <div className="flex gap-4 pt-6 mt-6 border-t border-gray-a4">
-          <button
-            onClick={handleSave}
-            className="flex-1 bg-accent-500 hover:bg-accent-600 text-gray-12 font-semibold py-3 rounded-lg"
-          >
-            Save Logic
-          </button>
-          <button
-            onClick={onClose}
-            className="flex-1 bg-gray-a3 hover:bg-gray-a4 text-gray-12 font-semibold py-3 rounded-lg"
-          >
-            Cancel
-          </button>
+          <Button color="gray" variant="soft" onClick={onClose}>Cancel</Button>
+          <Button color="tomato" variant="classic" onClick={handleSave}>Save Logic</Button>
         </div>
-      </div>
-    </div>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }
 

@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import FrostedCard from './FrostedCard';
+import FrostedButton from './FrostedButton';
 import InputField from './InputField';
+import { Save } from 'lucide-react';
 
 interface CompanyFlow {
   facebook_pixel_id?: string | null;
@@ -8,9 +11,23 @@ interface CompanyFlow {
 interface StepAdvancedProps {
   flow: CompanyFlow | null;
   onUpdate: (updates: Partial<CompanyFlow>) => void;
+  onSave: () => Promise<void>;
 }
 
-export default function StepAdvanced({ flow, onUpdate }: StepAdvancedProps) {
+export default function StepAdvanced({ flow, onUpdate, onSave }: StepAdvancedProps) {
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onSave();
+    } catch (error) {
+      console.error('Error saving flow:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -48,13 +65,25 @@ export default function StepAdvanced({ flow, onUpdate }: StepAdvancedProps) {
                 <div>
                   <div className="font-semibold text-gray-12">A/B Testing</div>
                   <div className="text-sm text-gray-600">Test different funnel variations</div>
+                  <div className="text-xs text-gray-500 mt-1">Coming Soon</div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" />
+                <label className="relative inline-flex items-center cursor-pointer opacity-50">
+                  <input type="checkbox" className="sr-only peer" disabled />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent-500/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-500"></div>
                 </label>
               </div>
             </div>
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <FrostedButton
+              onClick={handleSave}
+              icon={Save}
+              variant="accent"
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Flow'}
+            </FrostedButton>
           </div>
         </div>
       </FrostedCard>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Plus, FileText, CheckCircle2, X, Code } from 'lucide-react';
-import { Button } from '@whop/react/components';
+import { Button, Dialog } from '@whop/react/components';
 
 import UpsellFlowBuilder from './UpsellFlowBuilder';
 import EmbedCodeModal from './EmbedCodeModal';
@@ -320,21 +320,6 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
-                        <Button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setEmbedFlowId(f.id);
-                            setEmbedFlowName(f.flow_name);
-                            setShowEmbedModal(true);
-                          }}
-                          color="gray"
-                          variant="classic"
-                          size="2"
-                        >
-                          <Code className="w-4 h-4 mr-2" />
-                          Embed
-                        </Button>
                         <div className="text-right">
                           <p className="text-gray-9 text-xs mb-1">Created</p>
                           <p className="text-gray-10 text-sm font-medium">
@@ -345,6 +330,21 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                             })}
                           </p>
                         </div>
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setEmbedFlowId(f.id);
+                            setEmbedFlowName(f.flow_name);
+                            setShowEmbedModal(true);
+                          }}
+                          color="gray"
+                          variant="soft"
+                          size="1"
+                        >
+                          <Code className="w-4 h-4 mr-2" />
+                          Embed
+                        </Button>
                         {selectedFlowId === f.id && (
                           <CheckCircle2 className="w-6 h-6 text-accent-500 flex-shrink-0" />
                         )}
@@ -358,37 +358,18 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
 
         {/* New Flow Modal - Must be here for early return case */}
         {showNewFlowModal && (
-            <div 
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-a1/80 dark:bg-gray-a1/80 backdrop-blur-sm" 
-              onClick={(e) => {
-                console.log('Modal backdrop clicked');
-                setShowNewFlowModal(false);
-              }}
+          <Dialog.Root open={showNewFlowModal} onOpenChange={(open) => !open && setShowNewFlowModal(false)}>
+            <Dialog.Content 
+              size="2" 
+              style={{ maxWidth: '28rem' }}
             >
-              <div 
-                className="border border-gray-a4 rounded-xl bg-white dark:bg-gray-a2 w-full max-w-md shadow-xl backdrop-blur-sm" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <div className="flex items-center justify-between p-6 border-b border-gray-a4">
-                  <h2 className="text-lg font-semibold text-gray-12 flex items-center gap-2">
-                    <Plus className="w-5 h-5 text-accent-500" />
-                    Create New Flow
-                  </h2>
-                  <button 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log('Close button clicked');
-                      setShowNewFlowModal(false);
-                    }} 
-                    className="text-gray-10 hover:text-gray-12 transition-colors p-1 rounded-lg"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                <div className="p-6">
+              <Dialog.Title className="flex items-center gap-2">
+                <Plus className="w-5 h-5 text-accent-500" />
+                Create New Flow
+              </Dialog.Title>
+              <Dialog.Description>Enter a name for your new checkout flow</Dialog.Description>
+
+              <div style={{ marginTop: 'var(--space-4)' }}>
                   <label className="block text-sm font-medium text-gray-12 mb-2">
                     Flow Name
                   </label>
@@ -407,38 +388,36 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                     }}
                     autoFocus
                   />
-                  <div className="flex justify-end gap-3">
-                    <Button
-                      color="gray"
-                      variant="classic"
-                      size="2"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('Cancel button clicked');
-                        setShowNewFlowModal(false);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      color="tomato"
-                      variant="classic"
-                      size="2"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('Create Flow button clicked in modal');
-                        handleCreateNewFlow();
-                      }}
-                    >
-                      Create Flow
-                    </Button>
-                  </div>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
+                  <Button
+                    color="gray"
+                    variant="soft"
+                    size="2"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowNewFlowModal(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    color="tomato"
+                    variant="classic"
+                    size="2"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleCreateNewFlow();
+                    }}
+                  >
+                    Create Flow
+                  </Button>
                 </div>
               </div>
-            </div>
-          )}
+            </Dialog.Content>
+          </Dialog.Root>
+        )}
 
         {/* Embed Code Modal */}
         {showEmbedModal && embedFlowId && (

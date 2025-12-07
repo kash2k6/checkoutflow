@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Copy, Check } from 'lucide-react';
-import { Button } from '@whop/react/components';
+import { Copy, Check } from 'lucide-react';
+import { Button, Dialog } from '@whop/react/components';
 import FrostedCard from './UpsellFlowBuilder/FrostedCard';
 
 interface EmbedCodeModalProps {
@@ -74,28 +74,15 @@ export default function EmbedCodeModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-a1/80 dark:bg-gray-a1/80 backdrop-blur-sm">
-      <div className="border border-gray-a4 rounded-xl bg-white dark:bg-gray-a2 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-sm">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-a4">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-12 dark:text-white">
-              Embed Code
-            </h2>
-            <p className="text-sm text-gray-10 dark:text-gray-9 mt-1">
-              {flowName || 'Flow'}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-10 hover:text-gray-12 dark:text-gray-9 dark:hover:text-gray-10 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Content 
+        size="3" 
+        style={{ maxWidth: '56rem', maxHeight: '90vh' }}
+      >
+        <Dialog.Title>Embed Code</Dialog.Title>
+        <Dialog.Description>{flowName || 'Flow'}</Dialog.Description>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto space-y-6" style={{ marginTop: 'var(--space-4)' }}>
           {loading ? (
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-gray-a4 border-t-gray-12 mb-4"></div>
@@ -220,8 +207,8 @@ export default function EmbedCodeModal({
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }
 

@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useIframeSdk } from '@whop/react/iframe';
 import SubscriptionPlanCard from './SubscriptionPlanCard';
-import { X } from 'lucide-react';
+import { 
+  Dialog,
+  Button,
+} from '@whop/react/components';
 import { createSubscriptionPurchase } from '@/lib/actions/create-subscription-purchase';
 
 interface SubscribeModalProps {
@@ -69,24 +72,15 @@ export default function SubscribeModal({ isOpen, onClose, onSuccess }: Subscribe
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-a1/80 dark:bg-gray-a1/80 backdrop-blur-sm">
-      <div className="border border-gray-a4 rounded-xl bg-white dark:bg-gray-a2 w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col shadow-sm">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-a4">
-          <h2 className="text-xl font-semibold text-gray-12 dark:text-white">
-            Subscribe to Continue
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-10 hover:text-gray-12 dark:text-gray-9 dark:hover:text-gray-10 transition-colors"
-            disabled={isLoading}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Content 
+        size="3" 
+        style={{ maxWidth: '32rem', maxHeight: '95vh' }}
+      >
+        <Dialog.Title>Subscribe to Continue</Dialog.Title>
+        <Dialog.Description>Subscribe to enable your funnels and access all features</Dialog.Description>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto" style={{ marginTop: 'var(--space-4)' }}>
           {error && (
             <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <p className="text-red-800 dark:text-red-400 text-sm">{error}</p>
@@ -100,8 +94,12 @@ export default function SubscribeModal({ isOpen, onClose, onSuccess }: Subscribe
             />
           </div>
         </div>
-      </div>
-    </div>
+
+        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
+          <Button color="gray" variant="soft" onClick={onClose} disabled={isLoading}>Cancel</Button>
+        </div>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }
 

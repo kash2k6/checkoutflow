@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { Dialog, Button } from '@whop/react/components';
 
 interface FlowNode {
   id?: string;
@@ -261,23 +262,19 @@ export default function NodeEditor({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-a1/80 dark:bg-gray-a1/80 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-a2 border border-gray-a4 rounded-xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col shadow-lg">
-        <div className="flex items-center justify-between p-6 border-b border-gray-a4">
-          <h2 className="text-2xl font-bold text-gray-12">
-            {node ? 'Edit' : 'Add'} {nodeType === 'upsell' ? 'Upsell' : nodeType === 'downsell' ? 'Downsell' : 'Cross-sell'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-10 hover:text-gray-12 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+    <Dialog.Root open={true} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Content 
+        size="3" 
+        style={{ maxWidth: '80rem', maxHeight: '95vh' }}
+      >
+        <Dialog.Title>
+          {node ? 'Edit' : 'Add'} {nodeType === 'upsell' ? 'Upsell' : nodeType === 'downsell' ? 'Downsell' : 'Cross-sell'}
+        </Dialog.Title>
+        <Dialog.Description>
+          Configure the {nodeType === 'upsell' ? 'upsell' : nodeType === 'downsell' ? 'downsell' : 'cross-sell'} offer details
+        </Dialog.Description>
 
-        <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ marginTop: 'var(--space-4)' }}>
           {/* Form Section */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-12 mb-4">Configuration</h3>
@@ -709,22 +706,6 @@ export default function NodeEditor({
             </div>
           </div>
 
-              {/* Actions */}
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-accent-500 hover:bg-accent-600 text-gray-12 font-semibold py-3 rounded-lg"
-                >
-                  {node ? 'Update' : 'Create'} Node
-                </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 bg-gray-a3 hover:bg-gray-a4 text-gray-12 font-semibold py-3 rounded-lg"
-                >
-                  Cancel
-                </button>
-              </div>
             </form>
           </div>
 
@@ -850,8 +831,25 @@ export default function NodeEditor({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+
+        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
+          <Button color="gray" variant="soft" onClick={onClose}>Cancel</Button>
+          <Button 
+            color="tomato" 
+            variant="classic" 
+            onClick={(e) => {
+              const form = e.currentTarget.closest('form') || document.querySelector('form');
+              if (form) {
+                const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                form.dispatchEvent(submitEvent);
+              }
+            }}
+          >
+            {node ? 'Update' : 'Create'} Node
+          </Button>
+        </div>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }
 

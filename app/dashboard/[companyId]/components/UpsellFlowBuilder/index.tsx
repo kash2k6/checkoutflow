@@ -286,6 +286,7 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
           <StepInitialProduct
             flow={flow}
             onUpdate={handleUpdateFlow}
+            onSave={handleSaveFlow}
             companyId={companyId}
           />
         );
@@ -298,6 +299,7 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
             onEditNode={handleEditNode}
             onDeleteNode={handleDeleteNode}
             onLogicNode={handleLogicNode}
+            onSave={handleSaveFlow}
           />
         );
       case 4:
@@ -305,6 +307,7 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
           <StepConfirmation
             flow={flow}
             onUpdate={handleUpdateFlow}
+            onSave={handleSaveFlow}
             onCustomize={() => setShowConfirmationCustomization(true)}
           />
         );
@@ -313,6 +316,7 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
           <StepAdvanced
             flow={flow}
             onUpdate={handleUpdateFlow}
+            onSave={handleSaveFlow}
           />
         );
       default:

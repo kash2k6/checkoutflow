@@ -1,6 +1,10 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { 
+  Dialog,
+  Button,
+} from '@whop/react/components';
 
 interface CheckoutCustomizationProps {
   flow: {
@@ -104,21 +108,15 @@ export default function CheckoutCustomization({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-a1/80 dark:bg-gray-a1/80 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-a2 border border-gray-a4 rounded-xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col shadow-lg">
-        <div className="flex items-center justify-between p-6 border-b border-gray-a4">
-          <h2 className="text-2xl font-bold text-gray-12">Customize Checkout Page</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-10 hover:text-gray-12 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+    <Dialog.Root open={true} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Content 
+        size="3" 
+        style={{ maxWidth: '80rem', maxHeight: '95vh' }}
+      >
+        <Dialog.Title>Customize Checkout Page</Dialog.Title>
+        <Dialog.Description>Configure the appearance and theme of your checkout page</Dialog.Description>
 
-        <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-2 gap-8" style={{ marginTop: 'var(--space-4)' }}>
           {/* Form Section */}
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-12 mb-4">Configuration</h3>
@@ -379,23 +377,12 @@ export default function CheckoutCustomization({
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-a4">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-a3 hover:bg-gray-a4 rounded-lg text-gray-12 text-sm font-medium transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-accent-500 hover:bg-accent-600 rounded-lg text-gray-12 text-sm font-medium transition-colors"
-          >
-            Save Customization
-          </button>
+        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
+          <Button color="gray" variant="soft" onClick={onClose}>Cancel</Button>
+          <Button color="tomato" variant="classic" onClick={handleSave}>Save Customization</Button>
         </div>
-      </div>
-    </div>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }
 

@@ -1,5 +1,7 @@
-import { CheckCircle2, ArrowUp, ArrowDown, ArrowLeftRight } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle2, ArrowUp, ArrowDown, ArrowLeftRight, Save } from 'lucide-react';
 import FrostedCard from './FrostedCard';
+import FrostedButton from './FrostedButton';
 import SectionHeader from './SectionHeader';
 import NodeCard from './NodeCard';
 import ConnectorLine from './ConnectorLine';
@@ -34,6 +36,7 @@ interface StepUpsellsDownsellsProps {
   onEditNode: (node: FlowNode) => void;
   onDeleteNode: (nodeId: string) => void;
   onLogicNode: (node: FlowNode) => void;
+  onSave: () => Promise<void>;
 }
 
 export default function StepUpsellsDownsells({
@@ -43,7 +46,20 @@ export default function StepUpsellsDownsells({
   onEditNode,
   onDeleteNode,
   onLogicNode,
+  onSave,
 }: StepUpsellsDownsellsProps) {
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onSave();
+    } catch (error) {
+      console.error('Error saving flow:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
   const upsellNodes = (flow?.nodes || [])
     .filter(n => n.node_type === 'upsell')
     .sort((a, b) => a.order_index - b.order_index);
@@ -184,6 +200,17 @@ export default function StepUpsellsDownsells({
               ))
             )}
           </div>
+        </div>
+
+        <div className="flex justify-end pt-6">
+          <FrostedButton
+            onClick={handleSave}
+            icon={Save}
+            variant="accent"
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : 'Save Flow'}
+          </FrostedButton>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import FrostedCard from './FrostedCard';
 import FrostedButton from './FrostedButton';
 import InputField from './InputField';
-import { Eye } from 'lucide-react';
+import { Save } from 'lucide-react';
 
 interface WhopPlan {
   id: string;
@@ -18,12 +18,14 @@ interface CompanyFlow {
 interface StepInitialProductProps {
   flow: CompanyFlow | null;
   onUpdate: (updates: Partial<CompanyFlow>) => void;
+  onSave: () => Promise<void>;
   companyId: string;
 }
 
-export default function StepInitialProduct({ flow, onUpdate, companyId }: StepInitialProductProps) {
+export default function StepInitialProduct({ flow, onUpdate, onSave, companyId }: StepInitialProductProps) {
   const [plans, setPlans] = useState<WhopPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const loadPlans = async () => {
@@ -94,18 +96,21 @@ export default function StepInitialProduct({ flow, onUpdate, companyId }: StepIn
 
           <div className="flex justify-end pt-4">
             <FrostedButton
-              onClick={() => {
-                if (selectedPlan) {
-                  alert(`Preview for: ${selectedPlan.title}\n\nThis feature will open a preview window.`);
-                } else {
-                  alert('Please select a product first.');
+              onClick={async () => {
+                setSaving(true);
+                try {
+                  await onSave();
+                } catch (error) {
+                  console.error('Error saving flow:', error);
+                } finally {
+                  setSaving(false);
                 }
               }}
-              icon={Eye}
-              variant="secondary"
-              disabled={!selectedPlan}
+              icon={Save}
+              variant="accent"
+              disabled={saving}
             >
-              Preview Product
+              {saving ? 'Saving...' : 'Save Flow'}
             </FrostedButton>
           </div>
         </div>

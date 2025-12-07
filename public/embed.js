@@ -330,6 +330,7 @@
       const autoContainer = document.createElement('div');
       autoContainer.setAttribute('data-xperience-checkout', '');
       autoContainer.style.width = '100%';
+      autoContainer.style.height = '100%';
       autoContainer.style.minWidth = '320px';
       autoContainer.style.minHeight = '600px';
       document.body.appendChild(autoContainer);
@@ -349,6 +350,7 @@
       if (urlMemberId) autoContainer.setAttribute('data-member-id', urlMemberId);
       if (urlSetupIntentId) autoContainer.setAttribute('data-setup-intent-id', urlSetupIntentId);
       autoContainer.style.width = '100%';
+      autoContainer.style.height = '100%';
       autoContainer.style.minWidth = '320px';
       autoContainer.style.minHeight = '600px';
       document.body.appendChild(autoContainer);
@@ -361,6 +363,7 @@
       const autoContainer = document.createElement('div');
       autoContainer.setAttribute('data-xperience-confirmation', '');
       autoContainer.style.width = '100%';
+      autoContainer.style.height = '100%';
       autoContainer.style.minWidth = '320px';
       autoContainer.style.minHeight = '600px';
       document.body.appendChild(autoContainer);
@@ -369,6 +372,10 @@
 
     // Process checkout embeds
     checkoutContainers.forEach(container => {
+      // Ensure container has height: 100% if not already set
+      if (!container.style.height || container.style.height === '') {
+        container.style.height = '100%';
+      }
       // Try data attributes first, then fallback to URL params
       const companyId = container.getAttribute('data-company-id') || urlCompanyId;
       const flowId = container.getAttribute('data-flow-id') || urlFlowId;
@@ -395,6 +402,10 @@
 
     // Process upsell embeds
     upsellContainers.forEach(container => {
+      // Ensure container has height: 100% if not already set
+      if (!container.style.height || container.style.height === '') {
+        container.style.height = '100%';
+      }
       // Skip if already processed or already has an iframe
       if (processedContainers.has(container) || container.querySelector('iframe')) {
         return;
@@ -476,6 +487,10 @@
 
     // Process confirmation embeds
     confirmationContainers.forEach(container => {
+      // Ensure container has height: 100% if not already set
+      if (!container.style.height || container.style.height === '') {
+        container.style.height = '100%';
+      }
       // Skip if already processed or already has an iframe
       if (processedContainers.has(container) || container.querySelector('iframe')) {
         return;

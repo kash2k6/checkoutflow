@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import FrostedCard from './FrostedCard';
 import FrostedButton from './FrostedButton';
 import InputField from './InputField';
-import { Eye, Palette } from 'lucide-react';
+import { Save, Palette } from 'lucide-react';
 
 interface CompanyFlow {
   confirmation_page_url: string | null;
@@ -10,10 +11,24 @@ interface CompanyFlow {
 interface StepConfirmationProps {
   flow: CompanyFlow | null;
   onUpdate: (updates: Partial<CompanyFlow>) => void;
+  onSave: () => Promise<void>;
   onCustomize: () => void;
 }
 
-export default function StepConfirmation({ flow, onUpdate, onCustomize }: StepConfirmationProps) {
+export default function StepConfirmation({ flow, onUpdate, onSave, onCustomize }: StepConfirmationProps) {
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onSave();
+    } catch (error) {
+      console.error('Error saving flow:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -31,27 +46,21 @@ export default function StepConfirmation({ flow, onUpdate, onCustomize }: StepCo
             placeholder="https://yourdomain.com/thank-you"
           />
 
-          <div className="flex gap-4 pt-4">
-            <FrostedButton
-              onClick={() => {
-                if (flow?.confirmation_page_url) {
-                  alert(`Preview for: ${flow.confirmation_page_url}\n\nThis feature will open a preview window.`);
-                } else {
-                  alert('Please enter a confirmation page URL first.');
-                }
-              }}
-              icon={Eye}
-              variant="secondary"
-              disabled={!flow?.confirmation_page_url}
-            >
-              Preview Confirmation Page
-            </FrostedButton>
+          <div className="flex gap-4 justify-end pt-4">
             <FrostedButton
               onClick={onCustomize}
               icon={Palette}
-              variant="accent"
+              variant="secondary"
             >
               Customize Confirmation Page
+            </FrostedButton>
+            <FrostedButton
+              onClick={handleSave}
+              icon={Save}
+              variant="accent"
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Flow'}
             </FrostedButton>
           </div>
         </div>

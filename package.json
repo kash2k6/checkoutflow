@@ -16,7 +16,7 @@
 		"@vercel/functions": "^2.0.3",
 		"@whop/api": "^0.0.42",
 		"@whop/checkout": "latest",
-		"@whop/react": "0.2.37",
+		"@whop/react": "0.3.0",
 		"@whop/sdk": "^0.0.13",
 		"clsx": "^2.1.1",
 		"dotenv": "^16.5.0",

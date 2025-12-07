@@ -17,7 +17,7 @@ export default function DashboardTabs({
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-a1 dark:via-gray-a2 dark:to-gray-a1">
       {/* Tab Navigation */}
-      <div className="sticky top-0 z-50 bg-white/80 dark:bg-gray-a2/80 backdrop-blur-lg border-b border-gray-a4/50">
+      <div className="sticky top-0 z-50 bg-white dark:bg-gray-a2 border-b border-gray-a4">
         <div className="w-full px-6">
           <div className="flex items-center gap-1 h-14 sm:h-16">
             <button
