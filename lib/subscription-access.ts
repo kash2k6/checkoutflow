@@ -250,6 +250,11 @@ export async function checkCompanyAdminSubscription(targetCompanyId: string): Pr
           { id: userId }
         );
 
+        console.log(`[checkCompanyAdminSubscription] Access check result for user ${userId}:`, {
+          access_level: access.access_level,
+          targetCompanyId,
+        });
+
         // If user is an admin and has active subscription, return success
         if (access.access_level === 'admin') {
           const isTrial = membership.status?.toLowerCase() === 'trialing';
@@ -271,15 +276,18 @@ export async function checkCompanyAdminSubscription(targetCompanyId: string): Pr
               trial_end: membership.trial_end,
             },
           };
+        } else {
+          console.log(`[checkCompanyAdminSubscription] User ${userId} is NOT admin of ${targetCompanyId} (access_level: ${access.access_level})`);
         }
       } catch (error) {
         // If checkAccess fails for this user, continue to next membership
-        console.warn(`Error checking access for user ${userId}:`, error);
+        console.warn(`[checkCompanyAdminSubscription] Error checking access for user ${userId}:`, error);
         continue;
       }
     }
 
     // No admin found with active subscription
+    console.log(`[checkCompanyAdminSubscription] ❌ No admin found with active subscription for company ${targetCompanyId}`);
     return {
       hasAccess: false,
       isTrial: false,
