@@ -6,8 +6,8 @@ import { whopSdk } from '@/lib/whop-sdk';
  * Funnels (checkout flows, upsells, downsells) require the company owner/admin
  * to have an active subscription to our service plan.
  * 
- * Required Plan ID: plan_9ykCIXvTEDMyp
- * Required Product ID: prod_mM22JTuMsyM8V
+ * Required Plan ID: plan_x4TKAVYUfeUNS
+ * Required Product ID: prod_h7xnG0t0Y5Fgf
  * Our Company ID: biz_PHQfLZ3o2GvXQn
  * 
  * How it works:
@@ -19,8 +19,8 @@ import { whopSdk } from '@/lib/whop-sdk';
  */
 
 // Subscription constants
-export const SUBSCRIPTION_PLAN_ID = 'plan_9ykCIXvTEDMyp';
-export const SUBSCRIPTION_PRODUCT_ID = 'prod_mM22JTuMsyM8V';
+export const SUBSCRIPTION_PLAN_ID = 'plan_x4TKAVYUfeUNS';
+export const SUBSCRIPTION_PRODUCT_ID = 'prod_h7xnG0t0Y5Fgf';
 export const COMPANY_ID = 'biz_PHQfLZ3o2GvXQn';
 
 export interface SubscriptionStatus {

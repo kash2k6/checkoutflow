@@ -8,12 +8,12 @@ The subscription check ensures funnels only work for companies whose owners have
 ### Step 1: Query Memberships by Plan
 ```javascript
 // Query Whop API for all memberships to our subscription plan
-GET /api/v1/memberships?company_id=biz_PHQfLZ3o2GvXQn&plan_ids=plan_9ykCIXvTEDMyp
+GET /api/v1/memberships?company_id=biz_PHQfLZ3o2GvXQn&plan_ids=plan_x4TKAVYUfeUNS
 ```
 
 **What this does:**
 - Filters by our company ID (`biz_PHQfLZ3o2GvXQn`) - the company that owns the subscription plan
-- Filters by plan ID (`plan_9ykCIXvTEDMyp`) - our subscription plan
+- Filters by plan ID (`plan_x4TKAVYUfeUNS`) - our subscription plan
 - Returns all memberships (active, trialing, canceled, etc.)
 
 ### Step 2: Filter Active Subscriptions
@@ -43,7 +43,7 @@ const userId = membership.user?.id || membership.user_id
     "name": "Kash"
   },
   "plan": {
-    "id": "plan_9ykCIXvTEDMyp"  // ← Plan ID is here
+    "id": "plan_x4TKAVYUfeUNS"  // ← Plan ID is here
   },
   "company": {
     "id": "biz_PHQfLZ3o2GvXQn"  // ← Our company ID
@@ -93,7 +93,7 @@ if (access.access_level === 'admin') {
 ```
 1. Customer visits: /checkout?companyId=biz_nULEeITGXYHdQ2
 2. API calls: checkCompanyAdminSubscription('biz_nULEeITGXYHdQ2')
-3. Query: GET /api/v1/memberships?company_id=biz_PHQfLZ3o2GvXQn&plan_ids=plan_9ykCIXvTEDMyp
+3. Query: GET /api/v1/memberships?company_id=biz_PHQfLZ3o2GvXQn&plan_ids=plan_x4TKAVYUfeUNS
 4. Result: Found 1 membership (user_ojPhs9dIhFQ9C, status: trialing)
 5. Check: Is user_ojPhs9dIhFQ9C admin of biz_nULEeITGXYHdQ2?
 6. Result: YES → hasAccess: true
@@ -102,7 +102,7 @@ if (access.access_level === 'admin') {
 
 ## Key Points
 
-1. **Plan Filtering:** We filter by `plan_ids=plan_9ykCIXvTEDMyp` to only get subscriptions to OUR plan
+1. **Plan Filtering:** We filter by `plan_ids=plan_x4TKAVYUfeUNS` to only get subscriptions to OUR plan
 2. **Company Filtering:** We filter by `company_id=biz_PHQfLZ3o2GvXQn` to only get memberships to OUR company
 3. **User Extraction:** User ID is in `membership.user.id` (nested, not flat)
 4. **Admin Verification:** We verify the user with subscription is admin of the target company

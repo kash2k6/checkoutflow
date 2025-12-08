@@ -9,7 +9,7 @@ dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 dotenv.config({ path: resolve(process.cwd(), '.env') });
 
 const WHOP_SUBSCRIPTION_API_KEY = process.env.WHOP_SUBSCRIPTION_API_KEY || process.env.WHOP_API_KEY;
-const SUBSCRIPTION_PLAN_ID = 'plan_9ykCIXvTEDMyp';
+const SUBSCRIPTION_PLAN_ID = 'plan_x4TKAVYUfeUNS';
 const COMPANY_ID = 'biz_PHQfLZ3o2GvXQn';
 
 console.log('🔍 Debugging Membership Structure from Whop API...\n');

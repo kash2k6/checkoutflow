@@ -12,7 +12,7 @@ dotenv.config({ path: resolve(process.cwd(), '.env') });
 
 const WHOP_SUBSCRIPTION_API_KEY = process.env.WHOP_SUBSCRIPTION_API_KEY;
 const WHOP_API_KEY = process.env.WHOP_API_KEY;
-const SUBSCRIPTION_PLAN_ID = 'plan_9ykCIXvTEDMyp';
+const SUBSCRIPTION_PLAN_ID = 'plan_x4TKAVYUfeUNS';
 const COMPANY_ID = 'biz_PHQfLZ3o2GvXQn';
 const TARGET_COMPANY_ID = process.env.TEST_COMPANY_ID || 'biz_nULEeITGXYHdQ2'; // Company with flow
 
