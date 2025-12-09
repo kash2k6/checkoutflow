@@ -71,6 +71,7 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
   const [selectedFlowId, setSelectedFlowId] = useState<string | null>(null);
   const [plans, setPlans] = useState<WhopPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [verifyingFlow, setVerifyingFlow] = useState<string | null>(null); // Track flow being verified
   const [showNewFlowModal, setShowNewFlowModal] = useState(false);
   const [newFlowName, setNewFlowName] = useState('');
   const [showEmbedModal, setShowEmbedModal] = useState(false);
@@ -193,6 +194,8 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
         }),
       });
 
+      console.log('Flow creation response status:', response.status, response.statusText);
+
       if (response.ok) {
         const newFlow = await response.json();
         console.log('Flow created successfully:', newFlow);
@@ -214,20 +217,25 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
         const createdFlowName = newFlowName.trim();
         setNewFlowName('');
         
+        // Set verifying state to show loading indicator
+        setVerifyingFlow(newFlow.id);
+        
         // Verify the flow is accessible before navigating to it
         // This prevents "Flow not found" errors due to timing/database replication delays
         const verifyAndNavigate = async () => {
-          let retries = 3;
+          let retries = 5; // Increased retries
           let verified = false;
           
           while (retries > 0 && !verified) {
             try {
               const verifyResponse = await fetch(`/api/flows/${companyId}?flowId=${newFlow.id}`);
+              
+              // 200 OK means flow exists and is accessible
               if (verifyResponse.ok) {
                 const flowData = await verifyResponse.json();
-                if (flowData.id && flowData.id === newFlow.id) {
+                if (flowData.id && flowData.id === newFlow.id && !flowData.error) {
                   verified = true;
-                  console.log('Flow verified, navigating...');
+                  console.log('Flow verified (200), navigating...');
                   
                   // Reload flows list to ensure we have the latest data
                   const flowsResponse = await fetch(`/api/flows/${companyId}/list`);
@@ -236,24 +244,44 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                     setFlows(flowsData.flows || []);
                   }
                   
-                  // Navigate to the verified flow
+                  // Clear verifying state and navigate to the verified flow
+                  setVerifyingFlow(null);
                   setSelectedFlowId(newFlow.id);
                   return;
                 }
+              } 
+              // 403 means flow exists but subscription is blocking - still allow navigation for dashboard setup
+              else if (verifyResponse.status === 403) {
+                verified = true;
+                console.log('Flow verified (403 - subscription block, but flow exists), navigating...');
+                
+                // Reload flows list to ensure we have the latest data
+                const flowsResponse = await fetch(`/api/flows/${companyId}/list`);
+                if (flowsResponse.ok) {
+                  const flowsData = await flowsResponse.json();
+                  setFlows(flowsData.flows || []);
+                }
+                
+                // Clear verifying state and navigate - subscription banner will show in the builder
+                setVerifyingFlow(null);
+                setSelectedFlowId(newFlow.id);
+                return;
               }
+              // 404 means flow doesn't exist yet - continue retrying
+              // Other errors also continue retrying
             } catch (error) {
               console.error(`Flow verification attempt failed (${retries} retries left):`, error);
             }
             
             retries--;
             if (retries > 0) {
-              // Wait a bit before retrying (exponential backoff)
-              await new Promise(resolve => setTimeout(resolve, 300 * (4 - retries)));
+              // Wait longer between retries (exponential backoff)
+              await new Promise(resolve => setTimeout(resolve, 500 * (6 - retries)));
             }
           }
           
           // If verification failed after retries, try to find the flow by name in the list
-          console.warn('Flow verification failed, trying to find by name in flows list');
+          console.warn('Flow verification failed after retries, trying to find by name in flows list');
           const flowsResponse = await fetch(`/api/flows/${companyId}/list`);
           if (flowsResponse.ok) {
             const flowsData = await flowsResponse.json();
@@ -263,9 +291,11 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
             );
             if (foundFlow) {
               console.log('Found flow in list, navigating...');
+              setVerifyingFlow(null);
               setSelectedFlowId(foundFlow.id);
             } else {
-              // Last resort: show success message and let user select manually
+              // Clear verifying state and show success message
+              setVerifyingFlow(null);
               setAlertDialog({
                 open: true,
                 title: 'Flow Created',
@@ -274,8 +304,9 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
               });
             }
           } else {
-            // Even the list fetch failed - navigate anyway and hope for the best
+            // Even the list fetch failed - clear verifying and navigate anyway
             console.warn('Could not verify flow, navigating anyway...');
+            setVerifyingFlow(null);
             setSelectedFlowId(newFlow.id);
           }
         };
@@ -283,27 +314,43 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
         // Start verification process
         verifyAndNavigate();
       } else {
-        const errorData = await response.json();
-        console.error('Error creating flow:', errorData);
+        // Response was not OK - try to get error details
+        let errorMessage = 'Failed to create flow';
+        try {
+          const errorData = await response.json();
+          console.error('Error creating flow - Status:', response.status, 'Data:', errorData);
+          errorMessage = errorData.error || errorData.message || `Server error (${response.status})`;
+        } catch (jsonError) {
+          // If JSON parsing fails, try to get text
+          try {
+            const errorText = await response.text();
+            console.error('Error creating flow - Status:', response.status, 'Text:', errorText);
+            errorMessage = errorText || `Server error (${response.status})`;
+          } catch (textError) {
+            console.error('Error creating flow - Status:', response.status, 'Could not parse response');
+            errorMessage = `Server error (${response.status})`;
+          }
+        }
+        
         // Clear any stale selectedFlowId on error
         setSelectedFlowId(null);
         // Keep modal open and input field intact on error so user can try a different name
         setAlertDialog({
           open: true,
           title: 'Error',
-          message: errorData.error || 'Unknown error',
+          message: errorMessage,
           type: 'error',
         });
       }
     } catch (error) {
-      console.error('Error creating flow:', error);
+      console.error('Error creating flow (network/exception):', error);
       // Clear any stale selectedFlowId on error
       setSelectedFlowId(null);
       // Keep modal open and input field intact on error
       setAlertDialog({
         open: true,
         title: 'Error',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: error instanceof Error ? error.message : 'Network error - please check your connection and try again',
         type: 'error',
       });
     }
@@ -334,6 +381,19 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-gray-a4 border-t-gray-12 mb-4"></div>
           <div className="text-gray-12 text-lg font-medium">Loading flows...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show verifying state while checking if newly created flow is accessible
+  if (verifyingFlow) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-gray-a4 border-t-gray-12 mb-4"></div>
+          <div className="text-gray-12 text-lg font-medium">Verifying flow...</div>
+          <div className="text-gray-10 text-sm mt-2">Please wait while we confirm your flow is ready</div>
         </div>
       </div>
     );

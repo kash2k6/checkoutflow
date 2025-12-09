@@ -130,8 +130,46 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
             console.error('Flow data missing ID:', flowData);
             setFlow(null);
           }
+        } else if (flowResponse.status === 403) {
+          // 403 means flow exists but subscription is blocking access
+          // For dashboard setup, we should still allow viewing the flow
+          // Try to get basic flow info from the list endpoint (which doesn't require subscription)
+          console.log('Flow blocked by subscription (403), fetching basic info from list endpoint...');
+          try {
+            const flowsListResponse = await fetch(`/api/flows/${companyId}/list`);
+            if (flowsListResponse.ok) {
+              const flowsListData = await flowsListResponse.json();
+              const basicFlow = flowsListData.flows?.find((f: any) => f.id === flowId);
+              if (basicFlow) {
+                // Create a minimal flow object with the basic info
+                // The flow exists, subscription is just blocking full access
+                setFlow({
+                  id: basicFlow.id,
+                  company_id: companyId,
+                  flow_name: basicFlow.flow_name,
+                  initial_product_plan_id: basicFlow.initial_product_plan_id || '',
+                  confirmation_page_url: basicFlow.confirmation_page_url || null,
+                  facebook_pixel_id: null,
+                  checkout_theme: 'system',
+                  checkout_customization: {},
+                  confirmation_customization: {},
+                  nodes: [], // Nodes will be empty, but flow structure is preserved
+                });
+                console.log('Loaded basic flow info despite subscription block');
+              } else {
+                console.error('Flow not found in list:', flowId);
+                setFlow(null);
+              }
+            } else {
+              console.error('Could not fetch flows list:', flowsListResponse.status);
+              setFlow(null);
+            }
+          } catch (listError) {
+            console.error('Error fetching flows list:', listError);
+            setFlow(null);
+          }
         } else {
-          // Response was not OK (404, 403, etc.)
+          // 404 or other error - flow doesn't exist
           const errorData = await flowResponse.json().catch(() => ({ error: 'Unknown error' }));
           console.error('Flow load failed:', flowResponse.status, errorData);
           setFlow(null);

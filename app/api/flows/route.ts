@@ -161,6 +161,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error creating/updating flow:', error);
+    console.error('Error details:', {
+      message: error?.message,
+      code: error?.code,
+      details: error?.details,
+      stack: error?.stack,
+    });
     
     // Handle duplicate key constraint violation in catch block as fallback
     if (error?.code === '23505' && error?.details?.includes('idx_company_flows_company_name')) {
@@ -171,8 +177,18 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Return detailed error message
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : error?.message 
+      ? String(error.message)
+      : 'Failed to save flow';
+    
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to save flow' },
+      { 
+        error: errorMessage,
+        details: error?.code ? `Error code: ${error.code}` : undefined,
+      },
       { status: 500 }
     );
   }

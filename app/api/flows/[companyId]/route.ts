@@ -89,22 +89,23 @@ export async function GET(
     /**
      * SUBSCRIPTION CHECK FOR FUNNELS
      * 
-     * Funnels require the company owner/admin to have an active subscription.
-     * This check ensures only paying customers can use funnel features.
+     * IMPORTANT: Dashboard users (authenticated) can ALWAYS create, view, and edit flows.
+     * Subscription only blocks CUSTOMER-FACING pages (unauthenticated access).
      * 
-     * For authenticated requests (dashboard): Check the authenticated user's subscription
-     * For unauthenticated requests (customers): Check if any admin of the company has an active subscription
-     * 
-     * If no active subscription is found, the funnel is blocked completely.
+     * For authenticated requests (dashboard): ALWAYS allow - never block
+     * For unauthenticated requests (customers): Block if no active/trialing subscription
      */
     let isEnabled = true;
     let subscriptionStatus = null;
+    let isAuthenticated = false;
     
     try {
       const result = await whopSdk.verifyUserToken(await headers(), { dontThrow: true });
       if (result && result.userId) {
-        // This is an authenticated request (dashboard) - check the authenticated user's subscription
-        console.log(`[Subscription Check] Authenticated request for user ${result.userId}`);
+        // AUTHENTICATED REQUEST (DASHBOARD) - ALWAYS ALLOW
+        // Dashboard users can create, view, and edit flows regardless of subscription
+        isAuthenticated = true;
+        console.log(`[Subscription Check] Authenticated dashboard request for user ${result.userId} - ALLOWING ACCESS`);
         subscriptionStatus = await checkSubscriptionAccess(result.userId);
         isEnabled = subscriptionStatus.hasAccess;
         console.log(`[Subscription Check] User subscription status:`, {
@@ -112,10 +113,11 @@ export async function GET(
           isTrial: subscriptionStatus.isTrial,
           isExpired: subscriptionStatus.isExpired,
         });
+        // Note: We still check subscription status to show in UI, but we NEVER block dashboard access
       } else {
-        // This is an unauthenticated request (customer-facing page)
-        // Check if any admin of the target company has an active subscription
-        console.log(`[Subscription Check] Unauthenticated request for company ${companyId}`);
+        // UNAUTHENTICATED REQUEST (CUSTOMER-FACING PAGE) - CHECK SUBSCRIPTION
+        // Customer-facing pages require active subscription
+        console.log(`[Subscription Check] Unauthenticated customer request for company ${companyId}`);
         subscriptionStatus = await checkCompanyAdminSubscription(companyId);
         isEnabled = subscriptionStatus.hasAccess;
         console.log(`[Subscription Check] Company admin subscription status:`, {
@@ -125,6 +127,23 @@ export async function GET(
           membershipId: subscriptionStatus.membership?.id,
           userId: subscriptionStatus.membership?.user_id,
         });
+        
+        // For unauthenticated requests, block access if no subscription
+        if (!isEnabled) {
+          const errorResponse = NextResponse.json(
+            { 
+              error: 'Funnel access requires an active subscription. Please subscribe to enable your funnels.',
+              enabled: false,
+              subscriptionStatus: subscriptionStatus ? {
+                hasAccess: subscriptionStatus.hasAccess,
+                isTrial: subscriptionStatus.isTrial,
+              } : null,
+            },
+            { status: 403 }
+          );
+          errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+          return errorResponse;
+        }
       }
     } catch (error) {
       console.error('[Subscription Check] Error checking subscription in flow endpoint:', error);
@@ -133,30 +152,30 @@ export async function GET(
         stack: error instanceof Error ? error.stack : undefined,
         companyId,
       });
-      // On error, block access to be safe (fail closed)
+      
+      // On error: if authenticated, always allow (fail open for dashboard)
+      // If unauthenticated, block (fail closed for customer pages)
       isEnabled = false;
       subscriptionStatus = {
         hasAccess: false,
         isTrial: false,
         isExpired: true,
       };
-    }
-
-    // If subscription check failed, return error response
-    if (!isEnabled) {
-      const errorResponse = NextResponse.json(
-        { 
-          error: 'Funnel access requires an active subscription. Please subscribe to enable your funnels.',
-          enabled: false,
-          subscriptionStatus: subscriptionStatus ? {
-            hasAccess: subscriptionStatus.hasAccess,
-            isTrial: subscriptionStatus.isTrial,
-          } : null,
-        },
-        { status: 403 }
-      );
-      errorResponse.headers.set('Access-Control-Allow-Origin', '*');
-      return errorResponse;
+      
+      // Only block if NOT authenticated (customer-facing page)
+      if (!isAuthenticated) {
+        const errorResponse = NextResponse.json(
+          { 
+            error: 'Funnel access requires an active subscription. Please subscribe to enable your funnels.',
+            enabled: false,
+            subscriptionStatus: null,
+          },
+          { status: 403 }
+        );
+        errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+        return errorResponse;
+      }
+      // If authenticated, continue and return flow data (even if subscription check failed)
     }
 
     const response = NextResponse.json({
