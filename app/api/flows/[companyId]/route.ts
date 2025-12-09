@@ -210,11 +210,85 @@ export async function GET(
   }
 }
 
+// Delete a flow
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ companyId: string }> }
+) {
+  try {
+    const { companyId } = await params;
+
+    if (!isSupabaseConfigured() || !supabase) {
+      return NextResponse.json(
+        { error: 'Supabase not configured' },
+        { status: 500 }
+      );
+    }
+
+    // Get flowId from query params
+    const { searchParams } = request.nextUrl;
+    const flowId = searchParams.get('flowId');
+
+    if (!flowId) {
+      return NextResponse.json(
+        { error: 'flowId is required' },
+        { status: 400 }
+      );
+    }
+
+    // Verify flow belongs to company before deleting
+    const { data: flow, error: flowError } = await supabase
+      .from('company_flows')
+      .select('id, flow_name, company_id')
+      .eq('id', flowId)
+      .eq('company_id', companyId)
+      .single();
+
+    if (flowError || !flow) {
+      if (flowError?.code === 'PGRST116') {
+        return NextResponse.json(
+          { error: 'Flow not found' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json(
+        { error: 'Flow not found or access denied' },
+        { status: 404 }
+      );
+    }
+
+    // Delete the flow (CASCADE will automatically delete related nodes, edges, and analytics)
+    const { error: deleteError } = await supabase
+      .from('company_flows')
+      .delete()
+      .eq('id', flowId)
+      .eq('company_id', companyId);
+
+    if (deleteError) {
+      console.error('Error deleting flow:', deleteError);
+      throw deleteError;
+    }
+
+    console.log(`Flow ${flowId} (${flow.flow_name}) deleted successfully`);
+
+    return NextResponse.json({ 
+      success: true,
+      message: `Flow "${flow.flow_name}" deleted successfully`,
+    });
+  } catch (error) {
+    console.error('Error deleting flow:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to delete flow' },
+      { status: 500 }
+    );
+  }
+}
+
 // Handle OPTIONS request for CORS preflight
 export async function OPTIONS() {
   const response = new NextResponse(null, { status: 200 });
   response.headers.set('Access-Control-Allow-Origin', '*');
-  response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, DELETE, OPTIONS');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
   return response;
 }

@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, FileText, CheckCircle2, X, Code } from 'lucide-react';
+import { Plus, FileText, CheckCircle2, X, Code, Trash2 } from 'lucide-react';
 import { Button, Dialog } from '@whop/react/components';
 
 import UpsellFlowBuilder from './UpsellFlowBuilder';
 import EmbedCodeModal from './EmbedCodeModal';
-import AlertDialog from './AlertDialog';
+import AlertDialog, { ConfirmDialog } from './AlertDialog';
 
 interface FlowNode {
   id: string;
@@ -82,6 +82,11 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
     title: '',
     message: '',
     type: 'info',
+  });
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{ open: boolean; flowId: string | null; flowName: string | null }>({
+    open: false,
+    flowId: null,
+    flowName: null,
   });
 
   // Load flows list on mount
@@ -356,6 +361,67 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
     }
   };
 
+  const handleDeleteFlow = (flowId: string, flowName: string | null) => {
+    setDeleteConfirmDialog({
+      open: true,
+      flowId,
+      flowName,
+    });
+  };
+
+  const confirmDeleteFlow = async () => {
+    const { flowId, flowName } = deleteConfirmDialog;
+    if (!flowId) return;
+
+    try {
+      const response = await fetch(`/api/flows/${companyId}?flowId=${flowId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Flow deleted successfully:', result);
+        
+        // Reload flows list
+        const flowsResponse = await fetch(`/api/flows/${companyId}/list`);
+        if (flowsResponse.ok) {
+          const flowsData = await flowsResponse.json();
+          setFlows(flowsData.flows || []);
+        }
+        
+        // If the deleted flow was selected, clear selection
+        if (selectedFlowId === flowId) {
+          setSelectedFlowId(null);
+        }
+
+        setDeleteConfirmDialog({ open: false, flowId: null, flowName: null });
+        setAlertDialog({
+          open: true,
+          title: 'Success',
+          message: `Flow "${flowName || 'Untitled'}" has been deleted successfully.`,
+          type: 'success',
+        });
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        setDeleteConfirmDialog({ open: false, flowId: null, flowName: null });
+        setAlertDialog({
+          open: true,
+          title: 'Error',
+          message: errorData.error || 'Failed to delete flow',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting flow:', error);
+      setDeleteConfirmDialog({ open: false, flowId: null, flowName: null });
+      setAlertDialog({
+        open: true,
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Failed to delete flow',
+        type: 'error',
+      });
+    }
+  };
 
   // If a flow is selected, show the step-based builder
   if (selectedFlowId) {
@@ -511,6 +577,19 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                           <Code className="w-4 h-4 mr-2" />
                           Embed
                         </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteFlow(f.id, f.flow_name);
+                          }}
+                          color="red"
+                          variant="soft"
+                          size="1"
+                          title="Delete flow"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                         {selectedFlowId === f.id && (
                           <CheckCircle2 className="w-6 h-6 text-accent-500 flex-shrink-0" />
                         )}
@@ -607,6 +686,22 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
           title={alertDialog.title}
           message={alertDialog.message}
           type={alertDialog.type}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          open={deleteConfirmDialog.open}
+          onOpenChange={(open) => setDeleteConfirmDialog({ ...deleteConfirmDialog, open })}
+          title="Delete Flow"
+          message={
+            deleteConfirmDialog.flowName
+              ? `Are you sure you want to delete "${deleteConfirmDialog.flowName}"? This action cannot be undone and will delete all associated nodes, edges, and analytics data.`
+              : 'Are you sure you want to delete this flow? This action cannot be undone and will delete all associated nodes, edges, and analytics data.'
+          }
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={confirmDeleteFlow}
+          variant="danger"
         />
       </div>
     );
