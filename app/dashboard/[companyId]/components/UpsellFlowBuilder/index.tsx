@@ -107,6 +107,7 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
   useEffect(() => {
     if (!flowId) {
       setLoading(false);
+      setFlow(null);
       return;
     }
 
@@ -116,13 +117,28 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
         const flowResponse = await fetch(`/api/flows/${companyId}?flowId=${flowId}`);
         if (flowResponse.ok) {
           const flowData = await flowResponse.json();
-          setFlow({
-            ...flowData,
-            nodes: flowData.nodes || [],
-          });
+          // Check if response contains an error (even with 200 status)
+          if (flowData.error) {
+            console.error('Flow API returned error:', flowData.error);
+            setFlow(null);
+          } else if (flowData.id) {
+            setFlow({
+              ...flowData,
+              nodes: flowData.nodes || [],
+            });
+          } else {
+            console.error('Flow data missing ID:', flowData);
+            setFlow(null);
+          }
+        } else {
+          // Response was not OK (404, 403, etc.)
+          const errorData = await flowResponse.json().catch(() => ({ error: 'Unknown error' }));
+          console.error('Flow load failed:', flowResponse.status, errorData);
+          setFlow(null);
         }
       } catch (error) {
         console.error('Error loading flow:', error);
+        setFlow(null);
       } finally {
         setLoading(false);
       }

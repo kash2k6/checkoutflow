@@ -175,6 +175,10 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
       return;
     }
 
+    // Clear any stale selectedFlowId before creating new flow
+    // This ensures we don't navigate to an old flow if there was a previous error
+    setSelectedFlowId(null);
+
     try {
       console.log('Creating new flow:', { companyId, flow_name: newFlowName.trim() });
       
@@ -210,16 +214,74 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
         const createdFlowName = newFlowName.trim();
         setNewFlowName('');
         
-        // Reload flows list to ensure we have the latest data
-        const flowsResponse = await fetch(`/api/flows/${companyId}/list`);
-        if (flowsResponse.ok) {
-          const flowsData = await flowsResponse.json();
-          setFlows(flowsData.flows || []);
-        }
+        // Verify the flow is accessible before navigating to it
+        // This prevents "Flow not found" errors due to timing/database replication delays
+        const verifyAndNavigate = async () => {
+          let retries = 3;
+          let verified = false;
+          
+          while (retries > 0 && !verified) {
+            try {
+              const verifyResponse = await fetch(`/api/flows/${companyId}?flowId=${newFlow.id}`);
+              if (verifyResponse.ok) {
+                const flowData = await verifyResponse.json();
+                if (flowData.id && flowData.id === newFlow.id) {
+                  verified = true;
+                  console.log('Flow verified, navigating...');
+                  
+                  // Reload flows list to ensure we have the latest data
+                  const flowsResponse = await fetch(`/api/flows/${companyId}/list`);
+                  if (flowsResponse.ok) {
+                    const flowsData = await flowsResponse.json();
+                    setFlows(flowsData.flows || []);
+                  }
+                  
+                  // Navigate to the verified flow
+                  setSelectedFlowId(newFlow.id);
+                  return;
+                }
+              }
+            } catch (error) {
+              console.error(`Flow verification attempt failed (${retries} retries left):`, error);
+            }
+            
+            retries--;
+            if (retries > 0) {
+              // Wait a bit before retrying (exponential backoff)
+              await new Promise(resolve => setTimeout(resolve, 300 * (4 - retries)));
+            }
+          }
+          
+          // If verification failed after retries, try to find the flow by name in the list
+          console.warn('Flow verification failed, trying to find by name in flows list');
+          const flowsResponse = await fetch(`/api/flows/${companyId}/list`);
+          if (flowsResponse.ok) {
+            const flowsData = await flowsResponse.json();
+            setFlows(flowsData.flows || []);
+            const foundFlow = flowsData.flows?.find((f: FlowListItem) => 
+              f.id === newFlow.id || f.flow_name === createdFlowName
+            );
+            if (foundFlow) {
+              console.log('Found flow in list, navigating...');
+              setSelectedFlowId(foundFlow.id);
+            } else {
+              // Last resort: show success message and let user select manually
+              setAlertDialog({
+                open: true,
+                title: 'Flow Created',
+                message: `Flow "${createdFlowName}" was created successfully. Please select it from the list.`,
+                type: 'success',
+              });
+            }
+          } else {
+            // Even the list fetch failed - navigate anyway and hope for the best
+            console.warn('Could not verify flow, navigating anyway...');
+            setSelectedFlowId(newFlow.id);
+          }
+        };
         
-        // Navigate to the new flow immediately using the ID from the response
-        // The flow should be available immediately after creation
-        setSelectedFlowId(newFlow.id);
+        // Start verification process
+        verifyAndNavigate();
       } else {
         const errorData = await response.json();
         console.error('Error creating flow:', errorData);
