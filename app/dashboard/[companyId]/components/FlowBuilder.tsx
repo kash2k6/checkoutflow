@@ -193,20 +193,39 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
         const newFlow = await response.json();
         console.log('Flow created successfully:', newFlow);
         
-        // Reload flows list first
+        // Verify we have a valid flow ID
+        if (!newFlow.id) {
+          console.error('Flow created but no ID returned:', newFlow);
+          setAlertDialog({
+            open: true,
+            title: 'Error',
+            message: 'Flow was created but could not be loaded. Please refresh and try again.',
+            type: 'error',
+          });
+          return;
+        }
+        
+        // Close modal and clear input immediately
+        setShowNewFlowModal(false);
+        const createdFlowName = newFlowName.trim();
+        setNewFlowName('');
+        
+        // Reload flows list to ensure we have the latest data
         const flowsResponse = await fetch(`/api/flows/${companyId}/list`);
         if (flowsResponse.ok) {
           const flowsData = await flowsResponse.json();
           setFlows(flowsData.flows || []);
         }
         
-        // Then set the new flow as selected
+        // Navigate to the new flow immediately using the ID from the response
+        // The flow should be available immediately after creation
         setSelectedFlowId(newFlow.id);
-        setShowNewFlowModal(false);
-        setNewFlowName('');
       } else {
         const errorData = await response.json();
         console.error('Error creating flow:', errorData);
+        // Clear any stale selectedFlowId on error
+        setSelectedFlowId(null);
+        // Keep modal open and input field intact on error so user can try a different name
         setAlertDialog({
           open: true,
           title: 'Error',
@@ -216,6 +235,9 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
       }
     } catch (error) {
       console.error('Error creating flow:', error);
+      // Clear any stale selectedFlowId on error
+      setSelectedFlowId(null);
+      // Keep modal open and input field intact on error
       setAlertDialog({
         open: true,
         title: 'Error',

@@ -32,6 +32,24 @@ export async function POST(request: NextRequest) {
     let flow;
     if (id) {
       // Update existing flow by ID
+      // If flow_name is being updated, check if it conflicts with another flow
+      if (flow_name) {
+        const { data: existingFlow } = await supabase
+          .from('company_flows')
+          .select('id, flow_name')
+          .eq('company_id', company_id)
+          .eq('flow_name', flow_name)
+          .neq('id', id) // Exclude the current flow
+          .single();
+
+        if (existingFlow) {
+          return NextResponse.json(
+            { error: `A flow named "${flow_name}" already exists for this company. Please choose a different name.` },
+            { status: 409 } // Conflict status code
+          );
+        }
+      }
+
       const { data, error } = await supabase
         .from('company_flows')
         .update({
@@ -46,7 +64,16 @@ export async function POST(request: NextRequest) {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Handle duplicate key constraint violation
+        if (error.code === '23505' && error.details?.includes('idx_company_flows_company_name')) {
+          return NextResponse.json(
+            { error: `A flow named "${flow_name}" already exists for this company. Please choose a different name.` },
+            { status: 409 } // Conflict status code
+          );
+        }
+        throw error;
+      }
       flow = data;
       
       // If confirmation_page_url was updated, also update all edges with target_type='confirmation'
@@ -80,6 +107,24 @@ export async function POST(request: NextRequest) {
         insertData.initial_product_plan_id = initial_product_plan_id;
       }
 
+      // Check if a flow with this name already exists for this company
+      const finalFlowName = insertData.flow_name;
+      if (finalFlowName) {
+        const { data: existingFlow } = await supabase
+          .from('company_flows')
+          .select('id, flow_name')
+          .eq('company_id', company_id)
+          .eq('flow_name', finalFlowName)
+          .single();
+
+        if (existingFlow) {
+          return NextResponse.json(
+            { error: `A flow named "${finalFlowName}" already exists for this company. Please choose a different name.` },
+            { status: 409 } // Conflict status code
+          );
+        }
+      }
+
       const { data, error } = await supabase
         .from('company_flows')
         .insert(insertData)
@@ -88,6 +133,15 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         console.error('Supabase error creating flow:', error);
+        
+        // Handle duplicate key constraint violation
+        if (error.code === '23505' && error.details?.includes('idx_company_flows_company_name')) {
+          return NextResponse.json(
+            { error: `A flow named "${finalFlowName}" already exists for this company. Please choose a different name.` },
+            { status: 409 } // Conflict status code
+          );
+        }
+        
         throw error;
       }
       flow = data;
@@ -105,8 +159,18 @@ export async function POST(request: NextRequest) {
       ...flow,
       nodes: nodes || [],
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating/updating flow:', error);
+    
+    // Handle duplicate key constraint violation in catch block as fallback
+    if (error?.code === '23505' && error?.details?.includes('idx_company_flows_company_name')) {
+      const flowName = error?.details?.match(/flow_name\)=\([^,]+,\s*([^)]+)\)/)?.[1] || 'this name';
+      return NextResponse.json(
+        { error: `A flow named "${flowName}" already exists for this company. Please choose a different name.` },
+        { status: 409 } // Conflict status code
+      );
+    }
+    
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to save flow' },
       { status: 500 }
@@ -134,6 +198,24 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // If flow_name is being updated, check if it conflicts with another flow
+    if (flow_name) {
+      const { data: existingFlow } = await supabase
+        .from('company_flows')
+        .select('id, flow_name')
+        .eq('company_id', company_id)
+        .eq('flow_name', flow_name)
+        .neq('id', id) // Exclude the current flow
+        .single();
+
+      if (existingFlow) {
+        return NextResponse.json(
+          { error: `A flow named "${flow_name}" already exists for this company. Please choose a different name.` },
+          { status: 409 } // Conflict status code
+        );
+      }
+    }
+
     // Log what we're trying to save
     console.log('Saving checkout_customization:', JSON.stringify(checkout_customization));
     
@@ -155,6 +237,14 @@ export async function PUT(request: NextRequest) {
     
     if (error) {
       console.error('Error updating flow:', error);
+      
+      // Handle duplicate key constraint violation
+      if (error.code === '23505' && error.details?.includes('idx_company_flows_company_name')) {
+        return NextResponse.json(
+          { error: `A flow named "${flow_name}" already exists for this company. Please choose a different name.` },
+          { status: 409 } // Conflict status code
+        );
+      }
     } else {
       console.log('Flow updated successfully. checkout_customization:', JSON.stringify(data?.checkout_customization));
     }
@@ -192,8 +282,18 @@ export async function PUT(request: NextRequest) {
       ...data,
       nodes: nodes || [],
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating flow:', error);
+    
+    // Handle duplicate key constraint violation in catch block as fallback
+    if (error?.code === '23505' && error?.details?.includes('idx_company_flows_company_name')) {
+      const flowName = error?.details?.match(/flow_name\)=\([^,]+,\s*([^)]+)\)/)?.[1] || 'this name';
+      return NextResponse.json(
+        { error: `A flow named "${flowName}" already exists for this company. Please choose a different name.` },
+        { status: 409 } // Conflict status code
+      );
+    }
+    
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to update flow' },
       { status: 500 }
