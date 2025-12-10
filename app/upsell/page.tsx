@@ -466,11 +466,19 @@ interface CompanyFlow {
         if (flow?.confirmation_page_url) {
           const redirectUrl = new URL(flow.confirmation_page_url);
           redirectUrl.searchParams.set('companyId', companyId || '');
-          redirectUrl.searchParams.set('flowId', flowId || '');
           redirectUrl.searchParams.set('memberId', memberId);
+          // For external confirmation pages, don't pass flowId (prevents embed.js from thinking it's an upsell)
+          // Only pass flowId for internal confirmation pages
+          const isExternal = redirectUrl.origin !== window.location.origin;
+          if (!isExternal) {
+            redirectUrl.searchParams.set('flowId', flowId || '');
+          }
           // Ensure nodeId is NOT included in confirmation URLs (confirmation pages should never have nodeId)
           redirectUrl.searchParams.delete('nodeId');
-          const isExternal = redirectUrl.origin !== window.location.origin;
+          // Add confirmation=true parameter for external pages to help embed.js detect it's a confirmation page
+          if (isExternal) {
+            redirectUrl.searchParams.set('confirmation', 'true');
+          }
           handleRedirect(redirectUrl.toString(), isExternal);
         } else {
           // Only show confirmation if we actually have purchased products
@@ -582,19 +590,27 @@ interface CompanyFlow {
           setShowConfirmation(true);
         }
       }
-    } else if (nextAction.type === 'confirmation' && nextAction.url) {
-      // Redirect to confirmation page
+      } else if (nextAction.type === 'confirmation' && nextAction.url) {
+        // Redirect to confirmation page
         console.log('Redirecting to confirmation page:', nextAction.url);
-      const redirectUrl = new URL(nextAction.url);
-      redirectUrl.searchParams.set('companyId', companyId || '');
-      redirectUrl.searchParams.set('flowId', flowId || '');
-      if (memberIdFromUrl) {
-        redirectUrl.searchParams.set('memberId', memberIdFromUrl);
-      }
+        const redirectUrl = new URL(nextAction.url);
+        redirectUrl.searchParams.set('companyId', companyId || '');
+        if (memberIdFromUrl) {
+          redirectUrl.searchParams.set('memberId', memberIdFromUrl);
+        }
+        // For external confirmation pages, don't pass flowId (prevents embed.js from thinking it's an upsell)
+        // Only pass flowId for internal confirmation pages
+        const isExternal = redirectUrl.origin !== window.location.origin;
+        if (!isExternal) {
+          redirectUrl.searchParams.set('flowId', flowId || '');
+        }
         // Ensure nodeId is NOT included in confirmation URLs (confirmation pages should never have nodeId)
         redirectUrl.searchParams.delete('nodeId');
-      const isExternal = redirectUrl.origin !== window.location.origin;
-      handleRedirect(redirectUrl.toString(), isExternal);
+        // Add confirmation=true parameter for external pages to help embed.js detect it's a confirmation page
+        if (isExternal) {
+          redirectUrl.searchParams.set('confirmation', 'true');
+        }
+        handleRedirect(redirectUrl.toString(), isExternal);
     } else if (nextAction.type === 'external_url' && nextAction.url) {
       // Redirect to external URL
       console.log('Redirecting to external URL:', nextAction.url);

@@ -335,9 +335,13 @@
     const isConfirmationPath = pathname.includes('confirmation') || pathname.includes('thankyou');
     
     const hasCheckoutParams = urlCompanyId && !urlNodeId && !urlMemberId;
-    const hasUpsellParams = urlCompanyId && urlFlowId && (urlNodeId || isUpsellPath);
-    // Only show confirmation if we're on a confirmation path OR if we have memberId but NO nodeId (meaning we're done with upsells)
-    const hasConfirmationParams = urlCompanyId && urlMemberId && (!urlNodeId && !isUpsellPath && !isCheckoutPath) || isConfirmationPath;
+    // Upsell requires nodeId OR being on upsell path - don't auto-detect upsells without explicit nodeId
+    const hasUpsellParams = urlCompanyId && urlFlowId && urlNodeId && isUpsellPath;
+    // Only show confirmation if we're on a confirmation path OR if we have memberId but NO nodeId and NO flowId (meaning we're done with upsells)
+    // External confirmation pages might not have "confirmation" in path, so check for memberId without nodeId
+    const hasConfirmationParams = (urlCompanyId && urlMemberId && !urlNodeId && !urlFlowId && !isUpsellPath && !isCheckoutPath) 
+                                  || isConfirmationPath
+                                  || (urlCompanyId && urlMemberId && !urlNodeId && !isCheckoutPath && !isUpsellPath && url.searchParams?.get('confirmation') === 'true');
     
     // Find all embed containers
     let checkoutContainers = document.querySelectorAll('[data-xperience-checkout]');
@@ -355,10 +359,10 @@
       checkoutContainers = document.querySelectorAll('[data-xperience-checkout]');
     }
     
-    // Create upsell container if we have companyId and flowId (nodeId might come later)
-    // Also check pathname to see if we're on an upsell page
+    // Create upsell container if we have companyId and flowId and nodeId
+    // Don't create upsells if memberId is present (they've already purchased) unless explicitly on upsell path with nodeId
     // Don't create if we're on confirmation path
-    if (upsellContainers.length === 0 && hasUpsellParams && !isConfirmationPath) {
+    if (upsellContainers.length === 0 && hasUpsellParams && !isConfirmationPath && !urlMemberId) {
       const autoContainer = document.createElement('div');
       autoContainer.setAttribute('data-xperience-upsell', '');
       // Also set the params as data attributes so they're available when processing
@@ -375,8 +379,9 @@
     }
     
     // Only auto-create confirmation container if we're actually on a confirmation page
-    // Don't create it on upsell or checkout pages - ONLY on confirmation/thankyou paths
-    if (confirmationContainers.length === 0 && hasConfirmationParams && isConfirmationPath) {
+    // Don't create it on upsell or checkout pages
+    // Allow auto-creation on external pages if hasConfirmationParams is true (has memberId, no nodeId, no flowId or has confirmation param)
+    if (confirmationContainers.length === 0 && hasConfirmationParams && (isConfirmationPath || (urlMemberId && !urlNodeId && !isUpsellPath && !isCheckoutPath))) {
       const autoContainer = document.createElement('div');
       autoContainer.setAttribute('data-xperience-confirmation', '');
       autoContainer.style.width = '100%';

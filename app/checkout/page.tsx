@@ -486,9 +486,6 @@ function CheckoutContent() {
             const redirectUrl = new URL(flow.confirmation_page_url);
             redirectUrl.searchParams.set('companyId', companyId || '');
             redirectUrl.searchParams.set('memberId', memberId);
-            if (flowId) {
-              redirectUrl.searchParams.set('flowId', flowId);
-            }
             // Pass session ID to filter purchases by current transaction
             if (sessionId) {
               redirectUrl.searchParams.set('sessionId', sessionId);
@@ -498,6 +495,15 @@ function CheckoutContent() {
             
             // Check if confirmation URL is external
             const isExternal = redirectUrl.origin !== window.location.origin;
+            // For external confirmation pages, don't pass flowId (prevents embed.js from thinking it's an upsell)
+            // Only pass flowId for internal confirmation pages
+            if (!isExternal && flowId) {
+              redirectUrl.searchParams.set('flowId', flowId);
+            }
+            // Add confirmation=true parameter for external pages to help embed.js detect it's a confirmation page
+            if (isExternal) {
+              redirectUrl.searchParams.set('confirmation', 'true');
+            }
             handleRedirect(redirectUrl.toString(), isExternal);
           } else {
             // Default: show success message
