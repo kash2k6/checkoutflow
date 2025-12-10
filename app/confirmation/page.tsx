@@ -9,6 +9,7 @@ function ConfirmationContent() {
   const flowId = searchParams.get('flowId');
   const memberId = searchParams.get('memberId');
   const sessionId = searchParams.get('sessionId'); // Session ID to filter by current transaction
+  const nodeId = searchParams.get('nodeId'); // Check for nodeId - should not be on confirmation page
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [flow, setFlow] = useState<any>(null);
@@ -17,6 +18,28 @@ function ConfirmationContent() {
     price: number;
     type: 'one_time' | 'subscription';
   }>>([]);
+
+  // If nodeId is present, this should be an upsell page, not confirmation
+  // Redirect to upsell page if nodeId is present (someone accidentally navigated here with nodeId)
+  useEffect(() => {
+    if (nodeId && typeof window !== 'undefined' && companyId && flowId) {
+      console.warn('Confirmation page received nodeId parameter. Redirecting to upsell page...');
+      // Redirect to upsell page with the nodeId
+      const upsellUrl = new URL('/upsell', window.location.origin);
+      upsellUrl.searchParams.set('companyId', companyId);
+      upsellUrl.searchParams.set('flowId', flowId);
+      upsellUrl.searchParams.set('nodeId', nodeId);
+      if (memberId) {
+        upsellUrl.searchParams.set('memberId', memberId);
+      }
+      if (sessionId) {
+        upsellUrl.searchParams.set('sessionId', sessionId);
+      }
+      // Use replace instead of assign to avoid adding to history
+      window.location.replace(upsellUrl.toString());
+      return;
+    }
+  }, [nodeId, companyId, flowId, memberId, sessionId]);
 
   useEffect(() => {
     const loadData = async () => {

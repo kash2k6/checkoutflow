@@ -493,6 +493,8 @@ function CheckoutContent() {
             if (sessionId) {
               redirectUrl.searchParams.set('sessionId', sessionId);
             }
+            // Ensure nodeId is NOT included in confirmation URLs (confirmation pages should never have nodeId)
+            redirectUrl.searchParams.delete('nodeId');
             
             // Check if confirmation URL is external
             const isExternal = redirectUrl.origin !== window.location.origin;

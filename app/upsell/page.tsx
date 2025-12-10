@@ -468,6 +468,8 @@ interface CompanyFlow {
           redirectUrl.searchParams.set('companyId', companyId || '');
           redirectUrl.searchParams.set('flowId', flowId || '');
           redirectUrl.searchParams.set('memberId', memberId);
+          // Ensure nodeId is NOT included in confirmation URLs (confirmation pages should never have nodeId)
+          redirectUrl.searchParams.delete('nodeId');
           const isExternal = redirectUrl.origin !== window.location.origin;
           handleRedirect(redirectUrl.toString(), isExternal);
         } else {
@@ -572,6 +574,8 @@ interface CompanyFlow {
           if (memberIdFromUrl) {
             redirectUrl.searchParams.set('memberId', memberIdFromUrl);
           }
+          // Ensure nodeId is NOT included in confirmation URLs (confirmation pages should never have nodeId)
+          redirectUrl.searchParams.delete('nodeId');
           const isExternal = redirectUrl.origin !== window.location.origin;
           handleRedirect(redirectUrl.toString(), isExternal);
         } else if (purchasedProducts.length > 0) {
@@ -580,13 +584,15 @@ interface CompanyFlow {
       }
     } else if (nextAction.type === 'confirmation' && nextAction.url) {
       // Redirect to confirmation page
-      console.log('Redirecting to confirmation page:', nextAction.url);
+        console.log('Redirecting to confirmation page:', nextAction.url);
       const redirectUrl = new URL(nextAction.url);
       redirectUrl.searchParams.set('companyId', companyId || '');
       redirectUrl.searchParams.set('flowId', flowId || '');
       if (memberIdFromUrl) {
         redirectUrl.searchParams.set('memberId', memberIdFromUrl);
       }
+        // Ensure nodeId is NOT included in confirmation URLs (confirmation pages should never have nodeId)
+        redirectUrl.searchParams.delete('nodeId');
       const isExternal = redirectUrl.origin !== window.location.origin;
       handleRedirect(redirectUrl.toString(), isExternal);
     } else if (nextAction.type === 'external_url' && nextAction.url) {
@@ -609,6 +615,8 @@ interface CompanyFlow {
         if (memberIdFromUrl) {
           redirectUrl.searchParams.set('memberId', memberIdFromUrl);
         }
+        // Ensure nodeId is NOT included in confirmation URLs (confirmation pages should never have nodeId)
+        redirectUrl.searchParams.delete('nodeId');
         const isExternal = redirectUrl.origin !== window.location.origin;
         handleRedirect(redirectUrl.toString(), isExternal);
       } else {
