@@ -384,6 +384,33 @@ interface CompanyFlow {
           redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
         }
         handleRedirect(redirectUrl.toString()); // Update iframe for internal URLs
+      } else if (nextAction.type === 'node' && !nextAction.target) {
+        // Edge case: edge points to a node but target node not found in flow
+        console.warn('Edge configured to go to node, but target node not found in flow. Using fallback logic.');
+        const fallbackNode = findNextNodeFallback(currentNode, 'accept');
+        if (fallbackNode) {
+          const redirectUrl = new URL('/upsell', window.location.origin);
+          redirectUrl.searchParams.set('companyId', companyId || '');
+          redirectUrl.searchParams.set('flowId', flowId || '');
+          redirectUrl.searchParams.set('nodeId', fallbackNode.id);
+          redirectUrl.searchParams.set('memberId', memberId);
+          if (setupIntentIdFromUrl) {
+            redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
+          }
+          handleRedirect(redirectUrl.toString());
+        } else {
+          // No fallback node, go to confirmation
+          if (flow?.confirmation_page_url) {
+            const redirectUrl = new URL(flow.confirmation_page_url);
+            redirectUrl.searchParams.set('companyId', companyId || '');
+            redirectUrl.searchParams.set('flowId', flowId || '');
+            redirectUrl.searchParams.set('memberId', memberId);
+            const isExternal = redirectUrl.origin !== window.location.origin;
+            handleRedirect(redirectUrl.toString(), isExternal);
+          } else if (purchasedProducts.length > 0) {
+            setShowConfirmation(true);
+          }
+        }
       } else if (nextAction.type === 'confirmation' && nextAction.url) {
         // Redirect to confirmation page
         const redirectUrl = new URL(nextAction.url);
@@ -440,8 +467,14 @@ interface CompanyFlow {
     // Find next action based on configured logic
     const nextAction = findNextAction('decline');
     
+    console.log('Decline clicked - Next action:', nextAction);
+    console.log('Current node:', currentNode.id, currentNode.node_type);
+    console.log('Available edges:', edges);
+    console.log('Flow nodes:', flow?.nodes.map(n => ({ id: n.id, type: n.node_type })));
+    
     if (nextAction.type === 'node' && nextAction.target) {
       // Redirect to next node
+      console.log('Redirecting to next node:', nextAction.target.id, nextAction.target.node_type);
       let redirectUrl: URL;
       try {
         redirectUrl = new URL(nextAction.target.redirect_url);
@@ -461,6 +494,7 @@ interface CompanyFlow {
         }
       } catch (e) {
         // If redirect_url is not a valid URL, treat it as a relative path
+        console.log('redirect_url is not a valid URL, treating as relative path');
       }
       
       // If it's our domain or a relative path, redirect to our /upsell page
@@ -474,9 +508,44 @@ interface CompanyFlow {
       if (setupIntentIdFromUrl) {
         redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
       }
+      console.log('Redirecting to:', redirectUrl.toString());
       handleRedirect(redirectUrl.toString()); // Update iframe for internal URLs
+    } else if (nextAction.type === 'node' && !nextAction.target) {
+      // Edge case: edge points to a node but target node not found in flow
+      console.warn('Edge configured to go to node, but target node not found in flow. Using fallback logic.');
+      const fallbackNode = findNextNodeFallback(currentNode, 'decline');
+      if (fallbackNode) {
+        const redirectUrl = new URL('/upsell', window.location.origin);
+        redirectUrl.searchParams.set('companyId', companyId || '');
+        redirectUrl.searchParams.set('flowId', flowId || '');
+        redirectUrl.searchParams.set('nodeId', fallbackNode.id);
+        if (memberIdFromUrl) {
+          redirectUrl.searchParams.set('memberId', memberIdFromUrl);
+        }
+        if (setupIntentIdFromUrl) {
+          redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
+        }
+        console.log('Using fallback node, redirecting to:', redirectUrl.toString());
+        handleRedirect(redirectUrl.toString());
+      } else {
+        // No fallback node, go to confirmation
+        console.log('No fallback node found, going to confirmation');
+        if (flow?.confirmation_page_url) {
+          const redirectUrl = new URL(flow.confirmation_page_url);
+          redirectUrl.searchParams.set('companyId', companyId || '');
+          redirectUrl.searchParams.set('flowId', flowId || '');
+          if (memberIdFromUrl) {
+            redirectUrl.searchParams.set('memberId', memberIdFromUrl);
+          }
+          const isExternal = redirectUrl.origin !== window.location.origin;
+          handleRedirect(redirectUrl.toString(), isExternal);
+        } else if (purchasedProducts.length > 0) {
+          setShowConfirmation(true);
+        }
+      }
     } else if (nextAction.type === 'confirmation' && nextAction.url) {
       // Redirect to confirmation page
+      console.log('Redirecting to confirmation page:', nextAction.url);
       const redirectUrl = new URL(nextAction.url);
       redirectUrl.searchParams.set('companyId', companyId || '');
       redirectUrl.searchParams.set('flowId', flowId || '');
@@ -487,6 +556,7 @@ interface CompanyFlow {
       handleRedirect(redirectUrl.toString(), isExternal);
     } else if (nextAction.type === 'external_url' && nextAction.url) {
       // Redirect to external URL
+      console.log('Redirecting to external URL:', nextAction.url);
       const redirectUrl = new URL(nextAction.url);
       redirectUrl.searchParams.set('companyId', companyId || '');
       redirectUrl.searchParams.set('flowId', flowId || '');
@@ -496,6 +566,7 @@ interface CompanyFlow {
       handleRedirect(redirectUrl.toString(), true); // Always redirect parent for external URLs
     } else {
       // Fallback: show confirmation or redirect to confirmation page
+      console.log('No configured action found, using fallback');
       if (flow?.confirmation_page_url) {
         const redirectUrl = new URL(flow.confirmation_page_url);
         redirectUrl.searchParams.set('companyId', companyId || '');
@@ -509,6 +580,8 @@ interface CompanyFlow {
         // Only show confirmation if we have purchased products, don't show as fallback
         if (purchasedProducts.length > 0) {
           setShowConfirmation(true);
+        } else {
+          console.warn('No next action configured and no confirmation URL. User may be stuck on page.');
         }
       }
     }
@@ -540,42 +613,145 @@ interface CompanyFlow {
 
   const findNextAction = (action: 'accept' | 'decline'): { type: 'node' | 'confirmation' | 'external_url', target: FlowNode | null, url: string | null } => {
     const edge = edges.find(e => e.action === action);
+    
+    console.log(`findNextAction('${action}') - Found edge:`, edge);
+    console.log(`findNextAction('${action}') - Total edges:`, edges.length);
+    
     if (!edge) {
       // Fallback to old logic if no edge configured
-      return { type: 'node', target: findNextNodeFallback(currentNode!, action), url: null };
+      console.log(`No edge found for action '${action}', using fallback logic`);
+      const fallbackNode = findNextNodeFallback(currentNode!, action);
+      return { type: 'node', target: fallbackNode, url: null };
     }
 
     if (edge.target_type === 'node' && edge.to_node_id) {
       const targetNode = flow?.nodes.find(n => n.id === edge.to_node_id);
+      console.log(`Edge points to node ${edge.to_node_id}, found:`, targetNode ? targetNode.id : 'NOT FOUND');
+      if (!targetNode) {
+        console.warn(`Target node ${edge.to_node_id} not found in flow nodes. Available nodes:`, flow?.nodes.map(n => n.id));
+      }
       return { type: 'node', target: targetNode || null, url: null };
     } else if (edge.target_type === 'confirmation') {
       // Always use the flow's current confirmation_page_url (in case it was updated)
       // Fallback to edge.target_url if flow doesn't have one
-      return { type: 'confirmation', target: null, url: flow?.confirmation_page_url || edge.target_url || null };
+      const confirmationUrl = flow?.confirmation_page_url || edge.target_url || null;
+      console.log(`Edge points to confirmation page:`, confirmationUrl);
+      return { type: 'confirmation', target: null, url: confirmationUrl };
     } else if (edge.target_type === 'external_url' && edge.target_url) {
+      console.log(`Edge points to external URL:`, edge.target_url);
       return { type: 'external_url', target: null, url: edge.target_url };
       }
 
+    console.warn(`Edge found but target_type '${edge.target_type}' not handled properly`);
     return { type: 'node', target: null, url: null };
   };
 
   const findNextNodeFallback = (current: FlowNode, action: 'accept' | 'decline'): FlowNode | null => {
     if (!flow) return null;
 
-    // Simple logic: after accept/decline, go to next node of same type or next type
-    const allNodes = flow.nodes.sort((a, b) => {
-      const typeOrder = { upsell: 1, downsell: 2, cross_sell: 3 };
-      if (typeOrder[a.node_type] !== typeOrder[b.node_type]) {
-        return typeOrder[a.node_type] - typeOrder[b.node_type];
-      }
-      return a.order_index - b.order_index;
-    });
+    // Get all nodes sorted by type and order_index
+    const upsellNodes = flow.nodes
+      .filter(n => n.node_type === 'upsell')
+      .sort((a, b) => a.order_index - b.order_index);
     
-    const currentIndex = allNodes.findIndex(n => n.id === current.id);
-    if (currentIndex >= 0 && currentIndex < allNodes.length - 1) {
-      return allNodes[currentIndex + 1];
+    const downsellNodes = flow.nodes
+      .filter(n => n.node_type === 'downsell')
+      .sort((a, b) => a.order_index - b.order_index);
+    
+    const crossSellNodes = flow.nodes
+      .filter(n => n.node_type === 'cross_sell')
+      .sort((a, b) => a.order_index - b.order_index);
+
+    // Handle decline actions with proper flow logic
+    if (action === 'decline') {
+      if (current.node_type === 'upsell') {
+        // When declining an upsell: try next upsell, then first downsell, then first cross-sell
+        const currentIndex = upsellNodes.findIndex(n => n.id === current.id);
+        if (currentIndex >= 0 && currentIndex < upsellNodes.length - 1) {
+          // There's another upsell, go to it
+          console.log('Fallback (decline upsell): Found next upsell at index', currentIndex + 1);
+          return upsellNodes[currentIndex + 1];
+        } else if (downsellNodes.length > 0) {
+          // No more upsells, go to first downsell
+          console.log('Fallback (decline upsell): No more upsells, going to first downsell');
+          return downsellNodes[0];
+        } else if (crossSellNodes.length > 0) {
+          // No downsells either, go to first cross-sell
+          console.log('Fallback (decline upsell): No downsells, going to first cross-sell');
+          return crossSellNodes[0];
+        }
+        // No more nodes, will go to confirmation
+        console.log('Fallback (decline upsell): No more nodes, going to confirmation');
+        return null;
+      } else if (current.node_type === 'downsell') {
+        // When declining a downsell: try next downsell, then first cross-sell
+        const currentIndex = downsellNodes.findIndex(n => n.id === current.id);
+        if (currentIndex >= 0 && currentIndex < downsellNodes.length - 1) {
+          // There's another downsell, go to it
+          console.log('Fallback (decline downsell): Found next downsell at index', currentIndex + 1);
+          return downsellNodes[currentIndex + 1];
+        } else if (crossSellNodes.length > 0) {
+          // No more downsells, go to first cross-sell
+          console.log('Fallback (decline downsell): No more downsells, going to first cross-sell');
+          return crossSellNodes[0];
+        }
+        // No more nodes, will go to confirmation
+        console.log('Fallback (decline downsell): No more nodes, going to confirmation');
+        return null;
+      } else if (current.node_type === 'cross_sell') {
+        // When declining a cross-sell: try next cross-sell, then confirmation
+        const currentIndex = crossSellNodes.findIndex(n => n.id === current.id);
+        if (currentIndex >= 0 && currentIndex < crossSellNodes.length - 1) {
+          // There's another cross-sell, go to it
+          console.log('Fallback (decline cross-sell): Found next cross-sell at index', currentIndex + 1);
+          return crossSellNodes[currentIndex + 1];
+        }
+        // No more cross-sells, will go to confirmation
+        console.log('Fallback (decline cross-sell): No more cross-sells, going to confirmation');
+        return null;
+      }
+    } else {
+      // Handle accept actions - after accepting, typically continue to next in same type, then next type
+      if (current.node_type === 'upsell') {
+        // After accepting upsell: try next upsell, then first downsell
+        const currentIndex = upsellNodes.findIndex(n => n.id === current.id);
+        if (currentIndex >= 0 && currentIndex < upsellNodes.length - 1) {
+          console.log('Fallback (accept upsell): Found next upsell at index', currentIndex + 1);
+          return upsellNodes[currentIndex + 1];
+        } else if (downsellNodes.length > 0) {
+          console.log('Fallback (accept upsell): No more upsells, going to first downsell');
+          return downsellNodes[0];
+        } else if (crossSellNodes.length > 0) {
+          console.log('Fallback (accept upsell): No downsells, going to first cross-sell');
+          return crossSellNodes[0];
+        }
+        console.log('Fallback (accept upsell): No more nodes, going to confirmation');
+        return null;
+      } else if (current.node_type === 'downsell') {
+        // After accepting downsell: try next downsell, then first cross-sell
+        const currentIndex = downsellNodes.findIndex(n => n.id === current.id);
+        if (currentIndex >= 0 && currentIndex < downsellNodes.length - 1) {
+          console.log('Fallback (accept downsell): Found next downsell at index', currentIndex + 1);
+          return downsellNodes[currentIndex + 1];
+        } else if (crossSellNodes.length > 0) {
+          console.log('Fallback (accept downsell): No more downsells, going to first cross-sell');
+          return crossSellNodes[0];
+        }
+        console.log('Fallback (accept downsell): No more nodes, going to confirmation');
+        return null;
+      } else if (current.node_type === 'cross_sell') {
+        // After accepting cross-sell: try next cross-sell, then confirmation
+        const currentIndex = crossSellNodes.findIndex(n => n.id === current.id);
+        if (currentIndex >= 0 && currentIndex < crossSellNodes.length - 1) {
+          console.log('Fallback (accept cross-sell): Found next cross-sell at index', currentIndex + 1);
+          return crossSellNodes[currentIndex + 1];
+        }
+        console.log('Fallback (accept cross-sell): No more cross-sells, going to confirmation');
+        return null;
+      }
     }
     
+    console.log('Fallback: No matching logic, returning null');
     return null;
   };
 
