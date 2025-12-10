@@ -69,6 +69,13 @@ function ConfirmationContent() {
           if (memberId) {
             try {
               const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
+              console.log('Confirmation page - Loading purchases:', {
+                companyId,
+                memberId,
+                flowId,
+                sessionId,
+                url: purchasesUrl
+              });
               const purchasesResponse = await fetch(purchasesUrl, {
                 method: 'GET',
                 headers: {
@@ -79,11 +86,18 @@ function ConfirmationContent() {
               
               if (purchasesResponse.ok) {
                 const purchasesData = await purchasesResponse.json();
+                console.log('Confirmation page - Purchases received:', {
+                  count: purchasesData.purchases?.length || 0,
+                  purchases: purchasesData.purchases,
+                  total: purchasesData.total
+                });
                 if (purchasesData.purchases && purchasesData.purchases.length > 0) {
                   setPurchasedProducts(purchasesData.purchases);
                   setLoading(false);
                   return;
                 }
+              } else {
+                console.error('Confirmation page - Failed to load purchases:', purchasesResponse.status, await purchasesResponse.text());
               }
             } catch (e) {
               console.error('Error loading purchases:', e);

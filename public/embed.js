@@ -310,6 +310,7 @@
     const urlFlowId = allParams.flowId || urlParams.get('flowId') || manualParams.flowId;
     const urlNodeId = allParams.nodeId || urlParams.get('nodeId') || manualParams.nodeId;
     const urlMemberId = allParams.memberId || urlParams.get('memberId') || manualParams.memberId;
+    const urlSessionId = allParams.sessionId || urlParams.get('sessionId') || manualParams.sessionId;
     const urlSetupIntentId = allParams.setupIntentId || urlParams.get('setupIntentId') || manualParams.setupIntentId;
     
     // Debug: log all param sources
@@ -322,6 +323,7 @@
         flowId: urlFlowId,
         nodeId: urlNodeId,
         memberId: urlMemberId,
+        sessionId: urlSessionId,
         setupIntentId: urlSetupIntentId,
       },
       inIframe: window.parent !== window,
@@ -582,6 +584,7 @@
       const companyId = container.getAttribute('data-company-id') || urlCompanyId;
       const flowId = container.getAttribute('data-flow-id') || urlFlowId;
       const memberId = container.getAttribute('data-member-id') || urlMemberId;
+      const sessionId = container.getAttribute('data-session-id') || urlSessionId;
       
       if (!companyId) {
         container.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">⚠️ Missing companyId. Please add data-company-id attribute or companyId URL parameter.</div>';
@@ -589,9 +592,10 @@
       }
 
       const iframe = document.createElement('iframe');
-      let url = `${baseUrl}/confirmation?companyId=${companyId}`;
-      if (flowId) url += `&flowId=${flowId}`;
-      if (memberId) url += `&memberId=${memberId}`;
+      let url = `${baseUrl}/confirmation?companyId=${encodeURIComponent(companyId)}`;
+      if (flowId) url += `&flowId=${encodeURIComponent(flowId)}`;
+      if (memberId) url += `&memberId=${encodeURIComponent(memberId)}`;
+      if (sessionId) url += `&sessionId=${encodeURIComponent(sessionId)}`;
       iframe.src = url;
       iframe.style.width = '100%';
       iframe.style.height = '600px'; // Initial height, will be updated by resize messages

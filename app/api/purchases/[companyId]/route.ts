@@ -45,13 +45,30 @@ export async function GET(
 
     // Filter by session ID if provided (to show only current transaction)
     if (sessionId) {
+      console.log('Purchases API - Filtering by sessionId:', sessionId);
       query = query.eq('session_id', sessionId);
+    } else {
+      console.log('Purchases API - No sessionId provided, showing all purchases for member');
     }
     // Removed the 30-minute time window filter - show all purchases for the member/flow
     // This allows the confirmation page to display purchases even if they're older
 
     // Get purchases, ordered by purchase time
     const { data: purchases, error } = await query.order('purchased_at', { ascending: true });
+    
+    console.log('Purchases API - Query result:', {
+      sessionId,
+      memberId,
+      flowId,
+      count: purchases?.length || 0,
+      purchases: purchases?.map((p: any) => ({
+        id: p.id,
+        type: p.purchase_type,
+        amount: p.amount,
+        session_id: p.session_id,
+        purchased_at: p.purchased_at
+      }))
+    });
 
     if (error) {
       console.error('Error fetching purchases:', error);
