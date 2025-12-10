@@ -49,14 +49,14 @@ export default function DashboardWithSubscription({ companyId }: DashboardWithSu
     <>
       {/* Show subscription banner if user doesn't have subscription */}
       {!isLoading && !hasSubscription && (
-        <div className="sticky top-0 z-[60] bg-white dark:bg-gray-a2 border-b border-gray-a4 overflow-hidden">
+        <div className="sticky top-0 z-[60] bg-white/95 dark:bg-gray-a2/95 backdrop-blur-sm border-b border-gray-a4 overflow-hidden">
           <div className="w-full px-3 sm:px-4 md:px-6 py-3 md:py-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 max-w-7xl mx-auto">
               <div className="flex-1 min-w-0 overflow-hidden">
-                <p className="font-semibold text-sm sm:text-base text-gray-12 dark:text-white mb-1 truncate">
+                <p className="font-semibold text-sm sm:text-base text-gray-12 mb-1 truncate">
                   Subscription Required
                 </p>
-                <p className="text-xs sm:text-sm text-gray-10 dark:text-gray-9 break-words">
+                <p className="text-xs sm:text-sm text-gray-10 break-words">
                   Subscribe to enable your funnels and access all features. You can still set up your funnels now.
                 </p>
               </div>

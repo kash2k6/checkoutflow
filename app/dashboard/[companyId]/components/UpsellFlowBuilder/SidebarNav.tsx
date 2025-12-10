@@ -1,5 +1,4 @@
 import { Settings, Package, ArrowUpDown, CheckCircle2, Cog, X } from 'lucide-react';
-import FrostedCard from './FrostedCard';
 
 interface SidebarNavProps {
   activeStep: number;
@@ -29,21 +28,21 @@ export default function SidebarNav({ activeStep, onStepChange, isMobileOpen, onM
       {/* Mobile Overlay */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[70] md:hidden"
           onClick={onMobileClose}
         />
       )}
 
       {/* Sidebar */}
       <div className={`
-        fixed md:relative inset-y-0 left-0 z-50 md:z-auto
+        fixed md:relative inset-y-0 left-0 z-[80] md:z-auto
         w-64 flex-shrink-0
         transform transition-transform duration-300 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        <FrostedCard className="h-full md:h-auto md:sticky md:top-6 rounded-none md:rounded-xl">
-          <div className="p-4 md:p-0">
-            <div className="flex items-center justify-between mb-4 md:mb-4">
+        <div className="h-full md:h-auto md:sticky md:top-6 bg-white/95 dark:bg-gray-a2/95 backdrop-blur-sm border-r md:border-r-0 border-gray-a4 md:border-0 md:rounded-xl md:shadow-sm">
+          <div className="p-4 md:p-6">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-gray-12">Flow Builder</h2>
               {onMobileClose && (
                 <button
@@ -76,7 +75,7 @@ export default function SidebarNav({ activeStep, onStepChange, isMobileOpen, onM
               })}
             </div>
           </div>
-        </FrostedCard>
+        </div>
       </div>
     </>
   );
