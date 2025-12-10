@@ -581,20 +581,20 @@ interface CompanyFlow {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center px-4">
+        <div className="text-white text-sm md:text-base">Loading...</div>
       </div>
     );
   }
 
   if (error) {
           return (
-            <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-semibold text-white mb-4">Error</h1>
-          <p className="text-gray-400 mb-4">{error}</p>
-          <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-4 mb-4 text-left">
-            <p className="text-gray-300 text-sm mb-2">URL Parameters:</p>
+            <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center px-4 py-8">
+        <div className="text-center max-w-md w-full">
+          <h1 className="text-xl md:text-2xl font-semibold text-white mb-3 md:mb-4">Error</h1>
+          <p className="text-gray-400 mb-4 text-sm md:text-base">{error}</p>
+          <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-3 md:p-4 mb-4 text-left">
+            <p className="text-gray-300 text-xs md:text-sm mb-2">URL Parameters:</p>
             <ul className="text-gray-400 text-xs space-y-1">
               <li>companyId: {companyId || '❌ Missing'}</li>
               <li>flowId: {flowId || '❌ Missing'}</li>
@@ -602,10 +602,10 @@ interface CompanyFlow {
               <li>memberId: {memberIdFromUrl || 'Not provided'}</li>
               <li>setupIntentId: {setupIntentIdFromUrl || 'Not provided'}</li>
             </ul>
-            <p className="text-gray-300 text-sm mt-4 mb-2">Current URL:</p>
+            <p className="text-gray-300 text-xs md:text-sm mt-4 mb-2">Current URL:</p>
             <p className="text-gray-400 text-xs break-all">{typeof window !== 'undefined' ? window.location.href : 'N/A'}</p>
           </div>
-          <Link href="/" className="text-[#0D6B4D] hover:underline">
+          <Link href="/" className="text-[#0D6B4D] hover:underline text-sm md:text-base">
             Go to Home
                 </Link>
               </div>
@@ -615,12 +615,12 @@ interface CompanyFlow {
 
   if (!currentNode) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-semibold text-white mb-4">Node Not Found</h1>
-          <p className="text-gray-400 mb-4">The node configuration could not be loaded.</p>
-          <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-4 mb-4 text-left">
-            <p className="text-gray-300 text-sm mb-2">URL Parameters:</p>
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center px-4 py-8">
+        <div className="text-center max-w-md w-full">
+          <h1 className="text-xl md:text-2xl font-semibold text-white mb-3 md:mb-4">Node Not Found</h1>
+          <p className="text-gray-400 mb-4 text-sm md:text-base">The node configuration could not be loaded.</p>
+          <div className="bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg p-3 md:p-4 mb-4 text-left">
+            <p className="text-gray-300 text-xs md:text-sm mb-2">URL Parameters:</p>
             <ul className="text-gray-400 text-xs space-y-1">
               <li>companyId: {companyId || '❌ Missing'}</li>
               <li>flowId: {flowId || '❌ Missing'}</li>
@@ -654,41 +654,41 @@ interface CompanyFlow {
     const subscriptionProducts = purchasedProducts.filter(p => p.type === 'subscription');
 
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center p-4">
-        <div className="w-full max-w-2xl bg-[#2a2a2a] border border-[#3a3a3a] rounded-2xl shadow-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-[#0D6B4D] to-[#0b5940] p-6 text-center">
-            <h1 className="text-3xl font-bold text-white mb-2">✅ Order Complete!</h1>
-            <p className="text-green-100 text-sm">Thank you for your purchase</p>
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center p-3 md:p-4">
+        <div className="w-full max-w-2xl bg-[#2a2a2a] border border-[#3a3a3a] rounded-xl md:rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-[#0D6B4D] to-[#0b5940] p-4 md:p-6 text-center">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-1 md:mb-2">✅ Order Complete!</h1>
+            <p className="text-green-100 text-xs md:text-sm">Thank you for your purchase</p>
           </div>
 
-          <div className="p-8">
-            <h2 className="text-xl font-semibold text-white mb-6">Your Purchases:</h2>
+          <div className="p-4 md:p-6 lg:p-8">
+            <h2 className="text-lg md:text-xl font-semibold text-white mb-4 md:mb-6">Your Purchases:</h2>
             
-            <div className="space-y-4 mb-6">
+            <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
               {purchasedProducts.map((product, index) => (
-                <div key={index} className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-4 flex justify-between items-center">
-                  <div>
-                    <h3 className="text-white font-semibold">{product.name}</h3>
-                    <p className="text-gray-400 text-sm">
+                <div key={index} className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-3 md:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-white font-semibold text-sm md:text-base">{product.name}</h3>
+                    <p className="text-gray-400 text-xs md:text-sm">
                       {product.type === 'subscription' ? 'Subscription (Monthly)' : 'One-time Purchase'}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-white font-bold">${product.price.toFixed(2)}</p>
+                  <div className="text-left sm:text-right flex-shrink-0">
+                    <p className="text-white font-bold text-sm md:text-base">${product.price.toFixed(2)}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="border-t border-[#3a3a3a] pt-4 mb-6">
+            <div className="border-t border-[#3a3a3a] pt-3 md:pt-4 mb-4 md:mb-6">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold text-white">Total:</span>
-                <span className="text-2xl font-bold text-[#0D6B4D]">${total.toFixed(2)}</span>
+                <span className="text-base md:text-lg font-semibold text-white">Total:</span>
+                <span className="text-xl md:text-2xl font-bold text-[#0D6B4D]">${total.toFixed(2)}</span>
               </div>
             </div>
 
-            <div className="bg-[#0D6B4D]/20 border border-[#0D6B4D]/40 rounded-lg p-4 mb-6">
-              <p className="text-[#0D6B4D] text-sm">
+            <div className="bg-[#0D6B4D]/20 border border-[#0D6B4D]/40 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+              <p className="text-[#0D6B4D] text-xs md:text-sm">
                 {subscriptionProducts.length > 0 && (
                   <>You have {subscriptionProducts.length} active subscription{subscriptionProducts.length > 1 ? 's' : ''}. </>
                 )}
@@ -732,11 +732,11 @@ interface CompanyFlow {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4"
+      className="min-h-screen flex items-center justify-center p-3 md:p-4"
       style={{ backgroundColor: custom.backgroundColor || '#1a1a1a' }}
     >
       <div 
-        className="w-full max-w-2xl border rounded-2xl shadow-xl overflow-hidden"
+        className="w-full max-w-2xl border rounded-xl md:rounded-2xl shadow-xl overflow-hidden"
         style={{ 
           backgroundColor: custom.cardBackgroundColor || '#2a2a2a',
           borderColor: custom.cardBackgroundColor ? 'rgba(255,255,255,0.1)' : '#3a3a3a'
@@ -744,19 +744,19 @@ interface CompanyFlow {
       >
         {/* Header */}
         <div 
-          className="p-6 text-center"
+          className="p-4 md:p-6 text-center"
           style={{
             background: `linear-gradient(to right, ${custom.headerGradientStart || custom.primaryColor || '#0D6B4D'}, ${custom.headerGradientEnd || '#0b5940'})`
           }}
         >
           <h1 
-            className="text-3xl font-bold mb-2"
+            className="text-xl md:text-2xl lg:text-3xl font-bold mb-1 md:mb-2"
             style={{ color: custom.headerTextColor || '#ffffff' }}
           >
             {getHeaderTitle()}
           </h1>
           <p 
-            className="text-sm"
+            className="text-xs md:text-sm"
             style={{ color: custom.headerTextColor ? `${custom.headerTextColor}CC` : 'rgba(255, 255, 255, 0.9)' }}
           >
             {getHeaderSubtitle()}
@@ -764,44 +764,44 @@ interface CompanyFlow {
         </div>
 
         {/* Offer Content */}
-        <div className="p-8">
-          <div className="text-center mb-6">
+        <div className="p-4 md:p-6 lg:p-8">
+          <div className="text-center mb-4 md:mb-6">
             {custom.productImageUrl && (
-              <div className="mb-6 flex justify-center">
+              <div className="mb-4 md:mb-6 flex justify-center">
                 <img 
                   src={custom.productImageUrl} 
                   alt={currentNode.title || 'Product'} 
-                  className="max-w-full h-48 object-contain rounded-lg"
+                  className="max-w-full h-32 md:h-40 lg:h-48 object-contain rounded-lg"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
               </div>
             )}
-            <h2 className="text-2xl font-bold mb-3" style={{ color: custom.textColor || '#ffffff' }}>
+            <h2 className="text-lg md:text-xl lg:text-2xl font-bold mb-2 md:mb-3" style={{ color: custom.textColor || '#ffffff' }}>
               {currentNode.title || 'Special Offer'}
             </h2>
-            <p className="text-lg mb-4" style={{ color: custom.textColor || '#ffffff', opacity: 0.8 }}>
+            <p className="text-base md:text-lg mb-3 md:mb-4" style={{ color: custom.textColor || '#ffffff', opacity: 0.8 }}>
               {currentNode.description || 'Get this amazing product at a special price!'}
             </p>
             
-            <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4 mb-4 md:mb-6">
               <div className="text-center">
-                <div className="text-4xl font-bold" style={{ color: custom.primaryColor || '#0D6B4D' }}>
+                <div className="text-3xl md:text-4xl font-bold" style={{ color: custom.primaryColor || '#0D6B4D' }}>
                   ${currentNode.price?.toFixed(2) || '0.00'}
                 </div>
-                <div className="text-sm mt-1" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>
+                <div className="text-xs md:text-sm mt-1" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>
                   {custom.priceLabel || 'One-time Price'}
                 </div>
               </div>
               {savings > 0 && currentNode.original_price && (
                 <>
-                  <div style={{ color: custom.textColor || '#ffffff', opacity: 0.6 }}>vs</div>
+                  <div className="hidden sm:block" style={{ color: custom.textColor || '#ffffff', opacity: 0.6 }}>vs</div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold line-through" style={{ color: custom.textColor || '#ffffff', opacity: 0.6 }}>
+                    <div className="text-xl md:text-2xl font-bold line-through" style={{ color: custom.textColor || '#ffffff', opacity: 0.6 }}>
                       ${currentNode.original_price.toFixed(2)}
                     </div>
-                    <div className="text-sm mt-1" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>
+                    <div className="text-xs md:text-sm mt-1" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>
                       {custom.originalPriceLabel || 'Regular Price'}
                     </div>
                   </div>
@@ -811,13 +811,13 @@ interface CompanyFlow {
 
             {savings > 0 && (
               <div 
-                className="border rounded-lg p-4 mb-6"
+                className="border rounded-lg p-3 md:p-4 mb-4 md:mb-6"
                 style={{
                   backgroundColor: `${custom.primaryColor || '#0D6B4D'}20`,
                   borderColor: `${custom.primaryColor || '#0D6B4D'}40`
                 }}
               >
-                <p className="font-semibold" style={{ color: custom.textColor || '#ffffff' }}>
+                <p className="font-semibold text-sm md:text-base" style={{ color: custom.textColor || '#ffffff' }}>
                   💰 You Save ${savings.toFixed(2)}!
                 </p>
               </div>
@@ -825,17 +825,17 @@ interface CompanyFlow {
           </div>
 
           {error && (
-            <div className="bg-red-500/20 border border-red-500/40 rounded-lg p-4 mb-6">
-              <p className="text-red-400 text-sm">{error}</p>
+            <div className="bg-red-500/20 border border-red-500/40 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
+              <p className="text-red-400 text-xs md:text-sm">{error}</p>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
             <button
               onClick={handleAccept}
               disabled={isProcessing}
-              className={`flex-1 font-bold py-4 px-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg ${getButtonStyle()}`}
+              className={`flex-1 font-bold py-3 md:py-4 px-4 md:px-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base md:text-lg min-h-[44px] ${getButtonStyle()}`}
               style={{
                 backgroundColor: custom.primaryColor || '#0D6B4D',
                 color: custom.buttonTextColor || '#ffffff'
@@ -854,7 +854,7 @@ interface CompanyFlow {
             <button
               onClick={handleDecline}
               disabled={isProcessing}
-              className={`flex-1 font-semibold py-4 px-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${getButtonStyle()}`}
+              className={`flex-1 font-semibold py-3 md:py-4 px-4 md:px-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] ${getButtonStyle()}`}
               style={{
                 backgroundColor: custom.secondaryButtonColor || '#3a3a3a',
                 color: custom.buttonTextColor || '#ffffff'
@@ -873,8 +873,8 @@ interface CompanyFlow {
           </div>
 
           {/* Trust Badge */}
-          <div className="mt-8 text-center">
-            <p className="text-xs" style={{ color: custom.textColor || '#ffffff', opacity: 0.6 }}>
+          <div className="mt-6 md:mt-8 text-center">
+            <p className="text-xs md:text-sm px-2" style={{ color: custom.textColor || '#ffffff', opacity: 0.6 }}>
               {custom.trustBadgeText || '🔒 Secure one-click checkout • No need to enter payment details again'}
             </p>
           </div>
@@ -887,8 +887,8 @@ interface CompanyFlow {
 export default function UpsellPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center px-4">
+        <div className="text-white text-sm md:text-base">Loading...</div>
       </div>
     }>
       <UpsellContent />

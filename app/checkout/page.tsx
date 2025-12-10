@@ -574,18 +574,18 @@ function CheckoutContent() {
     const loadingBg = systemTheme === 'dark' ? 'bg-[#1a1a1a]' : 'bg-white';
     const loadingText = systemTheme === 'dark' ? 'text-white' : 'text-gray-12';
     return (
-      <div className={`min-h-screen ${loadingBg} flex items-center justify-center`}>
-        <div className={loadingText}>Loading checkout...</div>
+      <div className={`min-h-screen ${loadingBg} flex items-center justify-center px-4`}>
+        <div className={`${loadingText} text-sm md:text-base`}>Loading checkout...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={`min-h-screen ${bgColorClass} flex items-center justify-center px-4`} style={bgColorStyle}>
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold mb-4" style={{ color: textColorStyle }}>Error</h1>
-          <p className={`${secondaryTextColor} mb-6`}>{error}</p>
+      <div className={`min-h-screen ${bgColorClass} flex items-center justify-center px-4 py-8`} style={bgColorStyle}>
+        <div className="text-center max-w-md w-full">
+          <h1 className="text-xl md:text-2xl font-semibold mb-3 md:mb-4" style={{ color: textColorStyle }}>Error</h1>
+          <p className={`${secondaryTextColor} mb-4 md:mb-6 text-sm md:text-base`}>{error}</p>
         </div>
       </div>
     );
@@ -594,10 +594,10 @@ function CheckoutContent() {
   const finalPlanId = flow?.initial_product_plan_id || planId;
   if (!finalPlanId) {
     return (
-      <div className={`min-h-screen ${bgColorClass} flex items-center justify-center px-4`} style={bgColorStyle}>
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold mb-4" style={{ color: textColorStyle }}>No Product Selected</h1>
-          <p className={`${secondaryTextColor} mb-6`}>Please select a product to continue.</p>
+      <div className={`min-h-screen ${bgColorClass} flex items-center justify-center px-4 py-8`} style={bgColorStyle}>
+        <div className="text-center max-w-md w-full">
+          <h1 className="text-xl md:text-2xl font-semibold mb-3 md:mb-4" style={{ color: textColorStyle }}>No Product Selected</h1>
+          <p className={`${secondaryTextColor} mb-4 md:mb-6 text-sm md:text-base`}>Please select a product to continue.</p>
         </div>
       </div>
     );
@@ -606,24 +606,24 @@ function CheckoutContent() {
   return (
     <div className={`min-h-screen ${bgColorClass} flex flex-col`} style={bgColorStyle}>
       {/* Product Info & Checkout Content */}
-      <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8">
+      <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-4 md:py-8">
         {/* Product Information Card */}
         {(productInfo || custom.productImageUrl) && (
           <div 
-            className="mb-6 rounded-lg border overflow-hidden shadow-md"
+            className="mb-4 md:mb-6 rounded-lg border overflow-hidden shadow-md"
             style={{
               backgroundColor: cardBgColor,
               borderColor: borderColorStyle.borderColor || (effectiveTheme === 'dark' ? '#3a3a3a' : '#e5e7eb'),
             }}
           >
-            <div className="p-4 flex flex-row items-center gap-4">
+            <div className="p-3 md:p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4">
               {/* Product Image */}
               {custom.productImageUrl && (
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 mx-auto sm:mx-0">
                   <img 
                     src={custom.productImageUrl} 
                     alt={productInfo?.name || 'Product'} 
-                    className="w-24 h-24 object-contain rounded"
+                    className="w-20 h-20 sm:w-24 sm:h-24 object-contain rounded"
                     style={{
                       backgroundColor: effectiveTheme === 'dark' ? '#1a1a1a' : '#f9fafb',
                     }}
@@ -635,10 +635,10 @@ function CheckoutContent() {
               )}
               
               {/* Product Details */}
-              <div className="flex-1">
+              <div className="flex-1 w-full text-center sm:text-left">
                 {productInfo?.name && (
                   <h2 
-                    className="text-lg font-bold mb-1" 
+                    className="text-base md:text-lg font-bold mb-1" 
                     style={{ color: textColorStyle }}
                   >
                     {productInfo.name}
@@ -646,7 +646,7 @@ function CheckoutContent() {
                 )}
                 {productInfo?.price && (
                   <p 
-                    className="text-base font-semibold" 
+                    className="text-sm md:text-base font-semibold" 
                     style={{ color: custom.buttonColor || '#0D6B4D' }}
                   >
                     {productInfo.price}
@@ -671,9 +671,9 @@ function CheckoutContent() {
 
       {/* Processing Modal - Shows after checkout completes while we process the order */}
       {isProcessing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div 
-            className="mx-4 w-full max-w-md rounded-xl border p-8 shadow-2xl"
+            className="w-full max-w-md rounded-xl border p-6 md:p-8 shadow-2xl"
             style={{
               backgroundColor: effectiveTheme === 'dark' ? '#2a2a2a' : '#ffffff',
               borderColor: effectiveTheme === 'dark' ? '#3a3a3a' : '#e5e7eb',
@@ -681,9 +681,9 @@ function CheckoutContent() {
           >
             <div className="text-center">
               {/* Spinner */}
-              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center">
+              <div className="mx-auto mb-4 md:mb-6 flex h-12 w-12 md:h-16 md:w-16 items-center justify-center">
                 <div 
-                  className="h-16 w-16 animate-spin rounded-full border-4 border-t-transparent"
+                  className="h-12 w-12 md:h-16 md:w-16 animate-spin rounded-full border-4 border-t-transparent"
                   style={{ 
                     borderColor: custom.buttonColor || '#0D6B4D',
                     borderTopColor: 'transparent',
@@ -693,19 +693,19 @@ function CheckoutContent() {
               
               {/* Message */}
               <h3 
-                className="mb-3 text-2xl font-bold"
+                className="mb-2 md:mb-3 text-xl md:text-2xl font-bold"
                 style={{ color: textColorStyle }}
               >
                 Processing Your Order
               </h3>
               <p 
-                className="text-base"
+                className="text-sm md:text-base"
                 style={{ color: effectiveTheme === 'dark' ? '#9ca3af' : '#6b7280' }}
               >
                 {processingMessage}
               </p>
               <p 
-                className="mt-3 text-sm"
+                className="mt-2 md:mt-3 text-xs md:text-sm"
                 style={{ color: effectiveTheme === 'dark' ? '#6b7280' : '#9ca3af' }}
               >
                 Please do not close this window...
@@ -721,8 +721,8 @@ function CheckoutContent() {
 export default function CheckoutPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-white dark:bg-[#1a1a1a] flex items-center justify-center">
-        <div className="text-gray-12 dark:text-white">Loading...</div>
+      <div className="min-h-screen bg-white dark:bg-[#1a1a1a] flex items-center justify-center px-4">
+        <div className="text-gray-12 dark:text-white text-sm md:text-base">Loading...</div>
       </div>
     }>
       <CheckoutContent />

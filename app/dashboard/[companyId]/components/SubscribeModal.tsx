@@ -75,15 +75,15 @@ export default function SubscribeModal({ isOpen, onClose, onSuccess }: Subscribe
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Content 
         size="3" 
-        style={{ maxWidth: '32rem', maxHeight: '95vh' }}
+        className="max-w-[calc(100vw-2rem)] md:max-w-[32rem] max-h-[95vh] mx-4 md:mx-auto"
       >
-        <Dialog.Title>Subscribe to Continue</Dialog.Title>
-        <Dialog.Description>Subscribe to enable your funnels and access all features</Dialog.Description>
+        <Dialog.Title className="text-base md:text-lg">Subscribe to Continue</Dialog.Title>
+        <Dialog.Description className="text-sm md:text-base">Subscribe to enable your funnels and access all features</Dialog.Description>
 
         <div className="flex-1 overflow-y-auto" style={{ marginTop: 'var(--space-4)' }}>
           {error && (
-            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-red-800 dark:text-red-400 text-sm">{error}</p>
+            <div className="mb-4 p-3 md:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-red-800 dark:text-red-400 text-xs md:text-sm">{error}</p>
             </div>
           )}
 
@@ -95,8 +95,8 @@ export default function SubscribeModal({ isOpen, onClose, onSuccess }: Subscribe
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
-          <Button color="gray" variant="soft" onClick={onClose} disabled={isLoading}>Cancel</Button>
+        <div className="flex justify-end" style={{ marginTop: 'var(--space-4)' }}>
+          <Button color="gray" variant="soft" onClick={onClose} disabled={isLoading} className="min-h-[44px] touch-manipulation w-full sm:w-auto">Cancel</Button>
         </div>
       </Dialog.Content>
     </Dialog.Root>

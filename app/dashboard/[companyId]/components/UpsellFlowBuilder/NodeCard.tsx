@@ -55,48 +55,48 @@ export default function NodeCard({ node, productName, onConfigure, onLogic, onDe
 
   return (
     <FrostedCard className="hover:shadow-[0_4px_32px_rgba(0,0,0,0.08)]">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4 flex-1 min-w-0">
-          <div className={`w-12 h-12 ${getNodeTypeColor()} rounded-xl flex items-center justify-center flex-shrink-0`}>
-            <Icon className="w-6 h-6 text-white" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0 w-full sm:w-auto">
+          <div className={`w-10 h-10 md:w-12 md:h-12 ${getNodeTypeColor()} rounded-xl flex items-center justify-center flex-shrink-0`}>
+            <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-semibold text-accent-500 uppercase tracking-wide">
+              <span className="text-[10px] md:text-xs font-semibold text-accent-500 uppercase tracking-wide">
                 {getNodeTypeLabel()}
               </span>
             </div>
-            <div className="text-base font-semibold text-gray-12 mb-1 truncate">
+            <div className="text-sm md:text-base font-semibold text-gray-12 mb-1 truncate">
               {node.title || `${getNodeTypeLabel()} Node`}
             </div>
             {productName && (
-              <div className="text-sm text-gray-600 mb-1 truncate">
+              <div className="text-xs md:text-sm text-gray-600 mb-1 truncate">
                 {productName}
               </div>
             )}
-            <div className="text-xs text-gray-500 truncate">
+            <div className="text-[10px] md:text-xs text-gray-500 truncate">
               {node.redirect_url}
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end sm:justify-start">
           <button
             onClick={onConfigure}
-            className="p-2 rounded-lg hover:bg-gray-a3 transition-colors text-gray-10 hover:text-gray-12"
+            className="p-2.5 md:p-2 rounded-lg hover:bg-gray-a3 transition-colors text-gray-10 hover:text-gray-12 min-h-[44px] min-w-[44px] touch-manipulation flex items-center justify-center"
             title="Configure"
           >
             <Settings className="w-4 h-4" />
           </button>
           <button
             onClick={onLogic}
-            className="p-2 rounded-lg hover:bg-gray-a3 transition-colors text-gray-10 hover:text-accent-500"
+            className="p-2.5 md:p-2 rounded-lg hover:bg-gray-a3 transition-colors text-gray-10 hover:text-accent-500 min-h-[44px] min-w-[44px] touch-manipulation flex items-center justify-center"
             title="Logic"
           >
             <Code className="w-4 h-4" />
           </button>
           <button
             onClick={onDelete}
-            className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-gray-10 hover:text-red-500"
+            className="p-2.5 md:p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-gray-10 hover:text-red-500 min-h-[44px] min-w-[44px] touch-manipulation flex items-center justify-center"
             title="Delete"
           >
             <Trash2 className="w-4 h-4" />

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Menu } from 'lucide-react';
 import { Button } from '@whop/react/components';
 import SidebarNav from './SidebarNav';
 import StepFlowSetup from './StepFlowSetup';
@@ -90,6 +90,7 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
   const [showLogicEditor, setShowLogicEditor] = useState(false);
   const [showConfirmationCustomization, setShowConfirmationCustomization] = useState(false);
   const [showCheckoutCustomization, setShowCheckoutCustomization] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [alertDialog, setAlertDialog] = useState<{ open: boolean; title: string; message: string; type: 'success' | 'error' | 'warning' | 'info' }>({
     open: false,
     title: '',
@@ -358,10 +359,10 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
+      <div className="flex items-center justify-center py-8 md:py-12">
+        <div className="text-center px-4">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-gray-a4 border-t-gray-12 mb-4"></div>
-          <div className="text-gray-12 text-lg font-medium">Loading flow configuration...</div>
+          <div className="text-gray-12 text-base md:text-lg font-medium">Loading flow configuration...</div>
         </div>
       </div>
     );
@@ -369,9 +370,9 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
 
   if (!flow) {
     return (
-      <div className="text-center py-12">
-        <div className="text-gray-12 text-lg font-medium mb-2">Flow not found</div>
-        <Button onClick={onBack} color="gray" variant="classic" size="2">
+      <div className="text-center py-8 md:py-12 px-4">
+        <div className="text-gray-12 text-base md:text-lg font-medium mb-4">Flow not found</div>
+        <Button onClick={onBack} color="gray" variant="classic" size="2" className="min-h-[44px] touch-manipulation">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Flows
         </Button>
@@ -434,29 +435,47 @@ export default function UpsellFlowBuilder({ companyId, flowId, onBack }: UpsellF
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-a1 dark:via-gray-a2 dark:to-gray-a1 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-a1 dark:via-gray-a2 dark:to-gray-a1 p-3 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4 md:mb-6 flex items-center gap-3">
           <Button
             onClick={onBack}
             color="gray"
             variant="classic"
             size="2"
-            className="mb-4"
+            className="min-h-[44px] touch-manipulation"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Flows
+            <span className="hidden sm:inline">Back to Flows</span>
+            <span className="sm:hidden">Back</span>
+          </Button>
+          
+          {/* Mobile Menu Toggle */}
+          <Button
+            onClick={() => setIsMobileMenuOpen(true)}
+            color="gray"
+            variant="soft"
+            size="2"
+            className="md:hidden min-h-[44px] min-w-[44px] touch-manipulation"
+            aria-label="Open menu"
+          >
+            <Menu className="w-4 h-4" />
           </Button>
         </div>
 
         {/* Two-column layout */}
-        <div className="flex gap-6">
+        <div className="flex gap-4 md:gap-6">
           {/* Left Sidebar */}
-          <SidebarNav activeStep={activeStep} onStepChange={setActiveStep} />
+          <SidebarNav 
+            activeStep={activeStep} 
+            onStepChange={setActiveStep}
+            isMobileOpen={isMobileMenuOpen}
+            onMobileClose={() => setIsMobileMenuOpen(false)}
+          />
 
           {/* Right Content Panel */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full">
             {renderStepContent()}
           </div>
         </div>

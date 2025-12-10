@@ -30,14 +30,14 @@ export default function StepConfirmation({ flow, onUpdate, onSave, onCustomize }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-12 mb-2">Confirmation Page</h1>
-        <p className="text-gray-600">Configure where customers land after completing their purchase</p>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-12 mb-2">Confirmation Page</h1>
+        <p className="text-gray-600 text-sm md:text-base">Configure where customers land after completing their purchase</p>
       </div>
 
       <FrostedCard>
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           <InputField
             label="Confirmation Page URL"
             type="url"
@@ -46,19 +46,22 @@ export default function StepConfirmation({ flow, onUpdate, onSave, onCustomize }
             placeholder="https://yourdomain.com/thank-you"
           />
 
-          <div className="flex gap-4 justify-end pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end pt-3 md:pt-4">
             <FrostedButton
               onClick={onCustomize}
               icon={Palette}
               variant="secondary"
+              className="w-full sm:w-auto min-h-[44px] touch-manipulation"
             >
-              Customize Confirmation Page
+              <span className="hidden sm:inline">Customize Confirmation Page</span>
+              <span className="sm:hidden">Customize</span>
             </FrostedButton>
             <FrostedButton
               onClick={handleSave}
               icon={Save}
               variant="accent"
               disabled={saving}
+              className="w-full sm:w-auto min-h-[44px] touch-manipulation"
             >
               {saving ? 'Saving...' : 'Save Flow'}
             </FrostedButton>

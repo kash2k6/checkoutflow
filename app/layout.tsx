@@ -18,6 +18,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
 	title: "Xperience Living",
 	description: "AI-powered product recommendations",
+	viewport: {
+		width: "device-width",
+		initialScale: 1,
+		maximumScale: 5,
+		userScalable: true,
+	},
 };
 
 export default function RootLayout({

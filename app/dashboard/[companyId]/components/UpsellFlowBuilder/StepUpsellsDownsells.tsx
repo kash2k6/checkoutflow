@@ -76,24 +76,24 @@ export default function StepUpsellsDownsells({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-12 mb-2">Upsells & Downsells</h1>
-        <p className="text-gray-600">Build your funnel flow with upsells, downsells, and cross-sells</p>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-12 mb-2">Upsells & Downsells</h1>
+        <p className="text-gray-600 text-sm md:text-base">Build your funnel flow with upsells, downsells, and cross-sells</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Initial Purchase Node */}
         <FrostedCard>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-accent-500 rounded-xl flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 className="w-6 h-6 text-gray-12" />
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-accent-500 rounded-xl flex items-center justify-center flex-shrink-0">
+              <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6 text-gray-12" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-accent-500 uppercase tracking-wide mb-1">
+              <div className="text-xs md:text-sm font-semibold text-accent-500 uppercase tracking-wide mb-1">
                 Initial Purchase
               </div>
-              <div className="text-base font-semibold text-gray-12">
+              <div className="text-sm md:text-base font-semibold text-gray-12">
                 Checkout (Initial Purchase)
               </div>
             </div>
@@ -114,9 +114,9 @@ export default function StepUpsellsDownsells({
               label="Add Upsell"
             />
           </SectionHeader>
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {upsellNodes.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border border-[#E5E6EA]">
+              <div className="text-center py-6 md:py-8 text-gray-500 bg-gray-50 rounded-xl border border-[#E5E6EA] text-sm md:text-base">
                 No upsells configured. Click "Add Upsell" to get started.
               </div>
             ) : (
@@ -141,16 +141,16 @@ export default function StepUpsellsDownsells({
           <SectionHeader
             title="Downsells"
             icon={ArrowDown}
-            className="mb-4"
+            className="mb-3 md:mb-4"
           >
             <AddButton
               onClick={() => onAddNode('downsell')}
               label="Add Downsell"
             />
           </SectionHeader>
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {downsellNodes.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border border-[#E5E6EA]">
+              <div className="text-center py-6 md:py-8 text-gray-500 bg-gray-50 rounded-xl border border-[#E5E6EA] text-sm md:text-base">
                 No downsells configured. Click "Add Downsell" to get started.
               </div>
             ) : (
@@ -175,16 +175,16 @@ export default function StepUpsellsDownsells({
           <SectionHeader
             title="Cross-Sells"
             icon={ArrowLeftRight}
-            className="mb-4"
+            className="mb-3 md:mb-4"
           >
             <AddButton
               onClick={() => onAddNode('cross_sell')}
               label="Add Cross-Sell"
             />
           </SectionHeader>
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {crossSellNodes.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border border-[#E5E6EA]">
+              <div className="text-center py-6 md:py-8 text-gray-500 bg-gray-50 rounded-xl border border-[#E5E6EA] text-sm md:text-base">
                 No cross-sells configured. Click "Add Cross-Sell" to get started.
               </div>
             ) : (
@@ -202,12 +202,13 @@ export default function StepUpsellsDownsells({
           </div>
         </div>
 
-        <div className="flex justify-end pt-6">
+        <div className="flex justify-end pt-4 md:pt-6">
           <FrostedButton
             onClick={handleSave}
             icon={Save}
             variant="accent"
             disabled={saving}
+            className="min-h-[44px] touch-manipulation"
           >
             {saving ? 'Saving...' : 'Save Flow'}
           </FrostedButton>

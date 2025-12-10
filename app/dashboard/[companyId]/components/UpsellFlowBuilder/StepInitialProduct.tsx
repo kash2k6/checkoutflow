@@ -54,25 +54,25 @@ export default function StepInitialProduct({ flow, onUpdate, onSave, companyId }
   const selectedPlan = plans.find(p => p.id === flow?.initial_product_plan_id);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-12 mb-2">Initial Product</h1>
-        <p className="text-gray-600">Select the product customers will purchase initially</p>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-12 mb-2">Initial Product</h1>
+        <p className="text-gray-600 text-sm md:text-base">Select the product customers will purchase initially</p>
       </div>
 
       <FrostedCard>
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           <div>
-            <label className="block text-sm font-semibold text-gray-12 mb-2">
+            <label className="block text-xs md:text-sm font-semibold text-gray-12 mb-2">
               Initial Purchase Product
             </label>
             {loading ? (
-              <div className="text-gray-500">Loading products...</div>
+              <div className="text-gray-500 text-sm md:text-base">Loading products...</div>
             ) : (
               <select
                 value={flow?.initial_product_plan_id || ''}
                 onChange={(e) => onUpdate({ initial_product_plan_id: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-a4 rounded-xl bg-white dark:bg-gray-a3 text-gray-12 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-3 md:px-4 py-2.5 md:py-3 border border-gray-a4 rounded-xl bg-white dark:bg-gray-a3 text-gray-12 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all duration-200 text-base md:text-sm min-h-[44px]"
               >
                 <option value="">Select a product...</option>
                 {plans.map(plan => (
@@ -85,16 +85,16 @@ export default function StepInitialProduct({ flow, onUpdate, onSave, companyId }
           </div>
 
           {selectedPlan && (
-            <div className="p-4 bg-gray-50 rounded-xl border border-[#E5E6EA]">
-              <div className="text-sm font-semibold text-gray-12 mb-1">Selected Product:</div>
-              <div className="text-base text-gray-700">{selectedPlan.title}</div>
-              <div className="text-sm text-gray-600 mt-1">
+            <div className="p-3 md:p-4 bg-gray-50 rounded-xl border border-[#E5E6EA]">
+              <div className="text-xs md:text-sm font-semibold text-gray-12 mb-1">Selected Product:</div>
+              <div className="text-sm md:text-base text-gray-700">{selectedPlan.title}</div>
+              <div className="text-xs md:text-sm text-gray-600 mt-1">
                 ${selectedPlan.initial_price} {selectedPlan.currency.toUpperCase()}
               </div>
             </div>
           )}
 
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-end pt-3 md:pt-4">
             <FrostedButton
               onClick={async () => {
                 setSaving(true);
@@ -109,6 +109,7 @@ export default function StepInitialProduct({ flow, onUpdate, onSave, companyId }
               icon={Save}
               variant="accent"
               disabled={saving}
+              className="min-h-[44px] touch-manipulation"
             >
               {saving ? 'Saving...' : 'Save Flow'}
             </FrostedButton>

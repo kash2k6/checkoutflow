@@ -38,7 +38,7 @@ export default function FrostedButton({
       color={getColor()}
       variant="classic"
       size="2"
-      className={className}
+      className={`min-h-[44px] touch-manipulation ${className}`}
     >
       {Icon && <Icon className="w-4 h-4 mr-2" />}
       {children}

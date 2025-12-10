@@ -17,15 +17,15 @@ export function Accordion({ title, children, defaultOpen = false }: AccordionPro
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 bg-gray-a2 hover:bg-gray-a3 transition-colors text-left"
+        className="w-full flex items-center justify-between p-3 md:p-4 bg-gray-a2 hover:bg-gray-a3 transition-colors text-left min-h-[44px] touch-manipulation"
       >
-        <span className="font-semibold text-gray-12">{title}</span>
+        <span className="font-semibold text-gray-12 text-sm md:text-base">{title}</span>
         <ChevronDown
-          className={`w-5 h-5 text-gray-10 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
+          className={`w-4 h-4 md:w-5 md:h-5 text-gray-10 transition-transform flex-shrink-0 ${isOpen ? 'transform rotate-180' : ''}`}
         />
       </button>
       {isOpen && (
-        <div className="p-4 bg-gray-a1 border-t border-gray-a4">
+        <div className="p-3 md:p-4 bg-gray-a1 border-t border-gray-a4">
           {children}
         </div>
       )}

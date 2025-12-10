@@ -115,8 +115,8 @@ function ConfirmationContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center px-4">
+        <div className="text-white text-sm md:text-base">Loading...</div>
       </div>
     );
   }
@@ -147,11 +147,11 @@ function ConfirmationContent() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4"
+      className="min-h-screen flex items-center justify-center p-3 md:p-4"
       style={{ backgroundColor: custom.backgroundColor || '#1a1a1a' }}
     >
       <div 
-        className="w-full max-w-2xl border rounded-2xl shadow-xl overflow-hidden"
+        className="w-full max-w-2xl border rounded-xl md:rounded-2xl shadow-xl overflow-hidden"
         style={{ 
           backgroundColor: custom.cardBackgroundColor || '#2a2a2a',
           borderColor: custom.cardBackgroundColor ? 'rgba(255,255,255,0.1)' : '#3a3a3a'
@@ -159,19 +159,19 @@ function ConfirmationContent() {
       >
         {/* Header */}
         <div 
-          className="p-6 text-center"
+          className="p-4 md:p-6 text-center"
           style={{
             background: `linear-gradient(to right, ${custom.headerGradientStart || custom.primaryColor || '#0D6B4D'}, ${custom.headerGradientEnd || '#0b5940'})`
           }}
         >
           <h1 
-            className="text-3xl font-bold mb-2"
+            className="text-xl md:text-2xl lg:text-3xl font-bold mb-1 md:mb-2"
             style={{ color: custom.headerTextColor || '#ffffff' }}
           >
             {getHeaderTitle()}
           </h1>
           <p 
-            className="text-sm"
+            className="text-xs md:text-sm"
             style={{ color: custom.headerTextColor ? `${custom.headerTextColor}CC` : 'rgba(255, 255, 255, 0.9)' }}
           >
             {getHeaderSubtitle()}
@@ -179,48 +179,48 @@ function ConfirmationContent() {
         </div>
 
         {/* Confirmation Content */}
-        <div className="p-8">
-          <h2 className="text-xl font-semibold mb-6" style={{ color: custom.textColor || '#ffffff' }}>Your Purchases:</h2>
+        <div className="p-4 md:p-6 lg:p-8">
+          <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6" style={{ color: custom.textColor || '#ffffff' }}>Your Purchases:</h2>
           
           {purchasedProducts.length > 0 ? (
             <>
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
                 {purchasedProducts.map((product, index) => (
-                  <div key={index} className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-4 flex justify-between items-center">
-                    <div>
-                      <h3 className="font-semibold" style={{ color: custom.textColor || '#ffffff' }}>{product.name}</h3>
-                      <p className="text-sm" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>
+                  <div key={index} className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-3 md:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm md:text-base" style={{ color: custom.textColor || '#ffffff' }}>{product.name}</h3>
+                      <p className="text-xs md:text-sm" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>
                         {product.type === 'subscription' ? 'Subscription (Monthly)' : 'One-time Purchase'}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold" style={{ color: custom.textColor || '#ffffff' }}>${product.price.toFixed(2)}</p>
+                    <div className="text-left sm:text-right flex-shrink-0">
+                      <p className="font-bold text-sm md:text-base" style={{ color: custom.textColor || '#ffffff' }}>${product.price.toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-[#3a3a3a] pt-4 mb-6">
+              <div className="border-t border-[#3a3a3a] pt-3 md:pt-4 mb-4 md:mb-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold" style={{ color: custom.textColor || '#ffffff' }}>Total:</span>
-                  <span className="text-2xl font-bold" style={{ color: custom.primaryColor || '#0D6B4D' }}>${total.toFixed(2)}</span>
+                  <span className="text-base md:text-lg font-semibold" style={{ color: custom.textColor || '#ffffff' }}>Total:</span>
+                  <span className="text-xl md:text-2xl font-bold" style={{ color: custom.primaryColor || '#0D6B4D' }}>${total.toFixed(2)}</span>
                 </div>
               </div>
             </>
           ) : (
-            <div className="mb-6">
-              <p style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>Your order has been processed successfully.</p>
+            <div className="mb-4 md:mb-6">
+              <p className="text-sm md:text-base" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>Your order has been processed successfully.</p>
             </div>
           )}
 
           <div 
-            className="border rounded-lg p-4 mb-6"
+            className="border rounded-lg p-3 md:p-4 mb-4 md:mb-6"
             style={{
               backgroundColor: `${custom.primaryColor || '#0D6B4D'}20`,
               borderColor: `${custom.primaryColor || '#0D6B4D'}40`
             }}
           >
-            <p className="text-sm" style={{ color: custom.textColor || '#ffffff' }}>
+            <p className="text-xs md:text-sm" style={{ color: custom.textColor || '#ffffff' }}>
               {getMessageText()}
             </p>
           </div>
@@ -233,8 +233,8 @@ function ConfirmationContent() {
 export default function ConfirmationPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center px-4">
+        <div className="text-white text-sm md:text-base">Loading...</div>
       </div>
     }>
       <ConfirmationContent />

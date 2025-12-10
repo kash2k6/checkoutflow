@@ -18,10 +18,10 @@ export default async function DashboardPage({
       // In production, this should be blocked
       if (process.env.NODE_ENV === 'production') {
         return (
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-              <h1 className="text-2xl font-semibold text-gray-12 mb-4">Authentication Required</h1>
-              <p className="text-gray-10">Please access this page through the Whop dashboard.</p>
+          <div className="min-h-screen flex items-center justify-center px-4 py-8">
+            <div className="text-center max-w-md w-full">
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-12 mb-3 md:mb-4">Authentication Required</h1>
+              <p className="text-gray-10 text-sm md:text-base">Please access this page through the Whop dashboard.</p>
             </div>
           </div>
         );
@@ -29,8 +29,8 @@ export default async function DashboardPage({
       // Dev mode: allow access but show warning
       return (
         <div className="min-h-screen">
-          <div className="bg-yellow-500/20 border-b border-yellow-500/40 p-4 text-center">
-            <p className="text-yellow-700 dark:text-yellow-300 text-sm">
+          <div className="bg-yellow-500/20 border-b border-yellow-500/40 p-3 md:p-4 text-center">
+            <p className="text-yellow-700 dark:text-yellow-300 text-xs md:text-sm">
               ⚠️ Development Mode: Authentication bypassed. Access through Whop dashboard in production.
             </p>
           </div>
@@ -49,10 +49,10 @@ export default async function DashboardPage({
 
     if (access.access_level !== 'admin') {
       return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-semibold text-gray-12 mb-4">Access Denied</h1>
-            <p className="text-gray-10">Admin access required to configure checkout flows.</p>
+        <div className="min-h-screen flex items-center justify-center px-4 py-8">
+          <div className="text-center max-w-md w-full">
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-12 mb-3 md:mb-4">Access Denied</h1>
+            <p className="text-gray-10 text-sm md:text-base">Admin access required to configure checkout flows.</p>
           </div>
         </div>
       );
@@ -67,13 +67,13 @@ export default async function DashboardPage({
   } catch (error) {
     // Fallback error handling
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-semibold text-gray-12 mb-4">Authentication Error</h1>
-          <p className="text-gray-10 mb-4">
+      <div className="min-h-screen flex items-center justify-center px-4 py-8">
+        <div className="text-center max-w-md w-full">
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-12 mb-3 md:mb-4">Authentication Error</h1>
+          <p className="text-gray-10 mb-3 md:mb-4 text-sm md:text-base">
             {error instanceof Error ? error.message : 'Failed to authenticate user'}
           </p>
-          <p className="text-gray-9 text-sm">
+          <p className="text-gray-9 text-xs md:text-sm">
             Make sure you're accessing this through the Whop dashboard with the dev proxy enabled.
           </p>
         </div>

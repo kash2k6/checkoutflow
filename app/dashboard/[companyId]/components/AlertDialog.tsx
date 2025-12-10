@@ -45,20 +45,21 @@ export default function AlertDialog({
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content size="2">
-        <Dialog.Title className="flex items-center gap-3">
+      <Dialog.Content size="2" className="max-w-[calc(100vw-2rem)] mx-4 md:mx-auto">
+        <Dialog.Title className="flex items-center gap-2 md:gap-3 text-base md:text-lg">
           {icons[type]}
           {title}
         </Dialog.Title>
-        <Dialog.Description className="mt-2">
+        <Dialog.Description className="mt-2 text-sm md:text-base">
           {message}
         </Dialog.Description>
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="flex justify-end gap-2 md:gap-3 mt-4 md:mt-6">
           <Button
             color={buttonColors[type] as 'green' | 'red' | 'yellow' | 'blue'}
             variant="classic"
             size="2"
             onClick={handleConfirm}
+            className="min-h-[44px] touch-manipulation"
           >
             {confirmText}
           </Button>
@@ -105,20 +106,21 @@ export function ConfirmDialog({
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content size="2">
-        <Dialog.Title className="flex items-center gap-3">
-          <AlertTriangle className="w-6 h-6 text-yellow-500" />
+      <Dialog.Content size="2" className="max-w-[calc(100vw-2rem)] mx-4 md:mx-auto">
+        <Dialog.Title className="flex items-center gap-2 md:gap-3 text-base md:text-lg">
+          <AlertTriangle className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
           {title}
         </Dialog.Title>
-        <Dialog.Description className="mt-2">
+        <Dialog.Description className="mt-2 text-sm md:text-base">
           {message}
         </Dialog.Description>
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 md:gap-3 mt-4 md:mt-6">
           <Button
             color="gray"
             variant="classic"
             size="2"
             onClick={handleCancel}
+            className="w-full sm:w-auto min-h-[44px] touch-manipulation"
           >
             {cancelText}
           </Button>
@@ -127,6 +129,7 @@ export function ConfirmDialog({
             variant="classic"
             size="2"
             onClick={handleConfirm}
+            className="w-full sm:w-auto min-h-[44px] touch-manipulation"
           >
             {confirmText}
           </Button>

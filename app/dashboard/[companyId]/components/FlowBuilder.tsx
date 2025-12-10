@@ -443,10 +443,10 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex items-center justify-center py-8 md:py-12">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-gray-a4 border-t-gray-12 mb-4"></div>
-          <div className="text-gray-12 text-lg font-medium">Loading flows...</div>
+          <div className="text-gray-12 text-base md:text-lg font-medium">Loading flows...</div>
         </div>
       </div>
     );
@@ -455,11 +455,11 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
   // Show verifying state while checking if newly created flow is accessible
   if (verifyingFlow) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
+      <div className="flex items-center justify-center py-8 md:py-12">
+        <div className="text-center px-4">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-gray-a4 border-t-gray-12 mb-4"></div>
-          <div className="text-gray-12 text-lg font-medium">Verifying flow...</div>
-          <div className="text-gray-10 text-sm mt-2">Please wait while we confirm your flow is ready</div>
+          <div className="text-gray-12 text-base md:text-lg font-medium">Verifying flow...</div>
+          <div className="text-gray-10 text-xs md:text-sm mt-2">Please wait while we confirm your flow is ready</div>
         </div>
       </div>
     );
@@ -468,18 +468,18 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
   // Flow selection screen
   if (!selectedFlowId) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4 md:gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-12 mb-2">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-12 mb-2">
             Checkout Flow Builder
           </h1>
-          <p className="text-gray-10">Create and manage your checkout funnels</p>
+          <p className="text-gray-10 text-sm md:text-base">Create and manage your checkout funnels</p>
         </div>
 
         {/* Flow Grid */}
         <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-12">Your Flows</h2>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+              <h2 className="text-lg md:text-xl font-semibold text-gray-12">Your Flows</h2>
               <Button
                 color="tomato"
                 variant="classic"
@@ -489,16 +489,17 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                   e.stopPropagation();
                   setShowNewFlowModal(true);
                 }}
+                className="w-full sm:w-auto min-h-[44px] touch-manipulation"
               >
                 New Flow
               </Button>
             </div>
             {flows.length === 0 ? (
-              <div className="border border-gray-a4 rounded-xl p-12 bg-white dark:bg-gray-a2 text-center shadow-sm">
+              <div className="border border-gray-a4 rounded-xl p-6 md:p-12 bg-white dark:bg-gray-a2 text-center shadow-sm">
                 <div className="max-w-md mx-auto">
-                  <div className="text-6xl mb-4">🚀</div>
-                  <h2 className="text-2xl font-bold text-gray-12 mb-3">Create Your First Funnel</h2>
-                  <p className="text-gray-10 mb-6 leading-relaxed">
+                  <div className="text-4xl md:text-6xl mb-4">🚀</div>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-12 mb-3">Create Your First Funnel</h2>
+                  <p className="text-gray-10 mb-6 leading-relaxed text-sm md:text-base">
                     Get started by creating a checkout flow. You can track visits, purchases, and conversion rates for each funnel.
                   </p>
                   <Button
@@ -510,6 +511,7 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                       e.stopPropagation();
                       setShowNewFlowModal(true);
                     }}
+                    className="min-h-[44px] touch-manipulation"
                   >
                     Create Your First Flow
                   </Button>
@@ -523,21 +525,21 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                     onClick={() => {
                       setSelectedFlowId(f.id);
                     }}
-                    className={`border rounded-xl p-6 bg-white dark:bg-gray-a2 cursor-pointer transition-all duration-200 
-                      shadow-sm hover:shadow-md hover:border-gray-a5
+                    className={`border rounded-xl p-4 md:p-6 bg-white dark:bg-gray-a2 cursor-pointer transition-all duration-200 
+                      shadow-sm hover:shadow-md hover:border-gray-a5 touch-manipulation
                       ${selectedFlowId === f.id ? 'border-accent-500 ring-2 ring-accent-500/20 shadow-md bg-accent-50/30 dark:bg-accent-900/10' : 'border-gray-a4'}
                     `}
                   >
-                    <div className="flex items-center justify-between gap-6">
-                      <div className="flex items-center gap-4 min-w-0 flex-1">
-                        <div className="w-12 h-12 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0">
-                          <FileText className="w-6 h-6 text-gray-12" />
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
+                      <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1 w-full sm:w-auto">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0">
+                          <FileText className="w-5 h-5 md:w-6 md:h-6 text-gray-12" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="text-lg font-semibold text-gray-12 mb-1">
+                          <h3 className="text-base md:text-lg font-semibold text-gray-12 mb-1">
                             {f.flow_name || `Flow ${f.id.substring(0, 8)}`}
                           </h3>
-                          <p className="text-gray-10 text-sm">
+                          <p className="text-gray-10 text-xs md:text-sm break-words">
                             {(() => {
                               if (!f.initial_product_plan_id || String(f.initial_product_plan_id).trim() === '') {
                                 return 'No product selected';
@@ -551,10 +553,10 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        <div className="text-right">
+                      <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-end">
+                        <div className="text-left sm:text-right hidden sm:block">
                           <p className="text-gray-9 text-xs mb-1">Created</p>
-                          <p className="text-gray-10 text-sm font-medium">
+                          <p className="text-gray-10 text-xs md:text-sm font-medium">
                             {new Date(f.created_at).toLocaleDateString('en-US', { 
                               month: 'short', 
                               day: 'numeric', 
@@ -562,38 +564,52 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                             })}
                           </p>
                         </div>
-                        <Button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setEmbedFlowId(f.id);
-                            setEmbedFlowName(f.flow_name);
-                            setShowEmbedModal(true);
-                          }}
-                          color="gray"
-                          variant="soft"
-                          size="1"
-                        >
-                          <Code className="w-4 h-4 mr-2" />
-                          Embed
-                        </Button>
-                        <Button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDeleteFlow(f.id, f.flow_name);
-                          }}
-                          color="red"
-                          variant="soft"
-                          size="1"
-                          title="Delete flow"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                        {selectedFlowId === f.id && (
-                          <CheckCircle2 className="w-6 h-6 text-accent-500 flex-shrink-0" />
-                        )}
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setEmbedFlowId(f.id);
+                              setEmbedFlowName(f.flow_name);
+                              setShowEmbedModal(true);
+                            }}
+                            color="gray"
+                            variant="soft"
+                            size="1"
+                            className="min-h-[44px] min-w-[44px] touch-manipulation"
+                          >
+                            <Code className="w-4 h-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Embed</span>
+                          </Button>
+                          <Button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDeleteFlow(f.id, f.flow_name);
+                            }}
+                            color="red"
+                            variant="soft"
+                            size="1"
+                            title="Delete flow"
+                            className="min-h-[44px] min-w-[44px] touch-manipulation"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                          {selectedFlowId === f.id && (
+                            <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6 text-accent-500 flex-shrink-0 hidden sm:block" />
+                          )}
+                        </div>
                       </div>
+                    </div>
+                    <div className="text-left sm:hidden mt-2 pt-2 border-t border-gray-a4">
+                      <p className="text-gray-9 text-xs mb-1">Created</p>
+                      <p className="text-gray-10 text-xs font-medium">
+                        {new Date(f.created_at).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -606,13 +622,13 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
           <Dialog.Root open={showNewFlowModal} onOpenChange={(open) => !open && setShowNewFlowModal(false)}>
             <Dialog.Content 
               size="2" 
-              style={{ maxWidth: '28rem' }}
+              className="max-w-[calc(100vw-2rem)] md:max-w-[28rem]"
             >
-              <Dialog.Title className="flex items-center gap-2">
+              <Dialog.Title className="flex items-center gap-2 text-base md:text-lg">
                 <Plus className="w-5 h-5 text-accent-500" />
                 Create New Flow
               </Dialog.Title>
-              <Dialog.Description>Enter a name for your new checkout flow</Dialog.Description>
+              <Dialog.Description className="text-sm md:text-base">Enter a name for your new checkout flow</Dialog.Description>
 
               <div style={{ marginTop: 'var(--space-4)' }}>
                   <label className="block text-sm font-medium text-gray-12 mb-2">
@@ -623,7 +639,7 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                     value={newFlowName}
                     onChange={(e) => setNewFlowName(e.target.value)}
                     placeholder="e.g., Black Friday Funnel"
-                    className="w-full px-3 py-2 border border-gray-a4 rounded-lg bg-white dark:bg-gray-a3 text-gray-12 placeholder:text-gray-9 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent mb-6"
+                    className="w-full px-3 py-2.5 md:py-2 border border-gray-a4 rounded-lg bg-white dark:bg-gray-a3 text-gray-12 placeholder:text-gray-9 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent mb-6 text-base md:text-sm min-h-[44px]"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -633,7 +649,7 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                     }}
                     autoFocus
                   />
-                <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
+                <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-3 justify-end" style={{ marginTop: 'var(--space-4)' }}>
                   <Button
                     color="gray"
                     variant="soft"
@@ -643,6 +659,7 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                       e.stopPropagation();
                       setShowNewFlowModal(false);
                     }}
+                    className="w-full sm:w-auto min-h-[44px] touch-manipulation"
                   >
                     Cancel
                   </Button>
@@ -655,6 +672,7 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
                       e.stopPropagation();
                       handleCreateNewFlow();
                     }}
+                    className="w-full sm:w-auto min-h-[44px] touch-manipulation"
                   >
                     Create Flow
                   </Button>

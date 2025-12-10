@@ -33,14 +33,14 @@ export default function StepFlowSetup({ flow, onUpdate, onSave, companyId }: Ste
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-12 mb-2">Flow Setup</h1>
-        <p className="text-gray-600">Configure the basic settings for your funnel</p>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-12 mb-2">Flow Setup</h1>
+        <p className="text-gray-600 text-sm md:text-base">Configure the basic settings for your funnel</p>
       </div>
 
       <FrostedCard>
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           <InputField
             label="Flow Name"
             value={flow?.flow_name || ''}
@@ -59,12 +59,13 @@ export default function StepFlowSetup({ flow, onUpdate, onSave, companyId }: Ste
             }}
           />
 
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-end pt-3 md:pt-4">
             <FrostedButton
               onClick={handleSave}
               icon={Save}
               variant="accent"
               disabled={saving}
+              className="min-h-[44px] touch-manipulation"
             >
               {saving ? 'Saving...' : 'Save Flow'}
             </FrostedButton>

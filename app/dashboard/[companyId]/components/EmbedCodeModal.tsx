@@ -126,27 +126,27 @@ export default function EmbedCodeModal({
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Content 
         size="3" 
-        style={{ maxWidth: '56rem', maxHeight: '90vh' }}
+        className="max-w-[calc(100vw-2rem)] md:max-w-[56rem] max-h-[90vh] mx-4 md:mx-auto"
       >
-        <Dialog.Title>Embed Code</Dialog.Title>
-        <Dialog.Description>{flowName || 'Flow'}</Dialog.Description>
+        <Dialog.Title className="text-base md:text-lg">Embed Code</Dialog.Title>
+        <Dialog.Description className="text-sm md:text-base">{flowName || 'Flow'}</Dialog.Description>
 
-        <div className="flex-1 overflow-y-auto space-y-6" style={{ marginTop: 'var(--space-4)' }}>
+        <div className="flex-1 overflow-y-auto space-y-4 md:space-y-6" style={{ marginTop: 'var(--space-4)' }}>
           {loading ? (
-            <div className="text-center py-12">
+            <div className="text-center py-8 md:py-12">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-gray-a4 border-t-gray-12 mb-4"></div>
-              <div className="text-gray-10">Loading embed codes...</div>
+              <div className="text-gray-10 text-sm md:text-base">Loading embed codes...</div>
             </div>
           ) : (
             <>
               {/* Checkout Embed */}
               <FrostedCard>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-12 dark:text-white">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 md:mb-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-12 dark:text-white">
                       Checkout Page
                     </h3>
-                    <p className="text-sm text-gray-10 dark:text-gray-9">
+                    <p className="text-xs md:text-sm text-gray-10 dark:text-gray-9">
                       Embed this code on your checkout page
                     </p>
                   </div>
@@ -155,21 +155,24 @@ export default function EmbedCodeModal({
                     color="gray"
                     variant="classic"
                     size="2"
+                    className="w-full sm:w-auto min-h-[44px] touch-manipulation"
                   >
                     {copiedId === 'checkout' ? (
                       <>
-                        <Check className="w-4 h-4 mr-2" />
-                        Copied!
+                        <Check className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Copied!</span>
+                        <span className="sm:hidden">Copied!</span>
                       </>
                     ) : (
                       <>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy
+                        <Copy className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Copy</span>
+                        <span className="sm:hidden">Copy</span>
                       </>
                     )}
                   </Button>
                 </div>
-                <pre className="bg-gray-a1 dark:bg-gray-a3 rounded-lg p-4 text-xs overflow-x-auto border border-gray-a4">
+                <pre className="bg-gray-a1 dark:bg-gray-a3 rounded-lg p-3 md:p-4 text-[10px] md:text-xs overflow-x-auto border border-gray-a4">
                   <code className="text-gray-12 dark:text-white">
                     {checkoutEmbed}
                   </code>
@@ -178,18 +181,18 @@ export default function EmbedCodeModal({
 
               {/* Upsell Nodes */}
               {upsellNodes.length > 0 && (
-                <div className="space-y-4">
-                  <h2 className="text-xl font-semibold text-gray-12 dark:text-white">
+                <div className="space-y-3 md:space-y-4">
+                  <h2 className="text-lg md:text-xl font-semibold text-gray-12 dark:text-white">
                     Upsell Pages
                   </h2>
                   {upsellNodes.map((node) => (
                     <FrostedCard key={node.nodeId}>
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-12 dark:text-white">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 md:mb-4">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base md:text-lg font-semibold text-gray-12 dark:text-white">
                             {node.title || `Upsell ${node.orderIndex + 1}`}
                           </h3>
-                          <p className="text-sm text-gray-10 dark:text-gray-9">
+                          <p className="text-xs md:text-sm text-gray-10 dark:text-gray-9">
                             Embed this code for this specific upsell offer
                           </p>
                         </div>
@@ -198,21 +201,24 @@ export default function EmbedCodeModal({
                           color="gray"
                           variant="classic"
                           size="2"
+                          className="w-full sm:w-auto min-h-[44px] touch-manipulation"
                         >
                           {copiedId === node.nodeId ? (
                             <>
-                              <Check className="w-4 h-4 mr-2" />
-                              Copied!
+                              <Check className="w-4 h-4 sm:mr-2" />
+                              <span className="hidden sm:inline">Copied!</span>
+                              <span className="sm:hidden">Copied!</span>
                             </>
                           ) : (
                             <>
-                              <Copy className="w-4 h-4 mr-2" />
-                              Copy
+                              <Copy className="w-4 h-4 sm:mr-2" />
+                              <span className="hidden sm:inline">Copy</span>
+                              <span className="sm:hidden">Copy</span>
                             </>
                           )}
                         </Button>
                       </div>
-                      <pre className="bg-gray-a1 dark:bg-gray-a3 rounded-lg p-4 text-xs overflow-x-auto border border-gray-a4">
+                      <pre className="bg-gray-a1 dark:bg-gray-a3 rounded-lg p-3 md:p-4 text-[10px] md:text-xs overflow-x-auto border border-gray-a4">
                         <code className="text-gray-12 dark:text-white">
                           {node.embedCode}
                         </code>
@@ -224,18 +230,18 @@ export default function EmbedCodeModal({
 
               {/* Downsell Nodes */}
               {downsellNodes.length > 0 && (
-                <div className="space-y-4">
-                  <h2 className="text-xl font-semibold text-gray-12 dark:text-white">
+                <div className="space-y-3 md:space-y-4">
+                  <h2 className="text-lg md:text-xl font-semibold text-gray-12 dark:text-white">
                     Downsell Pages
                   </h2>
                   {downsellNodes.map((node) => (
                     <FrostedCard key={node.nodeId}>
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-12 dark:text-white">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 md:mb-4">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base md:text-lg font-semibold text-gray-12 dark:text-white">
                             {node.title || `Downsell ${node.orderIndex + 1}`}
                           </h3>
-                          <p className="text-sm text-gray-10 dark:text-gray-9">
+                          <p className="text-xs md:text-sm text-gray-10 dark:text-gray-9">
                             Embed this code for this specific downsell offer
                           </p>
                         </div>
@@ -244,21 +250,24 @@ export default function EmbedCodeModal({
                           color="gray"
                           variant="classic"
                           size="2"
+                          className="w-full sm:w-auto min-h-[44px] touch-manipulation"
                         >
                           {copiedId === node.nodeId ? (
                             <>
-                              <Check className="w-4 h-4 mr-2" />
-                              Copied!
+                              <Check className="w-4 h-4 sm:mr-2" />
+                              <span className="hidden sm:inline">Copied!</span>
+                              <span className="sm:hidden">Copied!</span>
                             </>
                           ) : (
                             <>
-                              <Copy className="w-4 h-4 mr-2" />
-                              Copy
+                              <Copy className="w-4 h-4 sm:mr-2" />
+                              <span className="hidden sm:inline">Copy</span>
+                              <span className="sm:hidden">Copy</span>
                             </>
                           )}
                         </Button>
                       </div>
-                      <pre className="bg-gray-a1 dark:bg-gray-a3 rounded-lg p-4 text-xs overflow-x-auto border border-gray-a4">
+                      <pre className="bg-gray-a1 dark:bg-gray-a3 rounded-lg p-3 md:p-4 text-[10px] md:text-xs overflow-x-auto border border-gray-a4">
                         <code className="text-gray-12 dark:text-white">
                           {node.embedCode}
                         </code>
@@ -270,18 +279,18 @@ export default function EmbedCodeModal({
 
               {/* Cross-Sell Nodes */}
               {crossSellNodes.length > 0 && (
-                <div className="space-y-4">
-                  <h2 className="text-xl font-semibold text-gray-12 dark:text-white">
+                <div className="space-y-3 md:space-y-4">
+                  <h2 className="text-lg md:text-xl font-semibold text-gray-12 dark:text-white">
                     Cross-Sell Pages
                   </h2>
                   {crossSellNodes.map((node) => (
                     <FrostedCard key={node.nodeId}>
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-12 dark:text-white">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 md:mb-4">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base md:text-lg font-semibold text-gray-12 dark:text-white">
                             {node.title || `Cross-Sell ${node.orderIndex + 1}`}
                           </h3>
-                          <p className="text-sm text-gray-10 dark:text-gray-9">
+                          <p className="text-xs md:text-sm text-gray-10 dark:text-gray-9">
                             Embed this code for this specific cross-sell offer
                           </p>
                         </div>
@@ -290,21 +299,24 @@ export default function EmbedCodeModal({
                           color="gray"
                           variant="classic"
                           size="2"
+                          className="w-full sm:w-auto min-h-[44px] touch-manipulation"
                         >
                           {copiedId === node.nodeId ? (
                             <>
-                              <Check className="w-4 h-4 mr-2" />
-                              Copied!
+                              <Check className="w-4 h-4 sm:mr-2" />
+                              <span className="hidden sm:inline">Copied!</span>
+                              <span className="sm:hidden">Copied!</span>
                             </>
                           ) : (
                             <>
-                              <Copy className="w-4 h-4 mr-2" />
-                              Copy
+                              <Copy className="w-4 h-4 sm:mr-2" />
+                              <span className="hidden sm:inline">Copy</span>
+                              <span className="sm:hidden">Copy</span>
                             </>
                           )}
                         </Button>
                       </div>
-                      <pre className="bg-gray-a1 dark:bg-gray-a3 rounded-lg p-4 text-xs overflow-x-auto border border-gray-a4">
+                      <pre className="bg-gray-a1 dark:bg-gray-a3 rounded-lg p-3 md:p-4 text-[10px] md:text-xs overflow-x-auto border border-gray-a4">
                         <code className="text-gray-12 dark:text-white">
                           {node.embedCode}
                         </code>
@@ -316,12 +328,12 @@ export default function EmbedCodeModal({
 
               {/* Confirmation Embed */}
               <FrostedCard>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-12 dark:text-white">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 md:mb-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base md:text-lg font-semibold text-gray-12 dark:text-white">
                       Confirmation Page
                     </h3>
-                    <p className="text-sm text-gray-10 dark:text-gray-9">
+                    <p className="text-xs md:text-sm text-gray-10 dark:text-gray-9">
                       Embed this code on your confirmation page
                     </p>
                   </div>
@@ -330,21 +342,24 @@ export default function EmbedCodeModal({
                     color="gray"
                     variant="classic"
                     size="2"
+                    className="w-full sm:w-auto min-h-[44px] touch-manipulation"
                   >
                     {copiedId === 'confirmation' ? (
                       <>
-                        <Check className="w-4 h-4 mr-2" />
-                        Copied!
+                        <Check className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Copied!</span>
+                        <span className="sm:hidden">Copied!</span>
                       </>
                     ) : (
                       <>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy
+                        <Copy className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Copy</span>
+                        <span className="sm:hidden">Copy</span>
                       </>
                     )}
                   </Button>
                 </div>
-                <pre className="bg-gray-a1 dark:bg-gray-a3 rounded-lg p-4 text-xs overflow-x-auto border border-gray-a4">
+                <pre className="bg-gray-a1 dark:bg-gray-a3 rounded-lg p-3 md:p-4 text-[10px] md:text-xs overflow-x-auto border border-gray-a4">
                   <code className="text-gray-12 dark:text-white">
                     {confirmationEmbed}
                   </code>

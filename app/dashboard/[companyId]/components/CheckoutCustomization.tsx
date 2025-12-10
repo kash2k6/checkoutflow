@@ -111,23 +111,23 @@ export default function CheckoutCustomization({
     <Dialog.Root open={true} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Content 
         size="3" 
-        style={{ maxWidth: '80rem', maxHeight: '95vh' }}
+        className="max-w-[calc(100vw-2rem)] md:max-w-[80rem] max-h-[95vh] mx-4 md:mx-auto"
       >
-        <Dialog.Title>Customize Checkout Page</Dialog.Title>
-        <Dialog.Description>Configure the appearance and theme of your checkout page</Dialog.Description>
+        <Dialog.Title className="text-base md:text-lg">Customize Checkout Page</Dialog.Title>
+        <Dialog.Description className="text-sm md:text-base">Configure the appearance and theme of your checkout page</Dialog.Description>
 
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8" style={{ marginTop: 'var(--space-4)' }}>
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-8" style={{ marginTop: 'var(--space-4)' }}>
           {/* Form Section */}
-          <div className="space-y-6 overflow-y-auto max-h-[calc(95vh-200px)] pr-2">
-            <h3 className="text-lg font-semibold text-gray-12 mb-4">Configuration</h3>
+          <div className="space-y-4 md:space-y-6 overflow-y-auto max-h-[calc(95vh-200px)] pr-0 md:pr-2">
+            <h3 className="text-base md:text-lg font-semibold text-gray-12 mb-3 md:mb-4">Configuration</h3>
             
             {/* Theme Selection */}
             <div>
-              <label className="block text-gray-12 font-semibold mb-2 text-sm">Checkout Theme</label>
+              <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Checkout Theme</label>
               <select
                 value={theme}
                 onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'system')}
-                className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
+                className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 min-h-[44px]"
               >
                 <option value="system">System (Follows user's device preference)</option>
                 <option value="light">Light</option>
@@ -139,39 +139,39 @@ export default function CheckoutCustomization({
             </div>
 
             {/* Button Colors */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Button Color</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Button Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
                     value={custom.buttonColor || '#0D6B4D'}
                     onChange={(e) => setCustom({ ...custom, buttonColor: e.target.value })}
-                    className="w-20 h-12 rounded cursor-pointer border-2 border-gray-a4 hover:border-gray-a5 transition-colors"
+                    className="w-16 md:w-20 h-10 md:h-12 rounded cursor-pointer border-2 border-gray-a4 hover:border-gray-a5 transition-colors min-h-[44px]"
                   />
                   <input
                     type="text"
                     value={custom.buttonColor || '#0D6B4D'}
                     onChange={(e) => setCustom({ ...custom, buttonColor: e.target.value })}
-                    className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 text-sm"
+                    className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                     placeholder="#0D6B4D"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Button Text Color</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Button Text Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
                     value={custom.buttonTextColor || '#ffffff'}
                     onChange={(e) => setCustom({ ...custom, buttonTextColor: e.target.value })}
-                    className="w-20 h-12 rounded cursor-pointer border-2 border-gray-a4 hover:border-gray-a5 transition-colors"
+                    className="w-16 md:w-20 h-10 md:h-12 rounded cursor-pointer border-2 border-gray-a4 hover:border-gray-a5 transition-colors min-h-[44px]"
                   />
                   <input
                     type="text"
                     value={custom.buttonTextColor || '#ffffff'}
                     onChange={(e) => setCustom({ ...custom, buttonTextColor: e.target.value })}
-                    className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 text-sm"
+                    className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                     placeholder="#ffffff"
                   />
                 </div>
@@ -179,7 +179,7 @@ export default function CheckoutCustomization({
             </div>
 
             {/* Background Colors (Optional - for page wrapper) */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               <div>
                 <label className="block text-gray-12 font-semibold mb-2 text-sm">Background Color (Optional)</label>
                 <div className="flex gap-2">
@@ -187,13 +187,13 @@ export default function CheckoutCustomization({
                     type="color"
                     value={custom.backgroundColor || ''}
                     onChange={(e) => setCustom({ ...custom, backgroundColor: e.target.value })}
-                    className="w-20 h-12 rounded cursor-pointer border-2 border-gray-a4 hover:border-gray-a5 transition-colors"
+                    className="w-16 md:w-20 h-10 md:h-12 rounded cursor-pointer border-2 border-gray-a4 hover:border-gray-a5 transition-colors min-h-[44px]"
                   />
                   <input
                     type="text"
                     value={custom.backgroundColor || ''}
                     onChange={(e) => setCustom({ ...custom, backgroundColor: e.target.value })}
-                    className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 text-sm"
+                    className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                     placeholder="Leave empty for theme default"
                   />
                 </div>
@@ -208,13 +208,13 @@ export default function CheckoutCustomization({
                     type="color"
                     value={custom.textColor || ''}
                     onChange={(e) => setCustom({ ...custom, textColor: e.target.value })}
-                    className="w-20 h-12 rounded cursor-pointer border-2 border-gray-a4 hover:border-gray-a5 transition-colors"
+                    className="w-16 md:w-20 h-10 md:h-12 rounded cursor-pointer border-2 border-gray-a4 hover:border-gray-a5 transition-colors min-h-[44px]"
                   />
                   <input
                     type="text"
                     value={custom.textColor || ''}
                     onChange={(e) => setCustom({ ...custom, textColor: e.target.value })}
-                    className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 text-sm"
+                    className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                     placeholder="Leave empty for theme default"
                   />
                 </div>
@@ -238,7 +238,7 @@ export default function CheckoutCustomization({
                   type="text"
                   value={custom.cardBackgroundColor || ''}
                   onChange={(e) => setCustom({ ...custom, cardBackgroundColor: e.target.value })}
-                  className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12 text-sm"
+                    className="flex-1 bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                   placeholder="Leave empty for theme default"
                 />
               </div>
@@ -377,9 +377,9 @@ export default function CheckoutCustomization({
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
-          <Button color="gray" variant="soft" onClick={onClose}>Cancel</Button>
-          <Button color="tomato" variant="classic" onClick={handleSave}>Save Customization</Button>
+        <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end" style={{ marginTop: 'var(--space-4)' }}>
+          <Button color="gray" variant="soft" onClick={onClose} className="w-full sm:w-auto min-h-[44px] touch-manipulation">Cancel</Button>
+          <Button color="tomato" variant="classic" onClick={handleSave} className="w-full sm:w-auto min-h-[44px] touch-manipulation">Save Customization</Button>
         </div>
       </Dialog.Content>
     </Dialog.Root>

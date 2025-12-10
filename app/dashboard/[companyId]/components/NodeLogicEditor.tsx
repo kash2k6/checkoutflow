@@ -158,9 +158,9 @@ export default function NodeLogicEditor({
   if (loading) {
     return (
       <Dialog.Root open={true} onOpenChange={(open) => !open && onClose()}>
-        <Dialog.Content size="2">
-          <Dialog.Title>Loading</Dialog.Title>
-          <div className="text-gray-12">Loading...</div>
+        <Dialog.Content size="2" className="max-w-[calc(100vw-2rem)] mx-4 md:mx-auto">
+          <Dialog.Title className="text-base md:text-lg">Loading</Dialog.Title>
+          <div className="text-gray-12 text-sm md:text-base">Loading...</div>
         </Dialog.Content>
       </Dialog.Root>
     );
@@ -170,25 +170,25 @@ export default function NodeLogicEditor({
     <Dialog.Root open={true} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Content 
         size="3" 
-        style={{ maxWidth: '32rem' }}
+        className="max-w-[calc(100vw-2rem)] md:max-w-[32rem] mx-4 md:mx-auto"
       >
-        <Dialog.Title>Configure Accept/Decline Logic</Dialog.Title>
-        <Dialog.Description>Set where users go when they accept or decline this offer</Dialog.Description>
+        <Dialog.Title className="text-base md:text-lg">Configure Accept/Decline Logic</Dialog.Title>
+        <Dialog.Description className="text-sm md:text-base">Set where users go when they accept or decline this offer</Dialog.Description>
 
         <div className="space-y-6" style={{ marginTop: 'var(--space-4)' }}>
           {/* Accept Logic */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-12 mb-4">When User Accepts:</h3>
-            <div className="space-y-4">
+            <h3 className="text-base md:text-lg font-semibold text-gray-12 mb-3 md:mb-4">When User Accepts:</h3>
+            <div className="space-y-3 md:space-y-4">
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Action Type</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Action Type</label>
                 <select
                   value={logic.accept.type}
                   onChange={(e) => setLogic({
                     ...logic,
                     accept: { ...logic.accept, type: e.target.value as any, targetId: null, targetUrl: null }
                   })}
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                 >
                   <option value="node">Go to Another Upsell/Downsell</option>
                   <option value="confirmation">Go to Confirmation Page</option>
@@ -197,14 +197,14 @@ export default function NodeLogicEditor({
               </div>
               {logic.accept.type === 'node' && (
                 <div>
-                  <label className="block text-gray-12 font-semibold mb-2 text-sm">Select Next Node</label>
+                  <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Select Next Node</label>
                   <select
                     value={logic.accept.targetId || ''}
                     onChange={(e) => setLogic({
                       ...logic,
                       accept: { ...logic.accept, targetId: e.target.value || null }
                     })}
-                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                   >
                     <option value="">Select a node...</option>
                     {availableNodes.filter(n => n.id !== nodeId).map(node => (
@@ -217,7 +217,7 @@ export default function NodeLogicEditor({
               )}
               {logic.accept.type === 'external_url' && (
                 <div>
-                  <label className="block text-gray-12 font-semibold mb-2 text-sm">External URL</label>
+                  <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">External URL</label>
                   <input
                     type="url"
                     value={logic.accept.targetUrl || ''}
@@ -226,7 +226,7 @@ export default function NodeLogicEditor({
                       accept: { ...logic.accept, targetUrl: e.target.value || null }
                     })}
                     placeholder="https://example.com/thank-you"
-                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                   />
                 </div>
               )}
@@ -235,17 +235,17 @@ export default function NodeLogicEditor({
 
           {/* Decline Logic */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-12 mb-4">When User Declines:</h3>
-            <div className="space-y-4">
+            <h3 className="text-base md:text-lg font-semibold text-gray-12 mb-3 md:mb-4">When User Declines:</h3>
+            <div className="space-y-3 md:space-y-4">
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Action Type</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Action Type</label>
                 <select
                   value={logic.decline.type}
                   onChange={(e) => setLogic({
                     ...logic,
                     decline: { ...logic.decline, type: e.target.value as any, targetId: null, targetUrl: null }
                   })}
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                 >
                   <option value="node">Go to Another Upsell/Downsell</option>
                   <option value="confirmation">Go to Confirmation Page</option>
@@ -254,14 +254,14 @@ export default function NodeLogicEditor({
               </div>
               {logic.decline.type === 'node' && (
                 <div>
-                  <label className="block text-gray-12 font-semibold mb-2 text-sm">Select Next Node</label>
+                  <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Select Next Node</label>
                   <select
                     value={logic.decline.targetId || ''}
                     onChange={(e) => setLogic({
                       ...logic,
                       decline: { ...logic.decline, targetId: e.target.value || null }
                     })}
-                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                   >
                     <option value="">Select a node...</option>
                     {availableNodes.filter(n => n.id !== nodeId).map(node => (
@@ -274,7 +274,7 @@ export default function NodeLogicEditor({
               )}
               {logic.decline.type === 'external_url' && (
                 <div>
-                  <label className="block text-gray-12 font-semibold mb-2 text-sm">External URL</label>
+                  <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">External URL</label>
                   <input
                     type="url"
                     value={logic.decline.targetUrl || ''}
@@ -283,7 +283,7 @@ export default function NodeLogicEditor({
                       decline: { ...logic.decline, targetUrl: e.target.value || null }
                     })}
                     placeholder="https://example.com/thank-you"
-                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                    className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                   />
                 </div>
               )}
@@ -291,9 +291,9 @@ export default function NodeLogicEditor({
           </div>
         </div>
 
-        <div className="flex gap-4 pt-6 mt-6 border-t border-gray-a4">
-          <Button color="gray" variant="soft" onClick={onClose}>Cancel</Button>
-          <Button color="tomato" variant="classic" onClick={handleSave}>Save Logic</Button>
+        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 md:pt-6 mt-4 md:mt-6 border-t border-gray-a4">
+          <Button color="gray" variant="soft" onClick={onClose} className="w-full sm:w-auto min-h-[44px] touch-manipulation">Cancel</Button>
+          <Button color="tomato" variant="classic" onClick={handleSave} className="w-full sm:w-auto min-h-[44px] touch-manipulation">Save Logic</Button>
         </div>
       </Dialog.Content>
     </Dialog.Root>

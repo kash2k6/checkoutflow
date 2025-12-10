@@ -14,7 +14,7 @@ export default function AddButton({ onClick, label, icon: Icon = Plus, className
       onClick={onClick}
       icon={Icon}
       variant="accent"
-      className={`px-4 py-2.5 ${className}`}
+      className={`px-3 md:px-4 py-2.5 w-full sm:w-auto min-h-[44px] touch-manipulation ${className}`}
     >
       {label}
     </FrostedButton>

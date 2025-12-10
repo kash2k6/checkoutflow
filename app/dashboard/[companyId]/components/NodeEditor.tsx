@@ -266,16 +266,16 @@ export default function NodeEditor({
     <Dialog.Root open={true} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Content 
         size="3" 
-        style={{ maxWidth: '80rem', maxHeight: '95vh' }}
+        className="max-w-[calc(100vw-2rem)] md:max-w-[80rem] max-h-[95vh] mx-4 md:mx-auto"
       >
-        <Dialog.Title>
+        <Dialog.Title className="text-base md:text-lg">
           {node ? 'Edit' : 'Add'} {nodeType === 'upsell' ? 'Upsell' : nodeType === 'downsell' ? 'Downsell' : 'Cross-sell'}
         </Dialog.Title>
-        <Dialog.Description>
+        <Dialog.Description className="text-sm md:text-base">
           Configure the {nodeType === 'upsell' ? 'upsell' : nodeType === 'downsell' ? 'downsell' : 'cross-sell'} offer details
         </Dialog.Description>
 
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ marginTop: 'var(--space-4)' }}>
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6" style={{ marginTop: 'var(--space-4)' }}>
           {/* Form Section */}
           <div className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-2">
@@ -289,7 +289,7 @@ export default function NodeEditor({
                 <select
                   value={formData.plan_id}
                   onChange={(e) => setFormData({ ...formData, plan_id: e.target.value })}
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                   required
                 >
                   <option value="">Select a product...</option>
@@ -309,7 +309,7 @@ export default function NodeEditor({
                   value={formData.title || ''}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="e.g., Never Run Out - Subscribe & Save!"
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                 />
               </div>
 
@@ -321,7 +321,7 @@ export default function NodeEditor({
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="e.g., Get this product delivered monthly. Cancel anytime. Save 15% with subscription!"
                   rows={3}
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                 />
               </div>
 
@@ -334,7 +334,7 @@ export default function NodeEditor({
                   value={formData.price || ''}
                   onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || null })}
                   placeholder={selectedPlan ? `Default: $${selectedPlan.initial_price}` : 'Enter price'}
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                 />
               </div>
 
@@ -347,7 +347,7 @@ export default function NodeEditor({
                   value={formData.original_price || ''}
                   onChange={(e) => setFormData({ ...formData, original_price: parseFloat(e.target.value) || null })}
                   placeholder="Enter original price to show savings"
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                 />
               </div>
 
@@ -361,7 +361,7 @@ export default function NodeEditor({
                   value={formData.redirect_url}
                   onChange={(e) => setFormData({ ...formData, redirect_url: e.target.value })}
                   placeholder="https://yourdomain.com/upsell"
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                   required
                 />
                 <p className="text-gray-400 text-sm mt-1">
@@ -376,16 +376,16 @@ export default function NodeEditor({
                   type="number"
                   value={formData.order_index || 0}
                   onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-4 py-2 text-gray-12"
+                  className="w-full bg-white dark:bg-gray-a3 border border-gray-a4 rounded-lg px-3 md:px-4 py-2.5 md:py-2 text-gray-12 text-base md:text-sm min-h-[44px]"
                 />
               </div>
             </div>
           </Accordion>
 
           <Accordion title="Colors">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Primary Color</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Primary Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -417,7 +417,7 @@ export default function NodeEditor({
                 </div>
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Gradient Start</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Header Gradient Start</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -441,7 +441,7 @@ export default function NodeEditor({
                 </div>
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Gradient End</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Header Gradient End</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -465,7 +465,7 @@ export default function NodeEditor({
                 </div>
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Text Color</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Header Text Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -489,7 +489,7 @@ export default function NodeEditor({
                 </div>
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Card Text Color</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Card Text Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -513,7 +513,7 @@ export default function NodeEditor({
                 </div>
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Card Background</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Card Background</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -537,7 +537,7 @@ export default function NodeEditor({
                 </div>
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Secondary Button Color</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Secondary Button Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -566,7 +566,7 @@ export default function NodeEditor({
           <Accordion title="Text Content">
             <div className="space-y-4">
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Title (leave empty for default)</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Header Title (leave empty for default)</label>
                 <input
                   type="text"
                   value={formData.customization?.headerTitle || ''}
@@ -579,7 +579,7 @@ export default function NodeEditor({
                 />
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Subtitle (leave empty for default)</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Header Subtitle (leave empty for default)</label>
                 <input
                   type="text"
                   value={formData.customization?.headerSubtitle || ''}
@@ -592,7 +592,7 @@ export default function NodeEditor({
                 />
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Header Emoji</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Header Emoji</label>
                 <input
                   type="text"
                   value={formData.customization?.headerEmoji || ''}
@@ -605,7 +605,7 @@ export default function NodeEditor({
                 />
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Accept Button Text</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Accept Button Text</label>
                 <input
                   type="text"
                   value={formData.customization?.acceptButtonText || ''}
@@ -618,7 +618,7 @@ export default function NodeEditor({
                 />
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Decline Button Text</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Decline Button Text</label>
                 <input
                   type="text"
                   value={formData.customization?.declineButtonText || 'No Thanks'}
@@ -631,7 +631,7 @@ export default function NodeEditor({
                 />
               </div>
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Trust Badge Text</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Trust Badge Text</label>
                 <input
                   type="text"
                   value={formData.customization?.trustBadgeText || ''}
@@ -649,7 +649,7 @@ export default function NodeEditor({
           <Accordion title="Button Settings">
             <div className="space-y-4">
               <div>
-                <label className="block text-gray-12 font-semibold mb-2 text-sm">Button Style</label>
+                <label className="block text-gray-12 font-semibold mb-2 text-xs md:text-sm">Button Style</label>
                 <select
                   value={formData.customization?.buttonStyle || 'pill'}
                   onChange={(e) => setFormData({
@@ -859,8 +859,8 @@ export default function NodeEditor({
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
-          <Button color="gray" variant="soft" onClick={onClose}>Cancel</Button>
+        <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end" style={{ marginTop: 'var(--space-4)' }}>
+          <Button color="gray" variant="soft" onClick={onClose} className="w-full sm:w-auto min-h-[44px] touch-manipulation">Cancel</Button>
           <Button 
             color="tomato" 
             variant="classic" 
@@ -871,6 +871,7 @@ export default function NodeEditor({
                 form.dispatchEvent(submitEvent);
               }
             }}
+            className="w-full sm:w-auto min-h-[44px] touch-manipulation"
           >
             {node ? 'Update' : 'Create'} Node
           </Button>
