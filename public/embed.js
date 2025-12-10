@@ -59,6 +59,25 @@
       return;
     }
 
+    // Handle resize messages from iframes
+    if (event.data && event.data.type === 'resize' && event.data.height) {
+      // Find the iframe that sent this message and update its height
+      iframeMap.forEach((iframe, container) => {
+        if (iframe.contentWindow === event.source) {
+          const height = event.data.height;
+          if (height > 0) {
+            // Update iframe height to match content
+            iframe.style.height = height + 'px';
+            // Also update container height if it's explicitly set
+            if (container.style.height && container.style.height !== '100%') {
+              container.style.height = height + 'px';
+            }
+          }
+        }
+      });
+      return;
+    }
+
     if (event.data && event.data.type === 'xperience-redirect') {
       // Find the iframe that sent this message
       iframeMap.forEach((iframe, container) => {
@@ -427,9 +446,10 @@
       if (flowId) url += `&flowId=${flowId}`;
       iframe.src = url;
       iframe.style.width = '100%';
-      iframe.style.height = '100%';
+      iframe.style.height = '600px'; // Initial height, will be updated by resize messages
       iframe.style.border = 'none';
       iframe.style.display = 'block';
+      iframe.style.minHeight = '600px';
       
       // Add iframe attributes for better cross-origin compatibility
       iframe.setAttribute('allow', 'payment; fullscreen; camera; microphone');
@@ -521,9 +541,10 @@
       
       iframe.src = url;
       iframe.style.width = '100%';
-      iframe.style.height = '100%';
+      iframe.style.height = '600px'; // Initial height, will be updated by resize messages
       iframe.style.border = 'none';
       iframe.style.display = 'block';
+      iframe.style.minHeight = '600px';
       
       // Add iframe attributes for better cross-origin compatibility
       iframe.setAttribute('allow', 'payment; fullscreen; camera; microphone');
@@ -568,9 +589,10 @@
       if (memberId) url += `&memberId=${memberId}`;
       iframe.src = url;
       iframe.style.width = '100%';
-      iframe.style.height = '100%';
+      iframe.style.height = '600px'; // Initial height, will be updated by resize messages
       iframe.style.border = 'none';
       iframe.style.display = 'block';
+      iframe.style.minHeight = '600px';
       
       // Add iframe attributes for better cross-origin compatibility (especially for Framer)
       iframe.setAttribute('allow', 'payment; fullscreen; camera; microphone');

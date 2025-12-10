@@ -185,6 +185,41 @@ interface CompanyFlow {
     }
   }, [memberIdFromUrl, setupIntentIdFromUrl, currentNode, flow]);
 
+  // Send height updates to parent iframe (for embed responsiveness)
+  useEffect(() => {
+    const sendHeight = () => {
+      if (typeof window !== 'undefined' && window.parent !== window) {
+        const height = document.documentElement.scrollHeight;
+        window.parent.postMessage({
+          type: 'resize',
+          height: height
+        }, '*');
+      }
+    };
+
+    // Send height on mount and when content changes
+    sendHeight();
+    const interval = setInterval(sendHeight, 500);
+    
+    // Also send on resize and content changes
+    window.addEventListener('resize', sendHeight);
+    
+    // Use MutationObserver to detect content changes
+    const observer = new MutationObserver(sendHeight);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true
+    });
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', sendHeight);
+      observer.disconnect();
+    };
+  }, [currentNode, flow, loading, error, showConfirmation, purchasedProducts]);
+
   const getMemberId = async (): Promise<string | null> => {
     // Try URL param first
     if (memberIdFromUrl) return memberIdFromUrl;

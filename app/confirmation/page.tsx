@@ -113,6 +113,41 @@ function ConfirmationContent() {
     }
   }, [flow, purchasedProducts]);
 
+  // Send height updates to parent iframe (for embed responsiveness)
+  useEffect(() => {
+    const sendHeight = () => {
+      if (typeof window !== 'undefined' && window.parent !== window) {
+        const height = document.documentElement.scrollHeight;
+        window.parent.postMessage({
+          type: 'resize',
+          height: height
+        }, '*');
+      }
+    };
+
+    // Send height on mount and when content changes
+    sendHeight();
+    const interval = setInterval(sendHeight, 500);
+    
+    // Also send on resize and content changes
+    window.addEventListener('resize', sendHeight);
+    
+    // Use MutationObserver to detect content changes
+    const observer = new MutationObserver(sendHeight);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true
+    });
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', sendHeight);
+      observer.disconnect();
+    };
+  }, [flow, loading, purchasedProducts]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center px-4">
