@@ -55,6 +55,17 @@ interface CompanyFlow {
     const memberIdFromUrl = searchParams.get('memberId');
     const setupIntentIdFromUrl = searchParams.get('setupIntentId');
   
+    // Get sessionId from URL or sessionStorage
+    const sessionIdFromUrl = searchParams.get('sessionId');
+    const getSessionId = (): string | null => {
+      if (sessionIdFromUrl) return sessionIdFromUrl;
+      if (typeof window !== 'undefined') {
+        const stored = sessionStorage.getItem('flow_session_id');
+        if (stored) return stored;
+      }
+      return null;
+    };
+  
   const [flow, setFlow] = useState<CompanyFlow | null>(null);
   const [currentNode, setCurrentNode] = useState<FlowNode | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -164,6 +175,10 @@ interface CompanyFlow {
     }
     if (setupIntentIdFromUrl) {
       localStorage.setItem('whop_setup_intent_id', setupIntentIdFromUrl);
+    }
+    // Store session ID if provided in URL (for passing through to confirmation)
+    if (sessionIdFromUrl && typeof window !== 'undefined') {
+      sessionStorage.setItem('flow_session_id', sessionIdFromUrl);
     }
 
     // Track page view
@@ -391,6 +406,7 @@ interface CompanyFlow {
       if (nextAction.type === 'node' && nextAction.target) {
         // Redirect to next node
         let redirectUrl: URL;
+        const sessionId = getSessionId();
         try {
           redirectUrl = new URL(nextAction.target.redirect_url);
           // If it's an external URL, redirect parent page
@@ -399,6 +415,9 @@ interface CompanyFlow {
             redirectUrl.searchParams.set('flowId', flowId || '');
             redirectUrl.searchParams.set('nodeId', nextAction.target.id);
             redirectUrl.searchParams.set('memberId', memberId);
+            if (sessionId) {
+              redirectUrl.searchParams.set('sessionId', sessionId);
+            }
             if (setupIntentIdFromUrl) {
               redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
             }
@@ -415,6 +434,9 @@ interface CompanyFlow {
         redirectUrl.searchParams.set('flowId', flowId || '');
         redirectUrl.searchParams.set('nodeId', nextAction.target.id);
         redirectUrl.searchParams.set('memberId', memberId);
+        if (sessionId) {
+          redirectUrl.searchParams.set('sessionId', sessionId);
+        }
         if (setupIntentIdFromUrl) {
           redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
         }
@@ -422,6 +444,7 @@ interface CompanyFlow {
       } else if (nextAction.type === 'node' && !nextAction.target) {
         // Edge case: edge points to a node but target node not found in flow
         console.warn('Edge configured to go to node, but target node not found in flow. Using fallback logic.');
+        const sessionId = getSessionId();
         const fallbackNode = findNextNodeFallback(currentNode, 'accept');
         if (fallbackNode) {
           const redirectUrl = new URL('/upsell', window.location.origin);
@@ -429,6 +452,9 @@ interface CompanyFlow {
           redirectUrl.searchParams.set('flowId', flowId || '');
           redirectUrl.searchParams.set('nodeId', fallbackNode.id);
           redirectUrl.searchParams.set('memberId', memberId);
+          if (sessionId) {
+            redirectUrl.searchParams.set('sessionId', sessionId);
+          }
           if (setupIntentIdFromUrl) {
             redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
           }
@@ -438,9 +464,24 @@ interface CompanyFlow {
           if (flow?.confirmation_page_url) {
             const redirectUrl = new URL(flow.confirmation_page_url);
             redirectUrl.searchParams.set('companyId', companyId || '');
-            redirectUrl.searchParams.set('flowId', flowId || '');
             redirectUrl.searchParams.set('memberId', memberId);
+            // Pass sessionId to filter purchases by current transaction
+            const sessionId = getSessionId();
+            if (sessionId) {
+              redirectUrl.searchParams.set('sessionId', sessionId);
+            }
+            // For external confirmation pages, don't pass flowId (prevents embed.js from thinking it's an upsell)
+            // Only pass flowId for internal confirmation pages
             const isExternal = redirectUrl.origin !== window.location.origin;
+            if (!isExternal) {
+              redirectUrl.searchParams.set('flowId', flowId || '');
+            }
+            // Ensure nodeId is NOT included in confirmation URLs (confirmation pages should never have nodeId)
+            redirectUrl.searchParams.delete('nodeId');
+            // Add confirmation=true parameter for external pages to help embed.js detect it's a confirmation page
+            if (isExternal) {
+              redirectUrl.searchParams.set('confirmation', 'true');
+            }
             handleRedirect(redirectUrl.toString(), isExternal);
           } else if (purchasedProducts.length > 0) {
             setShowConfirmation(true);
@@ -450,9 +491,24 @@ interface CompanyFlow {
         // Redirect to confirmation page
         const redirectUrl = new URL(nextAction.url);
         redirectUrl.searchParams.set('companyId', companyId || '');
-        redirectUrl.searchParams.set('flowId', flowId || '');
         redirectUrl.searchParams.set('memberId', memberId);
+        // Pass sessionId to filter purchases by current transaction
+        const sessionId = getSessionId();
+        if (sessionId) {
+          redirectUrl.searchParams.set('sessionId', sessionId);
+        }
+        // For external confirmation pages, don't pass flowId (prevents embed.js from thinking it's an upsell)
+        // Only pass flowId for internal confirmation pages
         const isExternal = redirectUrl.origin !== window.location.origin;
+        if (!isExternal) {
+          redirectUrl.searchParams.set('flowId', flowId || '');
+        }
+        // Ensure nodeId is NOT included in confirmation URLs (confirmation pages should never have nodeId)
+        redirectUrl.searchParams.delete('nodeId');
+        // Add confirmation=true parameter for external pages to help embed.js detect it's a confirmation page
+        if (isExternal) {
+          redirectUrl.searchParams.set('confirmation', 'true');
+        }
         handleRedirect(redirectUrl.toString(), isExternal);
       } else if (nextAction.type === 'external_url' && nextAction.url) {
         // Redirect to external URL
@@ -467,6 +523,11 @@ interface CompanyFlow {
           const redirectUrl = new URL(flow.confirmation_page_url);
           redirectUrl.searchParams.set('companyId', companyId || '');
           redirectUrl.searchParams.set('memberId', memberId);
+          // Pass sessionId to filter purchases by current transaction
+          const sessionId = getSessionId();
+          if (sessionId) {
+            redirectUrl.searchParams.set('sessionId', sessionId);
+          }
           // For external confirmation pages, don't pass flowId (prevents embed.js from thinking it's an upsell)
           // Only pass flowId for internal confirmation pages
           const isExternal = redirectUrl.origin !== window.location.origin;
@@ -560,12 +621,16 @@ interface CompanyFlow {
       console.warn('Edge configured to go to node, but target node not found in flow. Using fallback logic.');
       const fallbackNode = findNextNodeFallback(currentNode, 'decline');
       if (fallbackNode) {
+        const sessionId = getSessionId();
         const redirectUrl = new URL('/upsell', window.location.origin);
         redirectUrl.searchParams.set('companyId', companyId || '');
         redirectUrl.searchParams.set('flowId', flowId || '');
         redirectUrl.searchParams.set('nodeId', fallbackNode.id);
         if (memberIdFromUrl) {
           redirectUrl.searchParams.set('memberId', memberIdFromUrl);
+        }
+        if (sessionId) {
+          redirectUrl.searchParams.set('sessionId', sessionId);
         }
         if (setupIntentIdFromUrl) {
           redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
@@ -578,29 +643,47 @@ interface CompanyFlow {
         if (flow?.confirmation_page_url) {
           const redirectUrl = new URL(flow.confirmation_page_url);
           redirectUrl.searchParams.set('companyId', companyId || '');
-          redirectUrl.searchParams.set('flowId', flowId || '');
           if (memberIdFromUrl) {
             redirectUrl.searchParams.set('memberId', memberIdFromUrl);
           }
+          // Pass sessionId to filter purchases by current transaction
+          const sessionId = getSessionId();
+          if (sessionId) {
+            redirectUrl.searchParams.set('sessionId', sessionId);
+          }
+          // For external confirmation pages, don't pass flowId (prevents embed.js from thinking it's an upsell)
+          // Only pass flowId for internal confirmation pages
+          const isExternal = redirectUrl.origin !== window.location.origin;
+          if (!isExternal) {
+            redirectUrl.searchParams.set('flowId', flowId || '');
+          }
           // Ensure nodeId is NOT included in confirmation URLs (confirmation pages should never have nodeId)
           redirectUrl.searchParams.delete('nodeId');
-          const isExternal = redirectUrl.origin !== window.location.origin;
+          // Add confirmation=true parameter for external pages to help embed.js detect it's a confirmation page
+          if (isExternal) {
+            redirectUrl.searchParams.set('confirmation', 'true');
+          }
           handleRedirect(redirectUrl.toString(), isExternal);
         } else if (purchasedProducts.length > 0) {
           setShowConfirmation(true);
         }
       }
-      } else if (nextAction.type === 'confirmation' && nextAction.url) {
-        // Redirect to confirmation page
+    } else if (nextAction.type === 'confirmation' && nextAction.url) {
+      // Redirect to confirmation page
         console.log('Redirecting to confirmation page:', nextAction.url);
-        const redirectUrl = new URL(nextAction.url);
-        redirectUrl.searchParams.set('companyId', companyId || '');
-        if (memberIdFromUrl) {
-          redirectUrl.searchParams.set('memberId', memberIdFromUrl);
-        }
+      const redirectUrl = new URL(nextAction.url);
+      redirectUrl.searchParams.set('companyId', companyId || '');
+      if (memberIdFromUrl) {
+        redirectUrl.searchParams.set('memberId', memberIdFromUrl);
+      }
+      // Pass sessionId to filter purchases by current transaction
+      const sessionId = getSessionId();
+      if (sessionId) {
+        redirectUrl.searchParams.set('sessionId', sessionId);
+      }
         // For external confirmation pages, don't pass flowId (prevents embed.js from thinking it's an upsell)
         // Only pass flowId for internal confirmation pages
-        const isExternal = redirectUrl.origin !== window.location.origin;
+      const isExternal = redirectUrl.origin !== window.location.origin;
         if (!isExternal) {
           redirectUrl.searchParams.set('flowId', flowId || '');
         }
@@ -610,7 +693,7 @@ interface CompanyFlow {
         if (isExternal) {
           redirectUrl.searchParams.set('confirmation', 'true');
         }
-        handleRedirect(redirectUrl.toString(), isExternal);
+      handleRedirect(redirectUrl.toString(), isExternal);
     } else if (nextAction.type === 'external_url' && nextAction.url) {
       // Redirect to external URL
       console.log('Redirecting to external URL:', nextAction.url);
