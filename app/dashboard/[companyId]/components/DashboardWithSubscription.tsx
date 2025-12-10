@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Button } from '@whop/react/components';
 import DashboardTabs from './DashboardTabs';
 import SubscribeModal from './SubscribeModal';
 
@@ -48,22 +49,27 @@ export default function DashboardWithSubscription({ companyId }: DashboardWithSu
     <>
       {/* Show subscription banner if user doesn't have subscription */}
       {!isLoading && !hasSubscription && (
-        <div className="border-b border-gray-a4 bg-white dark:bg-gray-a2 px-3 sm:px-4 md:px-6 py-3 md:py-4 sticky top-0 z-40">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 max-w-7xl mx-auto">
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm sm:text-base text-gray-12 dark:text-white mb-1">
-                Subscription Required
-              </p>
-              <p className="text-xs sm:text-sm text-gray-10 dark:text-gray-9">
-                Subscribe to enable your funnels and access all features. You can still set up your funnels now.
-              </p>
+        <div className="sticky top-0 z-[60] bg-white dark:bg-gray-a2 border-b border-gray-a4 overflow-hidden">
+          <div className="w-full px-3 sm:px-4 md:px-6 py-3 md:py-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 max-w-7xl mx-auto">
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <p className="font-semibold text-sm sm:text-base text-gray-12 dark:text-white mb-1 truncate">
+                  Subscription Required
+                </p>
+                <p className="text-xs sm:text-sm text-gray-10 dark:text-gray-9 break-words">
+                  Subscribe to enable your funnels and access all features. You can still set up your funnels now.
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowModal(true)}
+                color="tomato"
+                variant="classic"
+                size="2"
+                className="w-full sm:w-auto min-h-[44px] touch-manipulation flex-shrink-0"
+              >
+                Subscribe Now
+              </Button>
             </div>
-            <button
-              onClick={() => setShowModal(true)}
-              className="w-full sm:w-auto border border-gray-a4 rounded-lg bg-white dark:bg-gray-a2 text-gray-12 dark:text-white hover:bg-gray-a3 dark:hover:bg-gray-a3 font-semibold py-2.5 px-4 sm:px-6 transition-colors text-sm whitespace-nowrap shadow-sm min-h-[44px] touch-manipulation"
-            >
-              Subscribe Now
-            </button>
           </div>
         </div>
       )}
