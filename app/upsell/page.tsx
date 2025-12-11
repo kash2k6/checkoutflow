@@ -754,10 +754,13 @@ interface CompanyFlow {
   }, [flowId, currentNode, companyId]);
 
   const findNextAction = (action: 'accept' | 'decline'): { type: 'node' | 'confirmation' | 'external_url', target: FlowNode | null, url: string | null } => {
-    const edge = edges.find(e => e.action === action);
+    // CRITICAL: Filter edges by current node ID - otherwise it finds edges from other nodes!
+    const edge = edges.find(e => e.action === action && e.from_node_id === currentNode?.id);
     
+    console.log(`findNextAction('${action}') - Current node:`, currentNode?.id, currentNode?.node_type);
     console.log(`findNextAction('${action}') - Found edge:`, edge);
     console.log(`findNextAction('${action}') - Total edges:`, edges.length);
+    console.log(`findNextAction('${action}') - Edges for current node:`, edges.filter(e => e.from_node_id === currentNode?.id));
     
     if (!edge) {
       // Fallback to old logic if no edge configured
