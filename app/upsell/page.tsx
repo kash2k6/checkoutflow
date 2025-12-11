@@ -562,7 +562,13 @@ interface CompanyFlow {
   };
 
   const handleDecline = () => {
-    if (!currentNode) return;
+    if (!currentNode || isProcessing) return;
+    
+    // Wait for edges to load before processing
+    if (edgesLoading) {
+      console.log('Edges still loading, please wait...');
+      return;
+    }
     
     if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', 'AddToCart', {
@@ -576,7 +582,8 @@ interface CompanyFlow {
     console.log('Decline clicked - Next action:', nextAction);
     console.log('Current node:', currentNode.id, currentNode.node_type);
     console.log('Available edges:', edges);
-    console.log('Flow nodes:', flow?.nodes.map(n => ({ id: n.id, type: n.node_type })));
+    console.log('Edges loading:', edgesLoading);
+    console.log('Flow nodes:', flow?.nodes.map(n => ({ id: n.id, type: n.node_type, order: n.order_index })));
     
     if (nextAction.type === 'node' && nextAction.target) {
       // Redirect to next node
@@ -736,19 +743,27 @@ interface CompanyFlow {
     target_type: 'node' | 'confirmation' | 'external_url';
     target_url: string | null;
   }>>([]);
+  const [edgesLoading, setEdgesLoading] = useState(true);
 
   useEffect(() => {
     const loadEdges = async () => {
-      if (!flowId || !currentNode) return;
+      if (!flowId || !currentNode) {
+        setEdgesLoading(false);
+        return;
+      }
+      setEdgesLoading(true);
       try {
         const response = await fetch(`/api/flows/${companyId}/edges?flowId=${flowId}&nodeId=${currentNode.id}`);
         if (response.ok) {
           const edgesData = await response.json();
           setEdges(edgesData || []);
-          }
-        } catch (error) {
-        console.error('Error loading edges:', error);
+          console.log('Edges loaded for node:', currentNode.id, edgesData);
         }
+      } catch (error) {
+        console.error('Error loading edges:', error);
+      } finally {
+        setEdgesLoading(false);
+      }
     };
     loadEdges();
   }, [flowId, currentNode, companyId]);
@@ -1155,38 +1170,42 @@ interface CompanyFlow {
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
             <button
               onClick={handleAccept}
-              disabled={isProcessing}
-              className={`flex-1 font-bold py-3 md:py-4 px-4 md:px-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base md:text-lg min-h-[44px] ${getButtonStyle()}`}
+              disabled={isProcessing || edgesLoading}
+              className={`flex-1 font-bold py-3 md:py-4 px-4 md:px-6 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-base md:text-lg min-h-[44px] cursor-pointer ${getButtonStyle()}`}
               style={{
                 backgroundColor: custom.primaryColor || '#0D6B4D',
                 color: custom.buttonTextColor || '#ffffff'
               }}
               onMouseEnter={(e) => {
-                if (!isProcessing) {
+                if (!isProcessing && !edgesLoading) {
                   e.currentTarget.style.opacity = '0.9';
+                  e.currentTarget.style.transform = 'scale(1.02)';
                 }
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.transform = 'scale(1)';
               }}
             >
               {isProcessing ? 'Processing...' : getAcceptButtonText()}
             </button>
             <button
               onClick={handleDecline}
-              disabled={isProcessing}
-              className={`flex-1 font-semibold py-3 md:py-4 px-4 md:px-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] ${getButtonStyle()}`}
+              disabled={isProcessing || edgesLoading}
+              className={`flex-1 font-semibold py-3 md:py-4 px-4 md:px-6 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] cursor-pointer ${getButtonStyle()}`}
               style={{
                 backgroundColor: custom.secondaryButtonColor || '#3a3a3a',
                 color: custom.buttonTextColor || '#ffffff'
               }}
               onMouseEnter={(e) => {
-                if (!isProcessing) {
+                if (!isProcessing && !edgesLoading) {
                   e.currentTarget.style.opacity = '0.9';
+                  e.currentTarget.style.transform = 'scale(1.02)';
                 }
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.transform = 'scale(1)';
               }}
             >
               {custom.declineButtonText || 'No Thanks'}
