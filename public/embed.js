@@ -532,19 +532,33 @@
       // Start with required params
       let url = `${baseUrl}/upsell?companyId=${companyId}&flowId=${flowId}`;
       
+      // CRITICAL: Remove nodeId from allParams to prevent old nodeId from existing iframes
+      // We want to use the nodeId from the current URL/container, not from old iframes
+      const allParamsClean = { ...allParams };
+      delete allParamsClean.nodeId; // Remove nodeId so we can set it explicitly from current URL
+      
       // Add all other parameters from allParams (which includes top window URL)
       // This ensures we pass through ALL parameters we found, not just the known ones
-      Object.keys(allParams).forEach(key => {
-        const value = allParams[key];
+      Object.keys(allParamsClean).forEach(key => {
+        const value = allParamsClean[key];
         if (value && !url.includes(`${key}=`)) {
           url += `&${key}=${encodeURIComponent(value)}`;
         }
       });
       
+      // CRITICAL: Always set nodeId explicitly from current URL/container (not from allParams)
+      // This ensures we use the correct nodeId for the current page, not from old iframes
+      if (nodeId) {
+        // Remove any existing nodeId first, then add the correct one
+        url = url.replace(/[&?]nodeId=[^&]*/g, '');
+        url += `&nodeId=${encodeURIComponent(nodeId)}`;
+      }
+      
       // Also explicitly add our known params if they exist (in case allParams missed them)
-      if (nodeId && !url.includes('nodeId=')) url += `&nodeId=${encodeURIComponent(nodeId)}`;
       if (memberId && !url.includes('memberId=')) url += `&memberId=${encodeURIComponent(memberId)}`;
       if (setupIntentId && !url.includes('setupIntentId=')) url += `&setupIntentId=${encodeURIComponent(setupIntentId)}`;
+      
+      console.log('Xperience Embed - Final iframe URL:', url);
       
       iframe.src = url;
       iframe.style.width = '100%';
