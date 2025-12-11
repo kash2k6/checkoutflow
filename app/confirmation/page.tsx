@@ -267,47 +267,102 @@ function ConfirmationContent() {
 
         {/* Confirmation Content */}
         <div className="p-4 md:p-6 lg:p-8">
-          <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6" style={{ color: custom.textColor || '#ffffff' }}>Your Purchases:</h2>
+          <h2 
+            className="text-lg md:text-xl font-semibold mb-4 md:mb-6" 
+            style={{ color: custom.sectionTitleColor || custom.textColor || '#ffffff' }}
+          >
+            {custom.purchasesTitle || 'Your Purchases:'}
+          </h2>
           
           {purchasedProducts.length > 0 ? (
             <>
               <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
                 {purchasedProducts.map((product, index) => (
-                  <div key={index} className="bg-[#1a1a1a] border border-[#3a3a3a] rounded-lg p-3 md:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+                  <div 
+                    key={index} 
+                    className="rounded-lg p-3 md:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 border"
+                    style={{ 
+                      backgroundColor: custom.productCardBackgroundColor || (custom.cardBackgroundColor ? `${custom.cardBackgroundColor}` : '#1a1a1a'),
+                      borderColor: custom.productCardBorderColor || (custom.cardBackgroundColor ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.15)'),
+                    }}
+                  >
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm md:text-base" style={{ color: custom.textColor || '#ffffff' }}>{product.name}</h3>
-                      <p className="text-xs md:text-sm" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>
+                      <h3 
+                        className="font-semibold text-sm md:text-base" 
+                        style={{ color: custom.productNameColor || custom.textColor || '#ffffff' }}
+                      >
+                        {product.name}
+                      </h3>
+                      <p 
+                        className="text-xs md:text-sm mt-1" 
+                        style={{ 
+                          color: custom.productTypeColor || custom.textColor || '#ffffff',
+                          opacity: custom.productTypeOpacity !== undefined ? custom.productTypeOpacity : 0.8
+                        }}
+                      >
                         {product.type === 'subscription' ? 'Subscription (Monthly)' : 'One-time Purchase'}
                       </p>
                     </div>
                     <div className="text-left sm:text-right flex-shrink-0">
-                      <p className="font-bold text-sm md:text-base" style={{ color: custom.textColor || '#ffffff' }}>${product.price.toFixed(2)}</p>
+                      <p 
+                        className="font-bold text-sm md:text-base" 
+                        style={{ color: custom.productPriceColor || custom.primaryColor || '#0D6B4D' }}
+                      >
+                        ${product.price.toFixed(2)}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-[#3a3a3a] pt-3 md:pt-4 mb-4 md:mb-6">
+              <div 
+                className="border-t pt-3 md:pt-4 mb-4 md:mb-6"
+                style={{ borderColor: custom.dividerColor || 'rgba(255,255,255,0.15)' }}
+              >
                 <div className="flex justify-between items-center">
-                  <span className="text-base md:text-lg font-semibold" style={{ color: custom.textColor || '#ffffff' }}>Total:</span>
-                  <span className="text-xl md:text-2xl font-bold" style={{ color: custom.primaryColor || '#0D6B4D' }}>${total.toFixed(2)}</span>
+                  <span 
+                    className="text-base md:text-lg font-semibold" 
+                    style={{ color: custom.totalLabelColor || custom.textColor || '#ffffff' }}
+                  >
+                    Total:
+                  </span>
+                  <span 
+                    className="text-xl md:text-2xl font-bold" 
+                    style={{ color: custom.totalPriceColor || custom.primaryColor || '#0D6B4D' }}
+                  >
+                    ${total.toFixed(2)}
+                  </span>
                 </div>
               </div>
             </>
           ) : (
             <div className="mb-4 md:mb-6">
-              <p className="text-sm md:text-base" style={{ color: custom.textColor || '#ffffff', opacity: 0.7 }}>Your order has been processed successfully.</p>
+              <p 
+                className="text-sm md:text-base" 
+                style={{ 
+                  color: custom.textColor || '#ffffff',
+                  opacity: custom.textOpacity !== undefined ? custom.textOpacity : 0.9
+                }}
+              >
+                Your order has been processed successfully.
+              </p>
             </div>
           )}
 
           <div 
             className="border rounded-lg p-3 md:p-4 mb-4 md:mb-6"
             style={{
-              backgroundColor: `${custom.primaryColor || '#0D6B4D'}20`,
-              borderColor: `${custom.primaryColor || '#0D6B4D'}40`
+              backgroundColor: custom.messageBackgroundColor || `${custom.primaryColor || '#0D6B4D'}20`,
+              borderColor: custom.messageBorderColor || `${custom.primaryColor || '#0D6B4D'}40`
             }}
           >
-            <p className="text-xs md:text-sm" style={{ color: custom.textColor || '#ffffff' }}>
+            <p 
+              className="text-xs md:text-sm" 
+              style={{ 
+                color: custom.messageTextColor || custom.textColor || '#ffffff',
+                opacity: custom.messageTextOpacity !== undefined ? custom.messageTextOpacity : 1
+              }}
+            >
               {getMessageText()}
             </p>
           </div>
