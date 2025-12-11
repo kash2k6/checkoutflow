@@ -78,16 +78,28 @@ interface CompanyFlow {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Reset confirmation state ONLY when URL parameters change (not on every render)
-  // This prevents confirmation from showing on initial page load
+  // Reset confirmation state and current node ONLY when URL parameters change (not on every render)
+  // This prevents confirmation from showing on initial page load and ensures we load the correct node
   useEffect(() => {
     setShowConfirmation(false);
+    // Reset currentNode when nodeId changes to ensure we load the correct node
+    setCurrentNode(null);
+    setLoading(true);
+    console.log('URL parameters changed, resetting node state. New nodeId:', nodeId);
   }, [companyId, flowId, nodeId]);
 
   // Load flow and node configuration
   useEffect(() => {
     const loadFlow = async () => {
-      console.log('Upsell page - Parameters:', { companyId, flowId, nodeId, memberIdFromUrl, setupIntentIdFromUrl });
+      console.log('=== UPSELL PAGE LOAD ===');
+      console.log('URL Parameters:', { companyId, flowId, nodeId, memberIdFromUrl, setupIntentIdFromUrl });
+      console.log('Current URL:', typeof window !== 'undefined' ? window.location.href : 'N/A');
+      console.log('Expected downsell nodeId: 71b8f61c-7e67-4a8e-a92c-0f06f29f5ac9');
+      console.log('Expected upsell nodeId: 5a62662a-8f35-417f-ac81-690eb15e840a');
+      console.log('Actual nodeId from URL:', nodeId);
+      console.log('Match downsell?', nodeId === '71b8f61c-7e67-4a8e-a92c-0f06f29f5ac9' ? '✅ YES' : '❌ NO');
+      console.log('Match upsell?', nodeId === '5a62662a-8f35-417f-ac81-690eb15e840a' ? '✅ YES' : '❌ NO');
+      console.log('========================');
       
       if (!companyId) {
         setError('Missing required parameter: companyId');
@@ -142,11 +154,25 @@ interface CompanyFlow {
           setFlow(flowData);
           
           // Find the current node
+          console.log('=== FINDING NODE ===');
+          console.log('Looking for nodeId:', nodeId);
+          console.log('Available nodes:', flowData.nodes.map((n: FlowNode) => ({ 
+            id: n.id, 
+            type: n.node_type, 
+            title: n.title 
+          })));
           const node = flowData.nodes.find((n: FlowNode) => n.id === nodeId);
+          console.log('Found node:', node ? { id: node.id, type: node.node_type, title: node.title } : 'NOT FOUND');
+          console.log('Node match?', node ? (node.id === nodeId ? '✅ YES' : '❌ NO - ID MISMATCH') : '❌ NOT FOUND');
+          console.log('===================');
+          
           if (node) {
             setCurrentNode(node);
+            console.log('Current node set to:', node.node_type, node.id);
           } else {
-            setError('Node not found in flow configuration');
+            console.error('Node not found! Looking for:', nodeId);
+            console.error('Available node IDs:', flowData.nodes.map((n: FlowNode) => n.id));
+            setError(`Node not found in flow configuration. Looking for: ${nodeId}`);
           }
         } else if (response.status === 404) {
           setError('Flow configuration not found');
