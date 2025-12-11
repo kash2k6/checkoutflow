@@ -285,27 +285,34 @@ interface CompanyFlow {
 
   // Helper function to handle redirect (works for both iframe and standalone)
   const handleRedirect = (url: string, shouldRedirectParent = false) => {
+    console.log('handleRedirect called:', { url, shouldRedirectParent });
     const isInIframe = typeof window !== 'undefined' && window.parent !== window;
+    console.log('Is in iframe?', isInIframe);
     
     if (isInIframe) {
       if (shouldRedirectParent) {
-        // For external URLs, try to redirect parent page via postMessage
-        // This is for custom embed scripts that listen for this message
+        // For external URLs, redirect parent page via postMessage
+        // embed.js listens for this message and redirects the parent window
+        console.log('Sending postMessage to redirect parent to:', url);
         window.parent.postMessage({
           type: 'xperience-redirect',
           url: url,
           action: 'redirect-parent'
         }, '*');
-        // Also try direct redirect (may not work due to same-origin policy, but worth trying)
+        
+        // Also try direct redirect as fallback (may not work due to same-origin policy)
         try {
-          window.top!.location.href = url;
+          if (window.top) {
+            window.top.location.href = url;
+            console.log('Direct redirect attempted to:', url);
+          }
         } catch (e) {
           // Cross-origin, can't redirect parent - postMessage is the only option
-          console.log('Cannot redirect parent due to cross-origin restrictions. Using postMessage.');
+          console.log('Cannot redirect parent directly due to cross-origin restrictions. Relying on postMessage.');
         }
       } else {
         // For internal URLs, update iframe content directly
-        // This works in both Whop's iframe and custom embeds
+        console.log('Updating iframe src to:', url);
         window.location.href = url;
         // Also send postMessage for custom embed scripts that might want to listen
         window.parent.postMessage({
@@ -316,6 +323,7 @@ interface CompanyFlow {
       }
     } else {
       // Not in iframe, normal redirect
+      console.log('Not in iframe, redirecting to:', url);
       window.location.href = url;
     }
   };
@@ -416,10 +424,13 @@ interface CompanyFlow {
           // Use the target node's redirect_url (the external Systeme.io page URL)
           redirectUrl = new URL(nextAction.target.redirect_url);
           
+          // CRITICAL: Clear any existing nodeId from the URL first, then set the correct one
+          redirectUrl.searchParams.delete('nodeId');
+          
           // Add all necessary query parameters so embed.js can load the correct node
           redirectUrl.searchParams.set('companyId', companyId || '');
           redirectUrl.searchParams.set('flowId', flowId || '');
-          redirectUrl.searchParams.set('nodeId', nextAction.target.id);
+          redirectUrl.searchParams.set('nodeId', nextAction.target.id); // Set the CORRECT nodeId for the target node
           redirectUrl.searchParams.set('memberId', memberId);
           if (sessionId) {
             redirectUrl.searchParams.set('sessionId', sessionId);
@@ -428,7 +439,14 @@ interface CompanyFlow {
             redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
           }
           
-          console.log('Redirecting to external node page:', redirectUrl.toString());
+          console.log('=== REDIRECT URL DEBUG (ACCEPT) ===');
+          console.log('Target node ID:', nextAction.target.id);
+          console.log('Target node type:', nextAction.target.node_type);
+          console.log('Full redirect URL:', redirectUrl.toString());
+          console.log('nodeId in URL:', redirectUrl.searchParams.get('nodeId'));
+          console.log('Expected nodeId:', nextAction.target.id);
+          console.log('Match?', redirectUrl.searchParams.get('nodeId') === nextAction.target.id ? '✅ YES' : '❌ NO');
+          console.log('==================================');
           
           // Always redirect parent window for external URLs (Systeme.io pages)
           // This ensures the user navigates to the next Systeme.io page, which will then load our upsell in an iframe
@@ -597,6 +615,12 @@ interface CompanyFlow {
     if (nextAction.type === 'node' && nextAction.target) {
       // Redirect to next node
       console.log('Redirecting to next node:', nextAction.target.id, nextAction.target.node_type);
+      console.log('Target node details:', {
+        id: nextAction.target.id,
+        type: nextAction.target.node_type,
+        title: nextAction.target.title,
+        redirect_url: nextAction.target.redirect_url
+      });
       
       // Use the target node's redirect_url (external Systeme.io URL) when navigating between nodes
       // This ensures the flow continues on the external page, and embed.js will load the next upsell
@@ -607,10 +631,13 @@ interface CompanyFlow {
         // Use the target node's redirect_url (the external Systeme.io page URL)
         redirectUrl = new URL(nextAction.target.redirect_url);
         
+        // CRITICAL: Clear any existing nodeId from the URL first, then set the correct one
+        redirectUrl.searchParams.delete('nodeId');
+        
         // Add all necessary query parameters so embed.js can load the correct node
         redirectUrl.searchParams.set('companyId', companyId || '');
         redirectUrl.searchParams.set('flowId', flowId || '');
-        redirectUrl.searchParams.set('nodeId', nextAction.target.id);
+        redirectUrl.searchParams.set('nodeId', nextAction.target.id); // Set the CORRECT nodeId for the target node
         if (memberIdFromUrl) {
           redirectUrl.searchParams.set('memberId', memberIdFromUrl);
         }
@@ -621,7 +648,14 @@ interface CompanyFlow {
           redirectUrl.searchParams.set('sessionId', sessionId);
         }
         
-        console.log('Redirecting to external node page:', redirectUrl.toString());
+        console.log('=== REDIRECT URL DEBUG ===');
+        console.log('Target node ID:', nextAction.target.id);
+        console.log('Target node type:', nextAction.target.node_type);
+        console.log('Full redirect URL:', redirectUrl.toString());
+        console.log('nodeId in URL:', redirectUrl.searchParams.get('nodeId'));
+        console.log('Expected nodeId:', nextAction.target.id);
+        console.log('Match?', redirectUrl.searchParams.get('nodeId') === nextAction.target.id ? '✅ YES' : '❌ NO');
+        console.log('========================');
         
         // Always redirect parent window for external URLs (Systeme.io pages)
         // This ensures the user navigates to the next Systeme.io page, which will then load our upsell in an iframe
