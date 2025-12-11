@@ -186,7 +186,7 @@ export default function TipCreator({ companyId }: TipCreatorProps) {
             />
             <Button
               onClick={handleCustomAmount}
-              color="accent"
+              color="tomato"
               variant="classic"
               size="2"
               disabled={!customAmount || parseFloat(customAmount) <= 0 || isLoading}
@@ -210,7 +210,7 @@ export default function TipCreator({ companyId }: TipCreatorProps) {
           </p>
           <Button
             onClick={handleSubscribe}
-            color="accent"
+            color="tomato"
             variant="classic"
             size="3"
             disabled={isLoading}
