@@ -58,6 +58,7 @@ async function checkFlowEdges() {
       console.log(`   Title: ${node.title || 'N/A'}`);
       console.log(`   Plan ID: ${node.plan_id}`);
       console.log(`   Price: $${node.price || '0.00'}`);
+      console.log(`   Redirect URL: ${node.redirect_url || 'N/A'}`);
       console.log('');
     });
   }

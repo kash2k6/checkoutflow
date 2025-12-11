@@ -405,42 +405,51 @@ interface CompanyFlow {
       
       if (nextAction.type === 'node' && nextAction.target) {
         // Redirect to next node
+        console.log('Redirecting to next node:', nextAction.target.id, nextAction.target.node_type);
+        
+        // Use the target node's redirect_url (external Systeme.io URL) when navigating between nodes
+        // This ensures the flow continues on the external page, and embed.js will load the next upsell
         let redirectUrl: URL;
         const sessionId = getSessionId();
-        try {
-          redirectUrl = new URL(nextAction.target.redirect_url);
-          // If it's an external URL, redirect parent page
-          if (redirectUrl.origin !== window.location.origin) {
-            redirectUrl.searchParams.set('companyId', companyId || '');
-            redirectUrl.searchParams.set('flowId', flowId || '');
-            redirectUrl.searchParams.set('nodeId', nextAction.target.id);
-            redirectUrl.searchParams.set('memberId', memberId);
-            if (sessionId) {
-              redirectUrl.searchParams.set('sessionId', sessionId);
-            }
-            if (setupIntentIdFromUrl) {
-              redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
-            }
-            handleRedirect(redirectUrl.toString(), true); // Redirect parent for external URLs
-            return;
-          }
-        } catch (e) {
-          // If redirect_url is not a valid URL, treat it as a relative path
-        }
         
-        // If it's our domain or a relative path, redirect to our /upsell page
-        redirectUrl = new URL('/upsell', window.location.origin);
-        redirectUrl.searchParams.set('companyId', companyId || '');
-        redirectUrl.searchParams.set('flowId', flowId || '');
-        redirectUrl.searchParams.set('nodeId', nextAction.target.id);
-        redirectUrl.searchParams.set('memberId', memberId);
-        if (sessionId) {
-          redirectUrl.searchParams.set('sessionId', sessionId);
+        try {
+          // Use the target node's redirect_url (the external Systeme.io page URL)
+          redirectUrl = new URL(nextAction.target.redirect_url);
+          
+          // Add all necessary query parameters so embed.js can load the correct node
+          redirectUrl.searchParams.set('companyId', companyId || '');
+          redirectUrl.searchParams.set('flowId', flowId || '');
+          redirectUrl.searchParams.set('nodeId', nextAction.target.id);
+          redirectUrl.searchParams.set('memberId', memberId);
+          if (sessionId) {
+            redirectUrl.searchParams.set('sessionId', sessionId);
+          }
+          if (setupIntentIdFromUrl) {
+            redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
+          }
+          
+          console.log('Redirecting to external node page:', redirectUrl.toString());
+          
+          // Always redirect parent window for external URLs (Systeme.io pages)
+          // This ensures the user navigates to the next Systeme.io page, which will then load our upsell in an iframe
+          handleRedirect(redirectUrl.toString(), true);
+          return;
+        } catch (e) {
+          // If redirect_url is not a valid URL, fallback to our internal route
+          console.log('redirect_url is not a valid URL, using internal route');
+          redirectUrl = new URL('/upsell', window.location.origin);
+          redirectUrl.searchParams.set('companyId', companyId || '');
+          redirectUrl.searchParams.set('flowId', flowId || '');
+          redirectUrl.searchParams.set('nodeId', nextAction.target.id);
+          redirectUrl.searchParams.set('memberId', memberId);
+          if (sessionId) {
+            redirectUrl.searchParams.set('sessionId', sessionId);
+          }
+          if (setupIntentIdFromUrl) {
+            redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
+          }
+          handleRedirect(redirectUrl.toString());
         }
-        if (setupIntentIdFromUrl) {
-          redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
-        }
-        handleRedirect(redirectUrl.toString()); // Update iframe for internal URLs
       } else if (nextAction.type === 'node' && !nextAction.target) {
         // Edge case: edge points to a node but target node not found in flow
         console.warn('Edge configured to go to node, but target node not found in flow. Using fallback logic.');
@@ -588,41 +597,54 @@ interface CompanyFlow {
     if (nextAction.type === 'node' && nextAction.target) {
       // Redirect to next node
       console.log('Redirecting to next node:', nextAction.target.id, nextAction.target.node_type);
-      let redirectUrl: URL;
-      try {
-        redirectUrl = new URL(nextAction.target.redirect_url);
-        // If it's an external URL, redirect parent page
-        if (redirectUrl.origin !== window.location.origin) {
-          redirectUrl.searchParams.set('companyId', companyId || '');
-          redirectUrl.searchParams.set('flowId', flowId || '');
-          redirectUrl.searchParams.set('nodeId', nextAction.target.id);
-          if (memberIdFromUrl) {
-            redirectUrl.searchParams.set('memberId', memberIdFromUrl);
-          }
-          if (setupIntentIdFromUrl) {
-            redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
-          }
-          handleRedirect(redirectUrl.toString(), true); // Redirect parent for external URLs
-          return;
-        }
-      } catch (e) {
-        // If redirect_url is not a valid URL, treat it as a relative path
-        console.log('redirect_url is not a valid URL, treating as relative path');
-      }
       
-      // If it's our domain or a relative path, redirect to our /upsell page
-      redirectUrl = new URL('/upsell', window.location.origin);
-      redirectUrl.searchParams.set('companyId', companyId || '');
-      redirectUrl.searchParams.set('flowId', flowId || '');
-      redirectUrl.searchParams.set('nodeId', nextAction.target.id);
-      if (memberIdFromUrl) {
-        redirectUrl.searchParams.set('memberId', memberIdFromUrl);
+      // Use the target node's redirect_url (external Systeme.io URL) when navigating between nodes
+      // This ensures the flow continues on the external page, and embed.js will load the next upsell
+      let redirectUrl: URL;
+      const sessionId = getSessionId();
+      
+      try {
+        // Use the target node's redirect_url (the external Systeme.io page URL)
+        redirectUrl = new URL(nextAction.target.redirect_url);
+        
+        // Add all necessary query parameters so embed.js can load the correct node
+        redirectUrl.searchParams.set('companyId', companyId || '');
+        redirectUrl.searchParams.set('flowId', flowId || '');
+        redirectUrl.searchParams.set('nodeId', nextAction.target.id);
+        if (memberIdFromUrl) {
+          redirectUrl.searchParams.set('memberId', memberIdFromUrl);
+        }
+        if (setupIntentIdFromUrl) {
+          redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
+        }
+        if (sessionId) {
+          redirectUrl.searchParams.set('sessionId', sessionId);
+        }
+        
+        console.log('Redirecting to external node page:', redirectUrl.toString());
+        
+        // Always redirect parent window for external URLs (Systeme.io pages)
+        // This ensures the user navigates to the next Systeme.io page, which will then load our upsell in an iframe
+        handleRedirect(redirectUrl.toString(), true);
+        return;
+      } catch (e) {
+        // If redirect_url is not a valid URL, fallback to our internal route
+        console.log('redirect_url is not a valid URL, using internal route');
+        redirectUrl = new URL('/upsell', window.location.origin);
+        redirectUrl.searchParams.set('companyId', companyId || '');
+        redirectUrl.searchParams.set('flowId', flowId || '');
+        redirectUrl.searchParams.set('nodeId', nextAction.target.id);
+        if (memberIdFromUrl) {
+          redirectUrl.searchParams.set('memberId', memberIdFromUrl);
+        }
+        if (setupIntentIdFromUrl) {
+          redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
+        }
+        if (sessionId) {
+          redirectUrl.searchParams.set('sessionId', sessionId);
+        }
+        handleRedirect(redirectUrl.toString());
       }
-      if (setupIntentIdFromUrl) {
-        redirectUrl.searchParams.set('setupIntentId', setupIntentIdFromUrl);
-      }
-      console.log('Redirecting to:', redirectUrl.toString());
-      handleRedirect(redirectUrl.toString()); // Update iframe for internal URLs
     } else if (nextAction.type === 'node' && !nextAction.target) {
       // Edge case: edge points to a node but target node not found in flow
       console.warn('Edge configured to go to node, but target node not found in flow. Using fallback logic.');
