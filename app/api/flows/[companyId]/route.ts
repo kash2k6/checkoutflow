@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { headers } from 'next/headers';
-import { whopSdk } from '@/lib/whop-sdk';
-import { checkSubscriptionAccess, checkCompanyAdminSubscription } from '@/lib/subscription-access';
 
 // Get flow for a company
 export async function GET(
@@ -86,106 +83,11 @@ export async function GET(
 
     if (nodesError) throw nodesError;
 
-    /**
-     * SUBSCRIPTION CHECK FOR FUNNELS
-     * 
-     * IMPORTANT: Dashboard users (authenticated) can ALWAYS create, view, and edit flows.
-     * Subscription only blocks CUSTOMER-FACING pages (unauthenticated access).
-     * 
-     * For authenticated requests (dashboard): ALWAYS allow - never block
-     * For unauthenticated requests (customers): Block if no active/trialing subscription
-     */
-    let isEnabled = true;
-    let subscriptionStatus = null;
-    let isAuthenticated = false;
-    
-    try {
-      const result = await whopSdk.verifyUserToken(await headers(), { dontThrow: true });
-      if (result && result.userId) {
-        // AUTHENTICATED REQUEST (DASHBOARD) - ALWAYS ALLOW
-        // Dashboard users can create, view, and edit flows regardless of subscription
-        isAuthenticated = true;
-        console.log(`[Subscription Check] Authenticated dashboard request for user ${result.userId} - ALLOWING ACCESS`);
-        subscriptionStatus = await checkSubscriptionAccess(result.userId);
-        isEnabled = subscriptionStatus.hasAccess;
-        console.log(`[Subscription Check] User subscription status:`, {
-          hasAccess: subscriptionStatus.hasAccess,
-          isTrial: subscriptionStatus.isTrial,
-          isExpired: subscriptionStatus.isExpired,
-        });
-        // Note: We still check subscription status to show in UI, but we NEVER block dashboard access
-      } else {
-        // UNAUTHENTICATED REQUEST (CUSTOMER-FACING PAGE) - CHECK SUBSCRIPTION
-        // Customer-facing pages require active subscription
-        console.log(`[Subscription Check] Unauthenticated customer request for company ${companyId}`);
-        subscriptionStatus = await checkCompanyAdminSubscription(companyId);
-        isEnabled = subscriptionStatus.hasAccess;
-        console.log(`[Subscription Check] Company admin subscription status:`, {
-          hasAccess: subscriptionStatus.hasAccess,
-          isTrial: subscriptionStatus.isTrial,
-          isExpired: subscriptionStatus.isExpired,
-          membershipId: subscriptionStatus.membership?.id,
-          userId: subscriptionStatus.membership?.user_id,
-        });
-        
-        // For unauthenticated requests, block access if no subscription
-        if (!isEnabled) {
-          const errorResponse = NextResponse.json(
-            { 
-              error: 'Funnel access requires an active subscription. Please subscribe to enable your funnels.',
-              enabled: false,
-              subscriptionStatus: subscriptionStatus ? {
-                hasAccess: subscriptionStatus.hasAccess,
-                isTrial: subscriptionStatus.isTrial,
-              } : null,
-            },
-            { status: 403 }
-          );
-          errorResponse.headers.set('Access-Control-Allow-Origin', '*');
-          return errorResponse;
-        }
-      }
-    } catch (error) {
-      console.error('[Subscription Check] Error checking subscription in flow endpoint:', error);
-      console.error('[Subscription Check] Error details:', {
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        companyId,
-      });
-      
-      // On error: if authenticated, always allow (fail open for dashboard)
-      // If unauthenticated, block (fail closed for customer pages)
-      isEnabled = false;
-      subscriptionStatus = {
-        hasAccess: false,
-        isTrial: false,
-        isExpired: true,
-      };
-      
-      // Only block if NOT authenticated (customer-facing page)
-      if (!isAuthenticated) {
-        const errorResponse = NextResponse.json(
-          { 
-            error: 'Funnel access requires an active subscription. Please subscribe to enable your funnels.',
-            enabled: false,
-            subscriptionStatus: null,
-          },
-          { status: 403 }
-        );
-        errorResponse.headers.set('Access-Control-Allow-Origin', '*');
-        return errorResponse;
-      }
-      // If authenticated, continue and return flow data (even if subscription check failed)
-    }
-
+    // Subscription checks removed - app is now free to use
     const response = NextResponse.json({
       ...flow,
       nodes: nodes || [],
-      enabled: isEnabled, // Funnel is enabled/disabled based on subscription
-      subscriptionStatus: subscriptionStatus ? {
-        hasAccess: subscriptionStatus.hasAccess,
-        isTrial: subscriptionStatus.isTrial,
-      } : null,
+      enabled: true, // Always enabled - no subscription required
     });
     
     // Add CORS headers for cross-origin iframe embedding

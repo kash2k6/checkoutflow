@@ -11,11 +11,11 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function POST(request: NextRequest) {
   try {
-    const { planId, userEmail, companyId: providedCompanyId, flowId } = await request.json();
+    const { planId, userEmail, companyId: providedCompanyId, flowId, tipAmount } = await request.json();
 
-    if (!planId) {
+    if (!planId && !tipAmount) {
       return NextResponse.json(
-        { error: 'Missing planId' },
+        { error: 'Missing planId or tipAmount' },
         { status: 400 }
       );
     }
@@ -27,8 +27,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get company ID - use provided one or fallback to env
-    const companyId = providedCompanyId || process.env.WHOP_COMPANY_ID;
+    // Get company ID - for tips, always use the main business ID
+    // For regular flows, use provided one or fallback to env
+    const TIP_COMPANY_ID = 'biz_PHQfLZ3o2GvXQn';
+    const companyId = tipAmount ? TIP_COMPANY_ID : (providedCompanyId || process.env.WHOP_COMPANY_ID);
     if (!companyId) {
       return NextResponse.json(
         { error: 'Company ID not provided and WHOP_COMPANY_ID not configured' },
@@ -36,9 +38,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create checkout configuration in SETUP MODE (no plan_id, just mode: "setup")
-    // This saves the payment method without charging
-    // We'll charge after setup completes via API
+    // For tips, create a one-time payment plan (actual charge)
+    // For regular flows, use setup mode to save payment method
+    const checkoutConfigBody: any = {
+      metadata: {
+        userEmail: userEmail || '',
+        planId: planId || '',
+        companyId: companyId,
+        flowId: flowId || '',
+        tipAmount: tipAmount || '',
+        source: tipAmount ? 'tip_creator' : 'whop_checkout_flow',
+      },
+    };
+
+    if (tipAmount) {
+      // Create one-time payment plan for tips (actual charge)
+      checkoutConfigBody.plan = {
+        company_id: companyId,
+        initial_price: tipAmount,
+        currency: 'usd',
+        plan_type: 'one_time',
+        title: `Tip $${tipAmount.toFixed(2)}`,
+        description: 'Thank you for your support!',
+      };
+    } else {
+      // Setup mode for regular flows (save payment method, no charge)
+      checkoutConfigBody.mode = 'setup';
+      checkoutConfigBody.company_id = companyId;
+    }
+
     const checkoutConfigResponse = await fetch(
       'https://api.whop.com/api/v1/checkout_configurations',
       {
@@ -47,17 +75,7 @@ export async function POST(request: NextRequest) {
           'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          mode: 'setup', // Setup mode - saves payment method, no charge
-          company_id: companyId,
-          metadata: {
-            userEmail: userEmail || '', // Store email in metadata for webhook retrieval
-            planId: planId, // Store plan ID in metadata so we can charge after setup
-            companyId: companyId, // Store company ID
-            flowId: flowId || '', // Store flow ID if provided
-            source: 'whop_checkout_flow',
-          },
-        }),
+        body: JSON.stringify(checkoutConfigBody),
       }
     );
 
@@ -74,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       checkoutConfigId: checkoutConfig.id,
-      planId: planId, // Return the plan ID we stored in metadata
+      planId: checkoutConfig.plan?.id || planId, // Return the plan ID from the created plan, or fallback to metadata
       purchaseUrl: checkoutConfig.purchase_url,
     });
   } catch (error) {
