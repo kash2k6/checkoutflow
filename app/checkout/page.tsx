@@ -50,13 +50,15 @@ function CheckoutContent() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingMessage, setProcessingMessage] = useState('Processing your order, please wait...');
   const [sessionId] = useState(() => {
-    // Generate or retrieve session ID
+    // Always generate a NEW session ID for each checkout flow
+    // This ensures each purchase gets its own unique session, preventing
+    // multiple purchases from being grouped together
     if (typeof window !== 'undefined') {
-      let sid = sessionStorage.getItem('flow_session_id');
-      if (!sid) {
-        sid = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        sessionStorage.setItem('flow_session_id', sid);
-      }
+      // Generate a fresh session ID for this checkout flow
+      const sid = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Store it in sessionStorage so it can be passed through the flow
+      sessionStorage.setItem('flow_session_id', sid);
+      console.log('Checkout - Generated new sessionId:', sid);
       return sid;
     }
     return null;
@@ -468,8 +470,12 @@ function CheckoutContent() {
             redirectUrl.searchParams.set('companyId', companyId || '');
             redirectUrl.searchParams.set('memberId', memberId);
             // Pass session ID to filter purchases by current transaction
+            // CRITICAL: Always include sessionId in URL for external redirects (sessionStorage doesn't work cross-domain)
             if (sessionId) {
               redirectUrl.searchParams.set('sessionId', sessionId);
+              console.log('Checkout - Adding sessionId to confirmation URL:', sessionId);
+            } else {
+              console.warn('Checkout - No sessionId available to pass to confirmation page!');
             }
             // Ensure nodeId is NOT included in confirmation URLs (confirmation pages should never have nodeId)
             redirectUrl.searchParams.delete('nodeId');
@@ -485,6 +491,12 @@ function CheckoutContent() {
             if (isExternal) {
               redirectUrl.searchParams.set('confirmation', 'true');
             }
+            console.log('Checkout - Redirecting to confirmation:', {
+              url: redirectUrl.toString(),
+              isExternal,
+              hasSessionId: !!sessionId,
+              sessionId: sessionId
+            });
             handleRedirect(redirectUrl.toString(), isExternal);
           } else {
             // Default: show success message

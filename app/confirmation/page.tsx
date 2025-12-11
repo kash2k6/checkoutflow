@@ -8,8 +8,20 @@ function ConfirmationContent() {
   const companyId = searchParams.get('companyId');
   const flowId = searchParams.get('flowId');
   const memberId = searchParams.get('memberId');
-  const sessionId = searchParams.get('sessionId'); // Session ID to filter by current transaction
+  const sessionIdFromUrl = searchParams.get('sessionId'); // Session ID to filter by current transaction
   const nodeId = searchParams.get('nodeId'); // Check for nodeId - should not be on confirmation page
+  
+  // Get sessionId from URL or sessionStorage (fallback for cross-domain redirects)
+  const getSessionId = (): string | null => {
+    if (sessionIdFromUrl) return sessionIdFromUrl;
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('flow_session_id');
+      if (stored) return stored;
+    }
+    return null;
+  };
+  
+  const sessionId = getSessionId();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [flow, setFlow] = useState<any>(null);
@@ -68,12 +80,15 @@ function ConfirmationContent() {
           // Load purchases from API using memberId
           if (memberId) {
             try {
-              const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`;
+              const effectiveSessionId = getSessionId();
+              const purchasesUrl = `/api/purchases/${companyId}?memberId=${encodeURIComponent(memberId)}${flowId ? `&flowId=${flowId}` : ''}${effectiveSessionId ? `&sessionId=${encodeURIComponent(effectiveSessionId)}` : ''}`;
               console.log('Confirmation page - Loading purchases:', {
                 companyId,
                 memberId,
                 flowId,
-                sessionId,
+                sessionIdFromUrl,
+                sessionIdFromStorage: typeof window !== 'undefined' ? sessionStorage.getItem('flow_session_id') : null,
+                effectiveSessionId,
                 url: purchasesUrl
               });
               const purchasesResponse = await fetch(purchasesUrl, {
