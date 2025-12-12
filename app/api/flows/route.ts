@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { whopSdk } from '@/lib/whop-sdk';
+import { checkFunnelLimit } from '@/lib/funnel-limits';
 
 // Create or update a flow
 export async function POST(request: NextRequest) {
@@ -93,6 +96,52 @@ export async function POST(request: NextRequest) {
         }
       }
     } else {
+      // Create new flow - check funnel limit first
+      try {
+        // Get user ID from authentication
+        const result = await whopSdk.verifyUserToken(await headers(), { dontThrow: true });
+        const userId = result?.userId;
+        
+        if (userId) {
+          // Check funnel limit
+          const limitCheck = await checkFunnelLimit(userId, company_id);
+          
+          if (!limitCheck.allowed) {
+            return NextResponse.json(
+              { 
+                error: limitCheck.message || 'Funnel limit reached',
+                limitReached: true,
+                currentCount: limitCheck.currentCount,
+                limit: limitCheck.limit,
+                planId: limitCheck.planId,
+              },
+              { status: 403 }
+            );
+          }
+        } else {
+          // No user ID - check if free tier limit is reached
+          const { count } = await supabase
+            .from('company_flows')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', company_id);
+          
+          if ((count || 0) >= 1) {
+            return NextResponse.json(
+              { 
+                error: 'Free tier allows 1 funnel. Please subscribe to create more funnels.',
+                limitReached: true,
+                currentCount: count || 0,
+                limit: 1,
+              },
+              { status: 403 }
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Error checking funnel limit:', error);
+        // Continue with flow creation if limit check fails (fail open for now)
+      }
+
       // Create new flow (initial_product_plan_id can be empty/null for new flows)
       const insertData: any = {
         company_id,

@@ -13,9 +13,10 @@ interface SubscribeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  currentPlanId?: string | null;
 }
 
-export default function SubscribeModal({ isOpen, onClose, onSuccess }: SubscribeModalProps) {
+export default function SubscribeModal({ isOpen, onClose, onSuccess, currentPlanId }: SubscribeModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const iframeSdk = useIframeSdk();
@@ -28,13 +29,13 @@ export default function SubscribeModal({ isOpen, onClose, onSuccess }: Subscribe
     }
   }, [isOpen]);
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (planId: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Create in-app purchase configuration
-      const inAppPurchase = await createSubscriptionPurchase();
+      // Create in-app purchase configuration with selected plan ID
+      const inAppPurchase = await createSubscriptionPurchase(planId);
       
       if (!inAppPurchase) {
         throw new Error('Failed to create subscription purchase');
@@ -74,11 +75,11 @@ export default function SubscribeModal({ isOpen, onClose, onSuccess }: Subscribe
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Content 
-        size="3" 
-        className="max-w-[calc(100vw-2rem)] md:max-w-[32rem] max-h-[95vh] mx-4 md:mx-auto"
+        size="4" 
+        className="max-w-[calc(100vw-2rem)] md:max-w-[90rem] max-h-[95vh] mx-4 md:mx-auto"
       >
-        <Dialog.Title className="text-base md:text-lg">Subscribe to Continue</Dialog.Title>
-        <Dialog.Description className="text-sm md:text-base">Subscribe to enable your funnels and access all features</Dialog.Description>
+        <Dialog.Title className="text-base md:text-lg">Choose Your Plan</Dialog.Title>
+        <Dialog.Description className="text-sm md:text-base">Select a plan to unlock more funnels and features</Dialog.Description>
 
         <div className="flex-1 overflow-y-auto" style={{ marginTop: 'var(--space-4)' }}>
           {error && (
@@ -91,6 +92,7 @@ export default function SubscribeModal({ isOpen, onClose, onSuccess }: Subscribe
             <SubscriptionPlanCard
               onSubscribe={handleSubscribe}
               isLoading={isLoading}
+              currentPlanId={currentPlanId}
             />
           </div>
         </div>

@@ -7,6 +7,7 @@ import { Button, Dialog } from '@whop/react/components';
 import UpsellFlowBuilder from './UpsellFlowBuilder';
 import EmbedCodeModal from './EmbedCodeModal';
 import AlertDialog, { ConfirmDialog } from './AlertDialog';
+import { useTabNavigation } from './DashboardTabs';
 
 interface FlowNode {
   id: string;
@@ -88,6 +89,9 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
     flowId: null,
     flowName: null,
   });
+  
+  // Get tab navigation function
+  const { setActiveTab } = useTabNavigation();
 
   // Load flows list on mount
   useEffect(() => {
@@ -163,6 +167,7 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
         setPlans([]); // Set empty array so UI can still render
       });
   }, [companyId]);
+
 
   // Debug: Log when modal state changes
   useEffect(() => {
@@ -321,10 +326,15 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
       } else {
         // Response was not OK - try to get error details
         let errorMessage = 'Failed to create flow';
+        let limitReached = false;
+        let planId: string | null = null;
+        
         try {
           const errorData = await response.json();
           console.error('Error creating flow - Status:', response.status, 'Data:', errorData);
           errorMessage = errorData.error || errorData.message || `Server error (${response.status})`;
+          limitReached = errorData.limitReached === true;
+          planId = errorData.planId || null;
         } catch (jsonError) {
           // If JSON parsing fails, try to get text
           try {
@@ -339,13 +349,24 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
         
         // Clear any stale selectedFlowId on error
         setSelectedFlowId(null);
-        // Keep modal open and input field intact on error so user can try a different name
-        setAlertDialog({
-          open: true,
-          title: 'Error',
-          message: errorMessage,
-          type: 'error',
-        });
+        
+        // If limit reached, navigate to subscription tab
+        if (limitReached) {
+          // Close the new flow modal
+          setShowNewFlowModal(false);
+          setNewFlowName('');
+          
+          // Navigate to subscription tab
+          setActiveTab('subscription');
+        } else {
+          // Keep modal open and input field intact on error so user can try a different name
+          setAlertDialog({
+            open: true,
+            title: 'Error',
+            message: errorMessage,
+            type: 'error',
+          });
+        }
       }
     } catch (error) {
       console.error('Error creating flow (network/exception):', error);
@@ -721,6 +742,7 @@ export default function FlowBuilder({ companyId }: { companyId: string }) {
           onConfirm={confirmDeleteFlow}
           variant="danger"
         />
+
       </div>
     );
   }

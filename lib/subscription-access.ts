@@ -3,30 +3,71 @@ import { whopSdk } from '@/lib/whop-sdk';
 /**
  * SUBSCRIPTION REQUIREMENTS FOR FUNNELS
  * 
- * Funnels (checkout flows, upsells, downsells) require the company owner/admin
- * to have an active subscription to our service plan.
+ * Multi-tier pricing system:
+ * - Free: 1 funnel (no subscription required)
+ * - Starter: $19.95/month for 3 funnels
+ * - Growth: $34.95/month for 10 funnels
+ * - Pro: $49.95/month for unlimited funnels
  * 
- * Required Plan ID: plan_ULypGjK7JAjeN
- * Required Product ID: prod_wjN5fTpW2hROu
  * Our Company ID: biz_PHQfLZ3o2GvXQn
  * 
  * How it works:
  * - For authenticated requests (dashboard): Check the authenticated user's subscription
  * - For unauthenticated requests (customers): Check if any admin of the target company has an active subscription
  * 
- * If no active subscription is found, funnels are completely blocked (not just a warning).
- * This ensures only paying customers can use the funnel features.
+ * Free tier allows 1 funnel without subscription. Paid tiers require active subscription.
  */
 
-// Subscription constants
-export const SUBSCRIPTION_PLAN_ID = 'plan_ULypGjK7JAjeN';
-export const SUBSCRIPTION_PRODUCT_ID = 'prod_wjN5fTpW2hROu';
-export const COMPANY_ID = 'biz_PHQfLZ3o2GvXQn';
+import {
+  COMPANY_ID,
+  SUBSCRIPTION_PRODUCT_ID,
+  STARTER_PLAN_ID,
+  GROWTH_PLAN_ID,
+  PRO_PLAN_ID,
+  FREE_TIER_FUNNEL_LIMIT,
+  PAID_PLAN_IDS,
+} from './subscription-constants';
+
+// Re-export constants for backward compatibility
+export {
+  COMPANY_ID,
+  SUBSCRIPTION_PRODUCT_ID,
+  STARTER_PLAN_ID,
+  GROWTH_PLAN_ID,
+  PRO_PLAN_ID,
+  FREE_TIER_FUNNEL_LIMIT,
+  PAID_PLAN_IDS,
+};
+
+// Legacy support - keep for backward compatibility, but prefer using specific plan IDs
+export const SUBSCRIPTION_PLAN_ID = PRO_PLAN_ID;
+
+/**
+ * Get the funnel limit for a given plan ID
+ * @param planId - The plan ID to check
+ * @returns The funnel limit (number) or null for unlimited
+ */
+export function getPlanLimit(planId: string | null | undefined): number | null {
+  if (!planId) return FREE_TIER_FUNNEL_LIMIT; // Free tier
+  
+  switch (planId) {
+    case STARTER_PLAN_ID:
+      return 3;
+    case GROWTH_PLAN_ID:
+      return 10;
+    case PRO_PLAN_ID:
+      return null; // Unlimited
+    default:
+      return FREE_TIER_FUNNEL_LIMIT; // Default to free tier
+  }
+}
 
 export interface SubscriptionStatus {
   hasAccess: boolean;
   isTrial: boolean;
   isExpired: boolean;
+  planId?: string | null;
+  funnelLimit?: number | null; // null means unlimited
   membership?: {
     id: string;
     status: string;
@@ -66,9 +107,9 @@ export async function checkSubscriptionAccess(userId: string): Promise<Subscript
     const url = new URL('https://api.whop.com/api/v1/memberships');
     url.searchParams.set('company_id', companyId);
     
-    // Only add plan_ids if we have a plan ID
-    if (SUBSCRIPTION_PLAN_ID) {
-      url.searchParams.set('plan_ids', SUBSCRIPTION_PLAN_ID);
+    // Query for any of the paid plan IDs
+    if (PAID_PLAN_IDS.length > 0) {
+      url.searchParams.set('plan_ids', PAID_PLAN_IDS.join(','));
     }
     
     // Only add user_ids if we have a user ID
@@ -123,15 +164,20 @@ export async function checkSubscriptionAccess(userId: string): Promise<Subscript
     const isTrial = activeMembership.status?.toLowerCase() === 'trialing';
     const isExpired = activeMembership.status?.toLowerCase() === 'canceled' || 
                      activeMembership.status?.toLowerCase() === 'expired';
+    
+    const planId = activeMembership.plan?.id || activeMembership.plan_id;
+    const funnelLimit = getPlanLimit(planId);
 
     return {
       hasAccess: true,
       isTrial,
       isExpired,
+      planId,
+      funnelLimit,
       membership: {
         id: activeMembership.id,
         status: activeMembership.status,
-        plan_id: activeMembership.plan?.id || activeMembership.plan_id,
+        plan_id: planId,
         user_id: activeMembership.user?.id || activeMembership.user_id || activeMembership.member?.user?.id,
         created_at: activeMembership.created_at,
         trial_end: activeMembership.trial_end,
@@ -176,10 +222,12 @@ export async function checkCompanyAdminSubscription(targetCompanyId: string): Pr
 
   try {
     // Get company members/admins from Whop API
-    // We'll query memberships for the subscription plan and check if any belong to admins of the target company
+    // We'll query memberships for any of the paid subscription plans and check if any belong to admins of the target company
     const url = new URL('https://api.whop.com/api/v1/memberships');
     url.searchParams.set('company_id', subscriptionCompanyId);
-    url.searchParams.set('plan_ids', SUBSCRIPTION_PLAN_ID);
+    if (PAID_PLAN_IDS.length > 0) {
+      url.searchParams.set('plan_ids', PAID_PLAN_IDS.join(','));
+    }
     // Note: Some Whop API versions may not support status filter, so we'll filter client-side
 
     const response = await fetch(url.toString(), {
@@ -260,6 +308,9 @@ export async function checkCompanyAdminSubscription(targetCompanyId: string): Pr
           const isTrial = membership.status?.toLowerCase() === 'trialing';
           const isExpired = membership.status?.toLowerCase() === 'canceled' || 
                            membership.status?.toLowerCase() === 'expired';
+          
+          const planId = membership.plan?.id || membership.plan_id;
+          const funnelLimit = getPlanLimit(planId);
 
           console.log(`[checkCompanyAdminSubscription] ✅ User ${userId} is admin of ${targetCompanyId} and has active subscription!`);
           
@@ -267,10 +318,12 @@ export async function checkCompanyAdminSubscription(targetCompanyId: string): Pr
             hasAccess: true,
             isTrial,
             isExpired,
+            planId,
+            funnelLimit,
             membership: {
               id: membership.id,
               status: membership.status,
-              plan_id: membership.plan?.id || membership.plan_id,
+              plan_id: planId,
               user_id: userId,
               created_at: membership.created_at,
               trial_end: membership.trial_end,

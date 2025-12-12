@@ -1,72 +1,159 @@
 'use client';
 
-import { Check } from 'lucide-react';
 import { Button } from '@whop/react/components';
-import FrostedCard from './UpsellFlowBuilder/FrostedCard';
+import { STARTER_PLAN_ID, GROWTH_PLAN_ID, PRO_PLAN_ID } from '@/lib/subscription-constants';
 
 interface SubscriptionPlanCardProps {
-  onSubscribe?: () => void;
+  onSubscribe?: (planId: string) => void;
   isLoading?: boolean;
+  currentPlanId?: string | null;
 }
 
-export default function SubscriptionPlanCard({ onSubscribe, isLoading }: SubscriptionPlanCardProps) {
+interface PlanTier {
+  id: string;
+  name: string;
+  price: string;
+  priceLabel: string;
+  funnelLimit: number | null; // null means unlimited
+  popular?: boolean;
+  planId: string | null; // null for free tier
+}
+
+const PLANS: PlanTier[] = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: '$0',
+    priceLabel: 'Forever free',
+    funnelLimit: 1,
+    planId: null,
+  },
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: '$19.95',
+    priceLabel: '/month',
+    funnelLimit: 3,
+    planId: STARTER_PLAN_ID,
+  },
+  {
+    id: 'growth',
+    name: 'Growth',
+    price: '$34.95',
+    priceLabel: '/month',
+    funnelLimit: 10,
+    popular: true,
+    planId: GROWTH_PLAN_ID,
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: '$49.95',
+    priceLabel: '/month',
+    funnelLimit: null,
+    planId: PRO_PLAN_ID,
+  },
+];
+
+export default function SubscriptionPlanCard({ onSubscribe, isLoading, currentPlanId }: SubscriptionPlanCardProps) {
+  const handleSubscribe = (plan: PlanTier) => {
+    if (plan.planId && onSubscribe) {
+      onSubscribe(plan.planId);
+    }
+  };
+
   return (
-    <FrostedCard className="w-full max-w-md mx-auto">
-      {/* Header */}
-      <div className="text-center mb-4 md:mb-6">
-        <h2 className="text-xl md:text-2xl font-bold text-gray-12 dark:text-white mb-2">
-          Unlimited Funnels for Your Business
+    <div className="w-full">
+      <div className="text-center mb-6 md:mb-8">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-12 dark:text-white mb-2">
+          Choose Your Plan
         </h2>
-        <p className="text-xs md:text-sm text-gray-10 dark:text-gray-9">
-          All features, no limitations
+        <p className="text-sm md:text-base text-gray-10 dark:text-gray-9">
+          Select the plan that fits your business needs
         </p>
       </div>
 
-      {/* Pricing */}
-      <div className="text-center mb-4 md:mb-6 pb-4 md:pb-6 border-b border-gray-a4">
-        <div className="flex items-baseline justify-center gap-2 mb-2">
-          <span className="text-4xl md:text-5xl font-bold text-gray-12 dark:text-white">$49.95</span>
-          <span className="text-gray-10 dark:text-gray-9 text-sm md:text-base">/month</span>
-        </div>
-        <p className="text-xs md:text-sm text-gray-9 dark:text-gray-8">7-day free trial, then $49.95/month</p>
-      </div>
+      <div className="max-w-4xl mx-auto">
+        <div className="space-y-3">
+          {PLANS.map((plan) => {
+            const isCurrentPlan = plan.planId === currentPlanId;
+            const isFree = plan.planId === null;
+            const isPaid = !isFree;
 
-      {/* Features */}
-      <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
-        <div className="flex items-start gap-2 md:gap-3">
-          <Check className="w-4 h-4 md:w-5 md:h-5 text-gray-12 dark:text-white mt-0.5 flex-shrink-0" />
-          <span className="text-gray-12 dark:text-white text-xs md:text-sm">Unlimited funnel creation</span>
-        </div>
-        <div className="flex items-start gap-2 md:gap-3">
-          <Check className="w-4 h-4 md:w-5 md:h-5 text-gray-12 dark:text-white mt-0.5 flex-shrink-0" />
-          <span className="text-gray-12 dark:text-white text-xs md:text-sm">All premium features</span>
-        </div>
-        <div className="flex items-start gap-2 md:gap-3">
-          <Check className="w-4 h-4 md:w-5 md:h-5 text-gray-12 dark:text-white mt-0.5 flex-shrink-0" />
-          <span className="text-gray-12 dark:text-white text-xs md:text-sm">Advanced analytics</span>
-        </div>
-        <div className="flex items-start gap-2 md:gap-3">
-          <Check className="w-4 h-4 md:w-5 md:h-5 text-gray-12 dark:text-white mt-0.5 flex-shrink-0" />
-          <span className="text-gray-12 dark:text-white text-xs md:text-sm">Priority support</span>
-        </div>
-        <div className="flex items-start gap-2 md:gap-3">
-          <Check className="w-4 h-4 md:w-5 md:h-5 text-gray-12 dark:text-white mt-0.5 flex-shrink-0" />
-          <span className="text-gray-12 dark:text-white text-xs md:text-sm">No limitations</span>
+            return (
+              <div
+                key={plan.id}
+                className={`flex items-center justify-between p-4 md:p-6 rounded-lg border-2 transition-all ${
+                  plan.popular
+                    ? 'border-tomato-9 bg-tomato-2 dark:bg-tomato-3'
+                    : isCurrentPlan
+                    ? 'border-green-9 bg-green-2 dark:bg-green-3'
+                    : 'border-gray-a4 bg-gray-a2 dark:bg-gray-a3'
+                }`}
+              >
+                <div className="flex items-center gap-4 md:gap-6 flex-1">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="text-lg md:text-xl font-bold text-gray-12 dark:text-white">
+                        {plan.name}
+                      </h3>
+                      {plan.popular && (
+                        <span className="bg-tomato-9 text-white text-xs font-semibold px-2 py-1 rounded">
+                          Most Popular
+                        </span>
+                      )}
+                      {isCurrentPlan && (
+                        <span className="bg-green-9 text-white text-xs font-semibold px-2 py-1 rounded">
+                          Current
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl md:text-3xl font-bold text-gray-12 dark:text-white">
+                        {plan.price}
+                      </span>
+                      <span className="text-gray-10 dark:text-gray-9 text-sm md:text-base">
+                        {plan.priceLabel}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-base md:text-lg font-semibold text-gray-12 dark:text-white">
+                      {plan.funnelLimit === null
+                        ? 'Unlimited funnels'
+                        : `${plan.funnelLimit} funnel${plan.funnelLimit === 1 ? '' : 's'}`}
+                    </p>
+                  </div>
+                </div>
+                <div className="ml-4 md:ml-6">
+                  {isFree ? (
+                    <span className="text-sm text-gray-9 dark:text-gray-8 px-4 py-2">
+                      Current Plan
+                    </span>
+                  ) : (
+                    <Button
+                      onClick={() => handleSubscribe(plan)}
+                      disabled={isLoading || isCurrentPlan}
+                      color={plan.popular ? 'tomato' : 'gray'}
+                      variant={isCurrentPlan ? 'soft' : 'classic'}
+                      size="3"
+                      className="min-w-[120px] min-h-[44px] touch-manipulation"
+                    >
+                      {isLoading
+                        ? 'Processing...'
+                        : isCurrentPlan
+                        ? 'Current Plan'
+                        : isPaid && currentPlanId
+                        ? 'Upgrade'
+                        : 'Subscribe'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-
-      {/* CTA Button */}
-      <Button
-        onClick={onSubscribe}
-        disabled={isLoading}
-        color="tomato"
-        variant="classic"
-        size="3"
-        className="w-full min-h-[44px] touch-manipulation"
-      >
-        {isLoading ? 'Processing...' : 'Subscribe Now'}
-      </Button>
-    </FrostedCard>
+    </div>
   );
 }
-

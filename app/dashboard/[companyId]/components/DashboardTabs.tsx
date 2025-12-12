@@ -1,22 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, createContext, useContext } from 'react';
 import FlowBuilder from './FlowBuilder';
 import AnalyticsDashboard from './AnalyticsDashboard';
-import TipCreator from './TipCreator';
+import Subscription from './Subscription';
 import HelpModal from './HelpModal';
-import { LayoutDashboard, BarChart3, Heart, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, BarChart3, CreditCard, HelpCircle } from 'lucide-react';
+
+type TabType = 'flows' | 'analytics' | 'subscription';
+
+interface TabContextType {
+  setActiveTab: (tab: TabType) => void;
+}
+
+const TabContext = createContext<TabContextType | null>(null);
+
+export const useTabNavigation = () => {
+  const context = useContext(TabContext);
+  // Return a no-op function if not in context (for components that might be used outside)
+  if (!context) {
+    return { setActiveTab: () => {} };
+  }
+  return context;
+};
 
 export default function DashboardTabs({ 
   companyId,
 }: { 
   companyId: string;
 }) {
-  const [activeTab, setActiveTab] = useState<'flows' | 'analytics' | 'tip'>('flows');
+  const [activeTab, setActiveTab] = useState<TabType>('flows');
   const [showHelpModal, setShowHelpModal] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-a1 dark:via-gray-a2 dark:to-gray-a1">
+    <TabContext.Provider value={{ setActiveTab }}>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-a1 dark:via-gray-a2 dark:to-gray-a1">
       {/* Tab Navigation */}
       <div className="sticky top-0 z-50 bg-white dark:bg-gray-a2 border-b border-gray-a4">
         <div className="w-full px-2 sm:px-4 md:px-6">
@@ -54,18 +72,18 @@ export default function DashboardTabs({
               )}
             </button>
             <button
-              onClick={() => setActiveTab('tip')}
+              onClick={() => setActiveTab('subscription')}
               className={`
                 relative flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 min-h-[44px] touch-manipulation
-                ${activeTab === 'tip'
+                ${activeTab === 'subscription'
                   ? 'text-accent-600 dark:text-accent-400 bg-accent-50 dark:bg-accent-900/20'
                   : 'text-gray-10 hover:text-gray-12 hover:bg-gray-a3'
                 }
               `}
             >
-              <Heart className="w-4 h-4 flex-shrink-0" />
-              <span className="whitespace-nowrap">Tip Creator</span>
-              {activeTab === 'tip' && (
+              <CreditCard className="w-4 h-4 flex-shrink-0" />
+              <span className="whitespace-nowrap">Subscription</span>
+              {activeTab === 'subscription' && (
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-500" />
               )}
             </button>
@@ -77,7 +95,7 @@ export default function DashboardTabs({
       <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
         {activeTab === 'flows' && <FlowBuilder companyId={companyId} />}
         {activeTab === 'analytics' && <AnalyticsDashboard companyId={companyId} />}
-        {activeTab === 'tip' && <TipCreator companyId={companyId} />}
+        {activeTab === 'subscription' && <Subscription companyId={companyId} />}
       </div>
 
       {/* Floating Help Button */}
@@ -95,7 +113,8 @@ export default function DashboardTabs({
         isOpen={showHelpModal} 
         onClose={() => setShowHelpModal(false)} 
       />
-    </div>
+      </div>
+    </TabContext.Provider>
   );
 }
 
