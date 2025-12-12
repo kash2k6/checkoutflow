@@ -43,8 +43,32 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
+    // Fetch regular products to get their IDs (exclude api and app products)
+    const productsResponse = await fetch(
+      `https://api.whop.com/api/v1/products?company_id=${companyId}&product_types=regular`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${process.env.WHOP_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    let regularProductIds: string[] = [];
+    if (productsResponse.ok) {
+      const productsData = await productsResponse.json();
+      regularProductIds = (productsData.data || []).map((product: any) => product.id);
+    }
+
+    // Filter plans to only include those from regular products
+    const filteredPlans = (data.data || []).filter((plan: any) => {
+      // Only include plans that have a product and the product is in the regular products list
+      return plan.product && regularProductIds.includes(plan.product.id);
+    });
+
     return NextResponse.json({
-      plans: data.data || [],
+      plans: filteredPlans,
     });
   } catch (error) {
     console.error('Error fetching plans:', error);
