@@ -48,10 +48,12 @@ export async function GET(
       console.log('Purchases API - Filtering by sessionId:', sessionId);
       query = query.eq('session_id', sessionId);
     } else {
-      console.log('Purchases API - No sessionId provided, showing all purchases for member');
+      // If no sessionId is provided, limit to recent purchases (last 10 minutes)
+      // This prevents showing all historical purchases when session storage isn't available
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      query = query.gte('purchased_at', tenMinutesAgo);
+      console.log('Purchases API - No sessionId provided, limiting to purchases from last 10 minutes:', tenMinutesAgo);
     }
-    // Removed the 30-minute time window filter - show all purchases for the member/flow
-    // This allows the confirmation page to display purchases even if they're older
 
     // Get purchases, ordered by purchase time
     const { data: purchases, error } = await query.order('purchased_at', { ascending: true });

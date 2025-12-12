@@ -31,6 +31,14 @@ function ConfirmationContent() {
     type: 'one_time' | 'subscription';
   }>>([]);
 
+  // Store sessionId in sessionStorage if it comes from URL (for persistence within the session)
+  useEffect(() => {
+    if (sessionIdFromUrl && typeof window !== 'undefined') {
+      sessionStorage.setItem('flow_session_id', sessionIdFromUrl);
+      console.log('Confirmation page - Stored sessionId from URL to sessionStorage:', sessionIdFromUrl);
+    }
+  }, [sessionIdFromUrl]);
+
   // If nodeId is present, this should be an upsell page, not confirmation
   // Redirect to upsell page if nodeId is present (someone accidentally navigated here with nodeId)
   useEffect(() => {
