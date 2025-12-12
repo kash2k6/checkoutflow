@@ -4,7 +4,8 @@ import { useState } from 'react';
 import FlowBuilder from './FlowBuilder';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import TipCreator from './TipCreator';
-import { LayoutDashboard, BarChart3, Heart } from 'lucide-react';
+import HelpModal from './HelpModal';
+import { LayoutDashboard, BarChart3, Heart, HelpCircle } from 'lucide-react';
 
 export default function DashboardTabs({ 
   companyId,
@@ -12,6 +13,7 @@ export default function DashboardTabs({
   companyId: string;
 }) {
   const [activeTab, setActiveTab] = useState<'flows' | 'analytics' | 'tip'>('flows');
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-a1 dark:via-gray-a2 dark:to-gray-a1">
@@ -77,6 +79,22 @@ export default function DashboardTabs({
         {activeTab === 'analytics' && <AnalyticsDashboard companyId={companyId} />}
         {activeTab === 'tip' && <TipCreator companyId={companyId} />}
       </div>
+
+      {/* Floating Help Button */}
+      <button
+        onClick={() => setShowHelpModal(true)}
+        className="fixed bottom-6 right-6 z-50 bg-accent-600 hover:bg-accent-700 dark:bg-accent-500 dark:hover:bg-accent-600 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-200 min-h-[56px] min-w-[56px] flex items-center justify-center touch-manipulation"
+        aria-label="How to embed checkout flow"
+        title="How to embed checkout flow"
+      >
+        <HelpCircle className="w-6 h-6" />
+      </button>
+
+      {/* Help Modal */}
+      <HelpModal 
+        isOpen={showHelpModal} 
+        onClose={() => setShowHelpModal(false)} 
+      />
     </div>
   );
 }
